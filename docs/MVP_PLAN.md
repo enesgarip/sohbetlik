@@ -7,12 +7,13 @@ Finance project cizgisine yakin ilk stack:
 - Vite
 - React
 - TypeScript
-- Supabase Postgres
-- Supabase Auth, anonymous sign-in ile
-- Supabase Realtime
+- Local-first room adapter
+- Kalici backend icin Supabase, Neon veya Upstash opsiyonlari
+- Supabase lokal Docker denemeleri icin migration yapisi
 - React Query
 - Tailwind CSS v4
 - lucide-react
+- qrcode.react
 - Vercel
 - Playwright
 - Vitest
@@ -24,16 +25,19 @@ Finance project cizgisine yakin ilk stack:
 - Demo soru seti eklendi.
 - PWA manifest ve service worker config eklendi.
 - Playwright smoke test eklendi.
+- Route destekli oda, davet, cevap, bekleme ve sonuc akisi eklendi.
+- Oda ve cevaplar icin versiyonlu localStorage adapter eklendi.
+- Davet linkinden gercek QR kod uretimi eklendi.
 
-## Faz 2: Supabase Baglantisi
+## Faz 2: Kalici Backend Baglantisi
 
-- Anonymous Auth oturumu ac.
-- Oda olusturmayi `rooms` tablosuna yaz.
-- Host katilimcisini `participants` tablosuna yaz.
+- Ucretsiz kota ve ihtiyaca gore Supabase, Neon veya Upstash kararini ver.
+- Oda olusturmayi kalici store'a yaz.
+- Host ve davetli katilimcisini kaydet.
 - Davet linkinden gelen kisiyi ayni odaya ekle.
-- Oda sorularini `room_questions` ile sabitle.
-- Cevaplari `answers` tablosuna yaz.
-- Realtime ile katilimci ve cevap durumlarini izle.
+- Oda sorularini oturum bazinda sabitle.
+- Cevaplari kalici store'a yaz.
+- Realtime veya kisa polling ile katilimci ve cevap durumlarini izle.
 
 ## Faz 3: AI Sonuc Ozeti
 
@@ -44,8 +48,6 @@ Finance project cizgisine yakin ilk stack:
 
 ## Faz 4: Uygulama Hissi
 
-- QR kodu gercek uret.
-- Oda linklerini route ile destekle.
 - Soru havuzunu 100+ soruya cikar.
 - Seviye ve kategori secimi ekle.
 - Offline/poor-network durumlarini yumusat.

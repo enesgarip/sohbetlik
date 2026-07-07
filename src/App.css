@@ -67,8 +67,10 @@
 
 .intro-layout,
 .room-layout,
+.join-layout,
 .question-layout,
 .waiting-layout,
+.empty-layout,
 .results-layout {
   padding: clamp(24px, 5vw, 58px);
 }
@@ -277,7 +279,9 @@ button {
 }
 
 .room-layout,
+.join-layout,
 .waiting-layout,
+.empty-layout,
 .results-layout {
   max-width: 780px;
   width: 100%;
@@ -290,7 +294,9 @@ button {
 }
 
 .room-copy p,
+.join-layout p,
 .waiting-layout p,
+.empty-layout p,
 .results-head p {
   max-width: 590px;
   margin: 18px auto 0;
@@ -317,6 +323,11 @@ button {
     linear-gradient(rgba(34, 32, 28, 0.07) 1px, transparent 1px),
     #fff6e9;
   background-size: 20px 20px;
+}
+
+.qr-block svg {
+  width: min(148px, 86%);
+  height: auto;
 }
 
 .invite-details {
@@ -479,6 +490,14 @@ output {
 .insight-item svg {
   margin-top: 3px;
   color: var(--coral);
+}
+
+.insight-item.common svg {
+  color: var(--sage-dark);
+}
+
+.insight-item.prompt svg {
+  color: var(--gold);
 }
 
 .insight-item p {

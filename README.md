@@ -9,7 +9,8 @@ Production: https://sohbetlik.vercel.app
 ## Stack
 
 - Vite + React + TypeScript
-- Supabase Postgres/Auth/Realtime
+- Local-first room adapter, sonradan Supabase/Neon/Upstash'a tasinabilir
+- Supabase lokal Docker denemeleri icin hazir migration yapisi
 - React Query
 - Tailwind CSS v4
 - Vercel
@@ -42,6 +43,8 @@ npm run test:unit
 npm run build
 npm run test:e2e
 ```
+
+DB gerektiren adimlara gelmeden oda, davet linki, cevap ve sonuc akisi localStorage tabanli adapter ile calisir. Kalici backend ihtiyaci netlesince ayni repository arayuzune Supabase veya alternatif bir servis baglanacak.
 
 ## Dokumanlar
 

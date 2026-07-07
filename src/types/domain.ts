@@ -20,9 +20,10 @@ export type Question = {
 
 export type AnswerValue = string | number
 
-export type Stage = 'intro' | 'room' | 'answering' | 'waiting' | 'results'
+export type AnswerMap = Record<string, AnswerValue>
 
 export type ConversationInsight = {
+  tone: 'common' | 'different' | 'prompt'
   title: string
   body: string
 }
