@@ -54,6 +54,12 @@ Current local Vercel project link:
 enesgarips-projects/sohbetlik
 ```
 
+Production URL:
+
+```text
+https://sohbetlik.vercel.app
+```
+
 ## Required Vercel Environment Variables
 
 Set these in Vercel for production and preview environments:

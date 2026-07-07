@@ -4,6 +4,8 @@ Iki kisilik AI destekli tanisma ve sohbet PWA'si.
 
 Sohbetlik bir uyumluluk testi degil; iki insanin ayni soru setini cevaplayip ortak yonlerini, farkli bakis acilarini ve konusmaya deger basliklari gormesine yardim eden bir deneyimdir.
 
+Production: https://sohbetlik.vercel.app
+
 ## Stack
 
 - Vite + React + TypeScript
