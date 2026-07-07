@@ -1,0 +1,107 @@
+import type { Question } from '../types/domain'
+
+export const mvpQuestions: Question[] = [
+  {
+    id: 'daily-pace',
+    category: 'Günlük yaşam',
+    level: 1,
+    type: 'either_or',
+    prompt: 'Bir gün boş kalsa hangisi daha iyi hissettirir?',
+    options: [
+      { id: 'outside', label: 'Dışarı çıkıp keşfetmek' },
+      { id: 'slow', label: 'Evde sakin kalmak' },
+    ],
+  },
+  {
+    id: 'morning-night',
+    category: 'Ritim',
+    level: 1,
+    type: 'either_or',
+    prompt: 'Enerjin daha çok ne zaman açılır?',
+    options: [
+      { id: 'morning', label: 'Sabah' },
+      { id: 'night', label: 'Gece' },
+    ],
+  },
+  {
+    id: 'humor-style',
+    category: 'Mizah',
+    level: 1,
+    type: 'choice',
+    prompt: 'Seni en hızlı hangi mizah yakalar?',
+    options: [
+      { id: 'dry', label: 'Kuru ve zeki' },
+      { id: 'absurd', label: 'Absürt' },
+      { id: 'story', label: 'Hikayeli' },
+      { id: 'playful', label: 'Tatlı atışmalı' },
+    ],
+  },
+  {
+    id: 'travel-mode',
+    category: 'Seyahat',
+    level: 2,
+    type: 'choice',
+    prompt: 'Bir seyahatte ideal modun hangisine yakın?',
+    options: [
+      { id: 'planned', label: 'Planlı ve rahat' },
+      { id: 'wandering', label: 'Akışta gezmek' },
+      { id: 'food', label: 'Yemek odaklı' },
+      { id: 'nature', label: 'Doğa ve yürüyüş' },
+    ],
+  },
+  {
+    id: 'message-rhythm',
+    category: 'İletişim',
+    level: 2,
+    type: 'slider',
+    prompt: 'Mesajlaşmada gün içinde temas senin için ne kadar önemli?',
+    lowLabel: 'Az ama net',
+    highLabel: 'Sık temas iyi gelir',
+    options: [
+      { id: '1', label: '1' },
+      { id: '2', label: '2' },
+      { id: '3', label: '3' },
+      { id: '4', label: '4' },
+      { id: '5', label: '5' },
+    ],
+  },
+  {
+    id: 'money-style',
+    category: 'Para',
+    level: 3,
+    type: 'choice',
+    prompt: 'Para konusunda kendini hangisine daha yakın görürsün?',
+    options: [
+      { id: 'security', label: 'Güvence önce gelir' },
+      { id: 'experience', label: 'Deneyime harcarım' },
+      { id: 'balance', label: 'Denge severim' },
+      { id: 'growth', label: 'Yatırım ve gelişim' },
+    ],
+  },
+  {
+    id: 'conflict-style',
+    category: 'İlişki',
+    level: 3,
+    type: 'choice',
+    prompt: 'Bir anlaşmazlıkta ilk ihtiyacın genelde ne olur?',
+    options: [
+      { id: 'space', label: 'Biraz alan' },
+      { id: 'talk', label: 'Hemen konuşmak' },
+      { id: 'soften', label: 'Önce yumuşamak' },
+      { id: 'clarity', label: 'Netlik kurmak' },
+    ],
+  },
+  {
+    id: 'future-year',
+    category: 'Gelecek',
+    level: 4,
+    type: 'choice',
+    prompt: 'Önümüzdeki bir yılda seni en çok heyecanlandıran alan hangisi?',
+    options: [
+      { id: 'career', label: 'Kariyer' },
+      { id: 'relationship', label: 'İlişkiler' },
+      { id: 'health', label: 'Sağlık ve rutin' },
+      { id: 'adventure', label: 'Yeni deneyimler' },
+    ],
+  },
+]
