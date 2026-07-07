@@ -4,153 +4,112 @@ Date: 2026-07-07
 
 ## Decision
 
-For the first real two-device MVP, Sohbetlik will use:
+For the first real two-device MVP, Sohbetlik will use Supabase as the primary backend:
 
-- Vercel Functions for the API boundary.
-- Upstash Redis for ephemeral room state.
-- Short polling for room progress and result readiness.
-- The current localStorage adapter as the offline/local fallback.
+- Supabase Auth with anonymous users.
+- Supabase Postgres for rooms, participants, questions, answers, and result summaries.
+- Supabase Realtime for room progress and result readiness.
+- Polling fallback if Realtime setup is delayed or fails.
+- Vercel Functions later for OpenAI result generation.
 
-Supabase remains the best product fit when a free slot or paid plan is available because it gives Postgres, anonymous auth, and Realtime in one place. It is not the first production backend right now because the Free plan allows two active free projects across organizations where the user is Owner/Admin, and both slots are already used.
+Upstash Redis is now fallback only. It was the temporary plan while the Supabase Free project slots were full, but a Supabase slot is available now.
 
-Neon Postgres remains the second option if we need relational persistence before Supabase becomes available.
+## Why Supabase First
 
-## Why Upstash First
-
-- Rooms are naturally temporary. A date session can expire after 24-48 hours.
-- We do not need user accounts for the first public MVP.
-- Redis JSON-style room state is enough for:
-  - room creation
-  - invite code lookup
-  - host/guest participants
-  - answer progress
-  - lightweight result state
-- It avoids spending a Supabase slot.
-- It keeps secrets server-side in Vercel Functions.
-- It is easy to replace later because the app already talks through a `RoomRepository` shape.
+- The product naturally needs shared state across two devices.
+- Anonymous auth lets users participate without email, phone, or account setup.
+- Postgres gives durable relational data for rooms, questions, answers, and later analytics.
+- RLS lets the frontend use a publishable key while keeping room data constrained.
+- Realtime can remove the need for custom WebSocket infrastructure.
+- The repo already contains a Supabase local config and initial migration.
 
 ## Current Provider Notes
 
-- Supabase Free: two active free projects; paused projects do not count. Source: <https://supabase.com/docs/guides/platform/billing-on-supabase>
-- Supabase explicit grants: new projects may require explicit grants for Data API access, separate from RLS. Source: <https://supabase.com/changelog>
-- Neon Free: free plan includes 100 projects, 100 CU-hours monthly per project, and 0.5 GB storage per project. Source: <https://neon.com/pricing>
-- Upstash Redis Free: free Redis has one database, 256 MB max data size, and 500K monthly commands. Source: <https://upstash.com/pricing/redis>
-- Vercel Marketplace supports Neon and Upstash provisioning for Vercel projects. Sources: <https://vercel.com/marketplace/neon>, <https://vercel.com/marketplace/upstash>
+- Anonymous Sign-Ins let users have authenticated sessions without providing PII. Source: <https://supabase.com/docs/guides/auth/auth-anonymous>
+- Supabase Realtime supports Postgres Changes and Broadcast. Broadcast is recommended for scalability/security, while Postgres Changes is simpler. Source: <https://supabase.com/docs/guides/realtime/subscribing-to-database-changes>
+- Postgres Changes requires Supabase to check access for every subscriber/change pair, so it needs care at scale. Source: <https://supabase.com/docs/guides/realtime/postgres-changes>
+- RLS should be enabled on exposed tables and views. Source: <https://supabase.com/docs/guides/api/securing-your-api>
+- New tables may require explicit grants to be reachable through the Data API. Source: <https://supabase.com/changelog/45329-breaking-change-tables-not-exposed-to-data-and-graphql-api-automatically>
 
-## API Shape
+## Client Architecture
 
-The frontend should eventually swap from `localRoomRepository` to a network repository with this API surface:
+The frontend should keep using a repository boundary:
 
-- `POST /api/rooms`
-  - Creates a room.
-  - Returns `{ room, participantId, participantToken }`.
-- `POST /api/rooms/:code/join`
-  - Joins the invite code as guest.
-  - Returns `{ room, participantId, participantToken }`.
-- `GET /api/rooms/:roomId`
-  - Returns the current room snapshot.
-  - Requires a participant token.
-- `POST /api/rooms/:roomId/answers`
-  - Saves one answer.
-  - Requires `{ participantId, participantToken, questionId, value }`.
-- `POST /api/rooms/:roomId/results`
-  - Later: starts or returns the AI result summary.
+- `RoomRepository` is the interface.
+- `localRoomRepository` remains local/dev fallback.
+- `supabaseRoomRepository` becomes the production repository once Supabase env vars exist.
 
-## Redis Data Model
+Expected repository behavior:
 
-Use two keys per room:
+- `createRoom(questionIds)` signs in anonymously if needed, creates a room, inserts host participant, assigns room questions, and returns `{ room, participantId }`.
+- `joinRoomByCode(roomCode)` signs in anonymously if needed, finds the room, inserts guest participant, and returns `{ room, participantId }`.
+- `saveAnswer(...)` upserts the participant answer.
+- `getRoomById(...)` reads the room snapshot, participants, questions, answers, and result summary.
 
-- `room:{roomId}` -> JSON room snapshot
-- `room-code:{code}` -> `roomId`
+## Supabase Data Model
 
-Both keys should use the same TTL.
+Initial migration already includes:
 
-Recommended first TTL:
+- `rooms`
+- `participants`
+- `questions`
+- `room_questions`
+- `answers`
+- `result_summaries`
 
-- 24 hours for normal MVP rooms.
-- Later, 48 hours if users want to revisit results after the date.
+Tables have RLS enabled. The migration already includes explicit grants for `authenticated` and `service_role`.
 
-Room snapshot:
-
-```json
-{
-  "id": "room_uuid",
-  "code": "HCCJ9K",
-  "version": 3,
-  "createdAt": "2026-07-07T13:00:00.000Z",
-  "expiresAt": "2026-07-08T13:00:00.000Z",
-  "questionIds": ["daily-pace", "morning-night"],
-  "participants": [
-    {
-      "id": "host_uuid",
-      "tokenHash": "server_only_hash",
-      "label": "Sen",
-      "role": "host",
-      "joinedAt": "2026-07-07T13:00:00.000Z",
-      "answers": {}
-    }
-  ],
-  "resultSummary": null
-}
-```
+Anonymous users become authenticated Supabase users, so MVP browser writes should use the `authenticated` role through the publishable key and RLS policies.
 
 ## Sync Strategy
 
-Use polling before adding Realtime:
+MVP path:
 
-- Poll `GET /api/rooms/:roomId` every 2 seconds while a participant is answering or waiting.
-- Slow to every 5-10 seconds when the tab is hidden.
-- Stop polling when both participants are complete and results are visible.
-- Use optimistic UI for answer saves.
-- Server increments `room.version` on every write.
-- Client may send `knownVersion` later so the API can return `304`-style empty responses.
+- Subscribe to room-related changes for:
+  - `rooms`
+  - `participants`
+  - `answers`
+  - `result_summaries`
+- Refetch the current room snapshot after a relevant change.
+- Poll every 2-3 seconds as fallback while a user is answering or waiting.
+- Stop polling/subscriptions when results are visible and stable.
 
-This is enough for two people and avoids the complexity of WebSocket hosting.
+Later scale path:
 
-## Security And Privacy
+- Consider Supabase Broadcast for higher scale or stricter event authorization.
+- Add server-side result generation with Vercel Functions.
+- Add cleanup/retention automation for stale rooms.
 
-- Do not put secret service tokens in the browser.
-- Invite links contain only the room code.
-- Participant write access uses a random `participantToken` returned after create/join.
-- Store the participant token only in browser storage for that participant.
-- Hash participant tokens before storing them in Redis.
-- Rate-limit room creation and join attempts by IP.
-- Do not store names, phone numbers, emails, or personal identifiers in the MVP.
-- Expire rooms automatically with Redis TTL.
+## Privacy And Security
 
-## Provider Upgrade Path
+- Do not store emails, phone numbers, or personal identifiers in the MVP.
+- Use anonymous auth for participants.
+- Do not expose service-role or secret keys in frontend code.
+- Use only `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in browser code.
+- Keep `OPENAI_API_KEY` server-side only.
+- Do not use `TO authenticated` alone as authorization; combine it with room membership/ownership predicates.
+- Do not use `auth.role()` in new policies.
+- Do not use user-editable metadata for authorization.
+- Prefer direct RLS policies over `SECURITY DEFINER` functions.
 
-### Stay On Upstash
+## Fallback Path
 
-Good while rooms are ephemeral and usage is small.
+If Supabase becomes blocked again:
 
-### Move To Neon
+- Use Vercel Functions as the API boundary.
+- Use Upstash Redis for temporary room snapshots.
+- Keep the same `RoomRepository` shape.
+- Expire rooms with Redis TTL.
 
-Use when we need:
-
-- relational analytics
-- a durable question admin surface
-- long-lived result history
-- SQL reporting
-
-The app keeps polling via Vercel Functions.
-
-### Move To Supabase
-
-Use when we can free a project slot or choose a paid plan.
-
-Then we can use:
-
-- Postgres tables already modeled in `supabase/migrations`
-- anonymous auth
-- Realtime subscriptions
-- RLS with explicit grants for exposed tables
+This fallback should not be implemented unless Supabase is blocked or clearly too heavy for the MVP.
 
 ## Next Implementation Steps
 
-1. Add `api/rooms` Vercel Functions.
-2. Add `redisRoomRepository` on the server side.
-3. Add a frontend `remoteRoomRepository` that calls the API.
-4. Add env placeholders for `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN`.
-5. Keep `localRoomRepository` as local/dev fallback.
-6. Add e2e coverage for cross-context host + guest flow.
+1. Link the repo to the new Supabase project.
+2. Add Supabase env vars locally and in Vercel.
+3. Dry-run and push the existing migration to the linked project.
+4. Generate fresh Supabase TypeScript types.
+5. Implement `supabaseRoomRepository`.
+6. Add anonymous auth bootstrap.
+7. Add Realtime subscriptions with polling fallback.
+8. Add e2e coverage for a host + guest two-context flow.

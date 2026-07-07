@@ -9,9 +9,9 @@ Production: https://sohbetlik.vercel.app
 ## Stack
 
 - Vite + React + TypeScript
-- Local-first room adapter, ilk prod sync icin Upstash Redis'e tasinabilir
-- Vercel Functions API siniri
-- Supabase lokal Docker denemeleri icin hazir migration yapisi
+- Local-first room adapter, production sync icin Supabase'e tasinacak
+- Supabase Auth, Postgres ve Realtime
+- Vercel Functions, server-side AI ozeti icin
 - React Query
 - Tailwind CSS v4
 - Vercel
@@ -31,12 +31,10 @@ npm run dev
 ```bash
 VITE_SUPABASE_URL=
 VITE_SUPABASE_PUBLISHABLE_KEY=
-UPSTASH_REDIS_REST_URL=
-UPSTASH_REDIS_REST_TOKEN=
 OPENAI_API_KEY=
 ```
 
-`OPENAI_API_KEY` ve `UPSTASH_REDIS_REST_TOKEN` frontend'e `VITE_` ile verilmez; sadece server-side/Vercel environment olarak kullanilir.
+`OPENAI_API_KEY` frontend'e `VITE_` ile verilmez; sadece server-side/Vercel environment olarak kullanilir.
 
 ## Komutlar
 
@@ -47,10 +45,16 @@ npm run build
 npm run test:e2e
 ```
 
-DB gerektiren adimlara gelmeden oda, davet linki, cevap ve sonuc akisi localStorage tabanli adapter ile calisir. Ilk gercek iki-cihaz sync icin ayni repository arayuzune Vercel Functions + Upstash Redis baglanacak.
+DB gerektiren adimlara gelmeden oda, davet linki, cevap ve sonuc akisi localStorage tabanli adapter ile calisir. Ilk gercek iki-cihaz sync icin ayni repository arayuzune Supabase baglanacak.
 
 ## Dokumanlar
 
+- [Agent Guide](AGENTS.md)
+- [Claude Handoff](CLAUDE.md)
+- [Project State](docs/ai/PROJECT_STATE.md)
+- [Next Actions](docs/ai/NEXT_ACTIONS.md)
+- [Source Index](docs/ai/SOURCE_INDEX.md)
+- [Claude Bootstrap Prompt](docs/ai/CLAUDE_BOOTSTRAP_PROMPT.md)
 - [Product Spec](docs/PRODUCT_SPEC.md)
 - [MVP Plan](docs/MVP_PLAN.md)
 - [Backend Sync Strategy](docs/architecture/BACKEND_SYNC_STRATEGY.md)

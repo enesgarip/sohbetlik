@@ -8,8 +8,7 @@ Finance project cizgisine yakin ilk stack:
 - React
 - TypeScript
 - Local-first room adapter
-- Ilk prod sync icin Vercel Functions + Upstash Redis karari
-- Kalici relational backend icin Supabase veya Neon opsiyonlari
+- Ilk prod sync icin Supabase Auth, Postgres ve Realtime
 - Supabase lokal Docker denemeleri icin migration yapisi
 - React Query
 - Tailwind CSS v4
@@ -30,16 +29,19 @@ Finance project cizgisine yakin ilk stack:
 - Oda ve cevaplar icin versiyonlu localStorage adapter eklendi.
 - Davet linkinden gercek QR kod uretimi eklendi.
 
-## Faz 2: Kalici Backend Baglantisi
+## Faz 2: Supabase Baglantisi
 
-- Upstash Redis store'u Vercel Marketplace uzerinden hazirla.
-- Oda olusturmayi TTL'li Redis room snapshot olarak yaz.
-- Host ve davetli katilimcisini kaydet.
+- Supabase projesini repo ile linkle.
+- Anonymous Auth'u aktif et.
+- Mevcut migration'i remote projeye dry-run ile kontrol edip push et.
+- Supabase TypeScript tiplerini guncelle.
+- `supabaseRoomRepository` ekle.
+- Host ve davetli katilimcisini Supabase'e kaydet.
 - Davet linkinden gelen kisiyi ayni odaya ekle.
 - Oda sorularini oturum bazinda sabitle.
-- Cevaplari Redis snapshot'a yaz.
-- Kisa polling ile katilimci ve cevap durumlarini izle.
-- Supabase veya Neon'a gecis ihtiyacini kalici gecmis/admin ihtiyaci cikinca tekrar degerlendir.
+- Cevaplari Supabase'e yaz.
+- Realtime ile katilimci ve cevap durumlarini izle.
+- Polling fallback ekle.
 
 ## Faz 3: AI Sonuc Ozeti
 
