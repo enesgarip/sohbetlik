@@ -8,6 +8,12 @@ Default repository target:
 enesgarip/projectx
 ```
 
+URL:
+
+```text
+https://github.com/enesgarip/projectx
+```
+
 The repository is intended to start private. It can be made public later from GitHub settings.
 
 ## Workflows
@@ -73,3 +79,5 @@ Also enable:
 - Require pull request before merging.
 - Require branches to be up to date.
 - Dismiss stale approvals when new commits are pushed.
+
+Current note: GitHub rejected API branch protection setup while the repository is private because the account/repository does not have the required plan feature. Make the repository public or enable the required GitHub plan, then reapply these settings.
