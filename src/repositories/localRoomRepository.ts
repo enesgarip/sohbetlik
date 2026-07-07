@@ -3,26 +3,11 @@ import {
   joinConversationRoom,
   saveParticipantAnswer,
   type ConversationRoom,
-  type RoomSession,
 } from '../domain/rooms'
-import type { AnswerValue } from '../types/domain'
+import type { RoomRepository } from './roomRepository'
 
 type RoomStore = {
   rooms: ConversationRoom[]
-}
-
-export type RoomRepository = {
-  createRoom: (questionIds: string[]) => RoomSession
-  getRoomById: (roomId: string) => ConversationRoom | null
-  getRoomByCode: (roomCode: string) => ConversationRoom | null
-  joinRoomByCode: (roomCode: string) => RoomSession | null
-  saveAnswer: (input: {
-    roomId: string
-    participantId: string
-    questionId: string
-    value: AnswerValue
-  }) => ConversationRoom | null
-  deleteRoom: (roomId: string) => void
 }
 
 const STORAGE_KEY = 'sohbetlik:rooms:v1'
