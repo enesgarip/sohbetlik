@@ -5,13 +5,13 @@
 Default repository target:
 
 ```text
-enesgarip/projectx
+enesgarip/sohbetlik
 ```
 
 URL:
 
 ```text
-https://github.com/enesgarip/projectx
+https://github.com/enesgarip/sohbetlik
 ```
 
 The repository is intended to start private. It can be made public later from GitHub settings.
@@ -51,7 +51,7 @@ VERCEL_PROJECT_ID
 Current local Vercel project link:
 
 ```text
-enesgarips-projects/projectx
+enesgarips-projects/sohbetlik
 ```
 
 ## Required Vercel Environment Variables

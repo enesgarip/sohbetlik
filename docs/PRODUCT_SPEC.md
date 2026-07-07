@@ -1,8 +1,8 @@
-# ProjectX Product Spec
+# Sohbetlik Product Spec
 
 ## Amac
 
-ProjectX, iki insanin birbirini daha dogal ve eglenceli sekilde tanimasina yardim eden mobile-first bir PWA deneyimidir.
+Sohbetlik, iki insanin birbirini daha dogal ve eglenceli sekilde tanimasina yardim eden mobile-first bir PWA deneyimidir.
 
 Uygulama bir kisilik testi, uyumluluk testi veya karar motoru degildir. Dogru cevap aramaz, insanlari puanlamaz ve "uygun / uygun degil" sonucu uretmez.
 

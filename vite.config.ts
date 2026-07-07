@@ -11,8 +11,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'ProjectX',
-        short_name: 'ProjectX',
+        name: 'Sohbetlik',
+        short_name: 'Sohbetlik',
         description: 'Iki kisilik AI destekli sohbet ve tanisma deneyimi.',
         theme_color: '#fffaf3',
         background_color: '#fffaf3',

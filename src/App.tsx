@@ -113,11 +113,11 @@ function App() {
     <main className="app-shell">
       <section className="experience">
         <header className="topbar">
-          <a className="brand" href="/" aria-label="ProjectX ana sayfa">
+          <a className="brand" href="/" aria-label="Sohbetlik ana sayfa">
             <span className="brand-mark">
               <HeartHandshake size={22} aria-hidden="true" />
             </span>
-            <span>ProjectX</span>
+            <span>Sohbetlik</span>
           </a>
           <div className="room-status">
             <Users size={17} aria-hidden="true" />

@@ -1,8 +1,8 @@
-# ProjectX
+# Sohbetlik
 
 Iki kisilik AI destekli tanisma ve sohbet PWA'si.
 
-ProjectX bir uyumluluk testi degil; iki insanin ayni soru setini cevaplayip ortak yonlerini, farkli bakis acilarini ve konusmaya deger basliklari gormesine yardim eden bir deneyimdir.
+Sohbetlik bir uyumluluk testi degil; iki insanin ayni soru setini cevaplayip ortak yonlerini, farkli bakis acilarini ve konusmaya deger basliklari gormesine yardim eden bir deneyimdir.
 
 ## Stack
 
