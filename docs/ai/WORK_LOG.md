@@ -1,5 +1,74 @@
 # Work Log
 
+## 2026-07-08 (Claude, Supabase production setup)
+
+- Created the real Supabase project via CLI (user approved): name `sohbetlik`, ref `ojhncwhagydpmfnygdfy`, region `eu-central-1`, org `qvuzhiugndmlovoniegv`. DB password generated locally and saved to gitignored `db-password.local` (never echoed; user should move it to a password manager — it can also be reset in the dashboard).
+- `supabase link` done; all three migrations pushed (`db push --linked`, dry-run verified first, `migration list --linked` confirms). Non-fatal pg-delta catalog cache warning during push; migrations applied cleanly.
+- Anonymous sign-ins enabled via `supabase config push` (config.toml already had `enable_anonymous_sign_ins = true`; remote diff showed it flipping false→true). Other diffs benign (localhost site_url variants, email confirmations off, MFA TOTP off) — we use anonymous auth only. Production `site_url` still points at localhost; cosmetic for now, set to the Vercel URL if email auth ever arrives.
+- `.env.local` now points at the production project (VITE_SUPABASE_URL + VITE_SUPABASE_PUBLISHABLE_KEY replaced in place). To use the local Docker stack again, restore the local values (`supabase start` prints them).
+- Types regenerated from the linked project (`gen types --linked`), build passes.
+- Vercel env: `VITE_SUPABASE_URL` + `VITE_SUPABASE_PUBLISHABLE_KEY` added to **production** via CLI (project already linked as `sohbetlik`). Preview env add kept demanding a git branch despite `--yes` (CLI quirk) — skipped; previews fall back to localStorage mode, add via dashboard if needed.
+- **Found and fixed a real production bug during verification:** the optimistic-write/polling race (a known MVP tradeoff) actually bites at real network latency — a stale snapshot could briefly wipe the just-selected answer, disabling the continue button and swallowing taps (mobile e2e stalled at question 23 twice). Fix: pending-answers ledger (`src/lib/pendingAnswers.ts`, 15s TTL) overlaid on every network snapshot in `useRoom` and after `saveAnswer`. Mobile full-flow e2e went from 60s-timeout to 5.9s.
+- Playwright global timeout 30s→60s (24-question flow against a real backend needs headroom).
+- Checks: `npm run lint` ✅, `npm run test:unit` ✅ (23), `npm run build` ✅, `npm run test:e2e` ✅ 6/6 **against the production Supabase project** (two-device sync included).
+- Remaining to go live: commit + push to main so Vercel Git integration deploys with the new env vars, then verify `https://sohbetlik.vercel.app` on two devices.
+
+## 2026-07-08 (Claude, question system implementation)
+
+- Stage 3 content approved; implemented the full question system per `docs/product/QUESTION_SYSTEM_DESIGN.md`.
+- New content layer (repo = single source of truth):
+  - `src/content/categories.ts` (12 category slugs + display names), `src/content/traits.ts` (25-trait registry; `oncelik-pusulasi` spelling corrected from the design doc's typo), `src/content/types.ts` (`QuestionContent` schema).
+  - `src/content/questions/level1.ts`: the 24 approved Level 1 questions with full metadata. Three tiny wording fixes vs the doc (removed `bile`/`hâlâ` to honor the guide's banned-word rule; doc updated to match).
+  - `src/content/questions.validate.test.ts`: mechanical quality gate (`npm run questions:lint`, also part of `test:unit`): option counts per type, slider label rules, banned words, batch caps (≤3/category, ≤2/trait), opener/closer availability.
+- Selection algorithm `src/domain/questionSelection.ts` (+ 10 unit tests, seeded PRNG):
+  - level-mix quotas, trait ≤2 / category ≤3 caps, soft type targets (35/45/20), seen-question refill (starvation guard), reserved openers (light+fun, either_or first), warm closer (nostalji/hayal preferred), greedy curve ordering with no same-trait/category neighbors and no 3-type runs, insertion fallback for tail conflicts.
+- Non-repeat layer 2: `src/lib/seenQuestions.ts` (localStorage, 90-day TTL, 200 cap); host exclusions applied at room creation, slugs recorded after create succeeds.
+- Option order shuffle: `src/domain/optionOrder.ts` — Fisher-Yates seeded by `roomId:questionId` so both devices see the same order; only for `shuffleOptions: true` questions (gece-mutfagi keeps its punchline last).
+- Slider results no longer show numbers: `getAnswerLabel` renders end-label positions ("Tam …", "… tarafına yakın", "İkisinin ortasında").
+- App wiring: room creation uses selection + exclusions (24 questions per session), answer screen renders shuffled options, home preview updated to a new question.
+- Migration `20260708090000_question_metadata_and_level1_pool.sql`:
+  - `questions` + subcategory/trait/intensity/spark_score/fun_score/est_seconds/shuffle_options/followup_prompt/ai_hint/meta (slider scale lives in `meta.slider`; qualityNote intentionally repo-only), pool index.
+  - `rooms.previous_room_id` (rematch chain FK; UI not built yet).
+  - Old 8 demo questions deactivated (kept for FK integrity; legacy rooms still render via the client lookup map).
+  - 24 questions seeded idempotently (`on conflict (slug) do update`).
+- `src/types/supabase.ts` hand-updated for the new columns; regenerate after remote push as usual.
+- Tests updated: e2e loops 24 questions, sync spec expects `1/24`, results test asserts number-free slider labels.
+- Checks run: `npm run lint` ✅, `npm run test:unit` ✅ (23), `npm run build` ✅, `npm run db:reset:local` ✅ (3 migrations), `npm run db:lint:local` ✅, `npm run test:e2e` ✅ (6, including two-device sync against the local stack with the new pool).
+- Note: e2e initially failed because the local DB predated the new migration (new slugs unmapped → room creation failed); `db reset` fixed it. Remote push will need the same migration before the frontend deploy (already the standing Step 2 in NEXT_ACTIONS).
+- Not built yet (by design, needs product/UI decisions): rematch "next level" flow using `previous_room_id`, level selector UI (sessions are Level 1 / 24 questions for now), level 2-4 question pools.
+
+## 2026-07-07 (Claude, question system design — Stage 1)
+
+- New multi-stage product task started: full question system design (guide → system architecture → question production). Staged workflow; each stage waits for user approval.
+- Stage 1 delivered: `docs/product/QUESTION_WRITING_GUIDE.md` — the quality standard for the entire future question pool. Covers good/bad question patterns, conversation-starting vs conversation-killing types, level 1-4 topic mapping, answer option design, per-type rules (multiple choice, slider, two-option), trait × context matrix for generating variants, psychological/UX principles, and a hard quality checklist.
+- Notable design constraints captured in the guide that affect Stage 2: questions need `trait` metadata (no same-trait back-to-back), option order should be shuffleable, slider results must never be rendered as distance/score, session ordering should follow peak-end (light open, warm close).
+- No code changed; docs only. No commands needed.
+- Status: Stage 1 approved by the user.
+- Stage 2 delivered: `docs/product/QUESTION_SYSTEM_DESIGN.md` — question system architecture on top of the existing schema. Key points: three orthogonal axes (category slug / level 1-4 / trait registry) + presentation type; 12 categories; per-room level mix table (e.g. L2 room = 25% L1 + 75% L2); content-as-code in `src/content/questions/` seeded via idempotent migration; `questions` table extension sketch (trait, intensity, spark/fun scores, followup_prompt, ai_hint, meta jsonb — qualityNote stays repo-only); slider scale moves to `meta.slider` so numbers are never shown; 3-phase selection algorithm (filter → stratified random sampling → peak-end ordering with adjacency repair) to live in `src/domain/questionSelection.ts`; non-repeat via `rooms.previous_room_id` chain (hard guarantee per pair) + device localStorage history (soft, 90-day decay); AI summary jsonb contract aligned with existing `ConversationInsight.tone`, with hard no-score guardrails.
+- Old 8 demo questions flagged for deactivation once the new pool lands (some violate the guide, e.g. slider showing numbers).
+- Status: Stage 2 approved by the user.
+- Stage 3 delivered: `docs/product/QUESTIONS_LEVEL1.md` — first Level 1 (İlk Tanışma) question pool, 24 questions with full metadata (slug, category, subcategory, trait, level, intensity, type, est. seconds, spark/fun scores, prompt, options/slider labels, quality rationale, followup prompt). Batch self-satisfies the set constraints: ≤3 per category (9 categories), ≤2 per trait (18 traits), 8 either_or / 10 choice / 6 slider, opener/closer candidates marked, ~6-7 min per-person budget, banned-word scan clean. Rejected drafts documented for future author calibration. New trait `kucuk-keyifler` added to the registry; `temas-ritmi` and `para-keyif-dengesi` used at L1 via safe reframing (friendship/childhood scenes) with per-question justification.
+- Status: waiting for user approval of Stage 3 content. After approval, implementation follows design doc §12: encode into `src/content/questions/level1.ts`, add `questions:lint` validator, seed migration, deactivate the 8 demo questions. No code/schema changed yet.
+
+## 2026-07-07 (Claude, Supabase room sync)
+
+- `RoomRepository` interface converted to async and extended with `subscribeToRoom`.
+- `localRoomRepository` made async; cross-tab sync via `storage` events.
+- `supabaseRoomRepository` implemented: anonymous auth bootstrap, create/join room, answer upserts, room snapshot reads, Realtime Postgres Changes subscription.
+- `activeRoomRepository` selects Supabase when `VITE_SUPABASE_*` env vars exist, otherwise localStorage fallback.
+- `useRoom` hook added: initial load + Realtime subscription + 3s polling fallback (only while tab is visible).
+- `App.tsx` refactored to async loading with loading/error states on all room pages.
+- New migration `20260707150000_seed_questions_and_room_access.sql`:
+  - `questions.slug` column (unique) + seed of the 8 MVP questions, so frontend slug ids map to DB uuids.
+  - Participants select policy widened: guests can now read the host's participant row for open rooms (old policy blocked guest progress view).
+  - `delete` grant + policy on rooms for the creator ("Yeni oda" reset flow).
+- `supabase/seed.sql` emptied; questions now seed via migration so remote `db push` gets them too.
+- `src/types/supabase.ts` rewritten in CLI format (added missing `room_questions`, `result_summaries`, `Relationships` arrays — without them supabase-js collapses all table types to `never`).
+- New e2e test `tests/sync.spec.ts`: host + guest in separate browser contexts, real two-device sync verified against the local Supabase stack. Skips automatically when `.env.local` has no Supabase env (CI stays green).
+- Checks run: `npm run lint` ✅, `npm run test:unit` ✅ (7), `npm run build` ✅, `npm run db:lint:local` ✅, `npx supabase migration list --local` ✅ (2 migrations), `npm run test:e2e` ✅ (6, including two-device sync against local Supabase).
+- Known MVP tradeoffs: room `status` is intentionally never set to `completed` (RLS read access for guests depends on open status); `/room/:roomId` assumes the viewer is the host; answer writes are optimistic with polling reconciliation.
+- Still pending (needs dashboard access): link real Supabase project, enable anonymous sign-ins, set env in `.env.local` + Vercel, `db push --linked`, regenerate types.
+
 ## 2026-07-07
 
 - Project named Sohbetlik.

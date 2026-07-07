@@ -83,7 +83,7 @@ function updateRoom(store: RoomStore, nextRoom: ConversationRoom) {
 }
 
 export const localRoomRepository: RoomRepository = {
-  createRoom(questionIds) {
+  async createRoom(questionIds) {
     const store = loadStore()
     const existingCodes = new Set(store.rooms.map((room) => room.code))
     const session = createConversationRoom(questionIds, existingCodes)
@@ -95,17 +95,17 @@ export const localRoomRepository: RoomRepository = {
     return session
   },
 
-  getRoomById(roomId) {
+  async getRoomById(roomId) {
     return loadStore().rooms.find((room) => room.id === roomId) ?? null
   },
 
-  getRoomByCode(roomCode) {
+  async getRoomByCode(roomCode) {
     const normalizedCode = normalizeRoomCode(roomCode)
 
     return loadStore().rooms.find((room) => room.code === normalizedCode) ?? null
   },
 
-  joinRoomByCode(roomCode) {
+  async joinRoomByCode(roomCode) {
     const store = loadStore()
     const normalizedCode = normalizeRoomCode(roomCode)
     const room = store.rooms.find((candidate) => candidate.code === normalizedCode)
@@ -120,7 +120,7 @@ export const localRoomRepository: RoomRepository = {
     return session
   },
 
-  saveAnswer({ roomId, participantId, questionId, value }) {
+  async saveAnswer({ roomId, participantId, questionId, value }) {
     const store = loadStore()
     const room = store.rooms.find((candidate) => candidate.id === roomId)
 
@@ -134,11 +134,29 @@ export const localRoomRepository: RoomRepository = {
     return nextRoom
   },
 
-  deleteRoom(roomId) {
+  async deleteRoom(roomId) {
     const store = loadStore()
 
     saveStore({
       rooms: store.rooms.filter((room) => room.id !== roomId),
     })
+  },
+
+  subscribeToRoom(_roomId, onChange) {
+    if (typeof window === 'undefined') {
+      return () => {}
+    }
+
+    // Storage events only fire in other tabs, which is exactly the
+    // "second device" case the local repository can support.
+    const handler = (event: StorageEvent) => {
+      if (event.key === STORAGE_KEY) {
+        onChange()
+      }
+    }
+
+    window.addEventListener('storage', handler)
+
+    return () => window.removeEventListener('storage', handler)
   },
 }

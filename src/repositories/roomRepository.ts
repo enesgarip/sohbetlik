@@ -8,11 +8,16 @@ export type SaveRoomAnswerInput = {
   value: AnswerValue
 }
 
+export type RoomChangeHandler = () => void
+
+export type RoomUnsubscribe = () => void
+
 export type RoomRepository = {
-  createRoom: (questionIds: string[]) => RoomSession
-  getRoomById: (roomId: string) => ConversationRoom | null
-  getRoomByCode: (roomCode: string) => ConversationRoom | null
-  joinRoomByCode: (roomCode: string) => RoomSession | null
-  saveAnswer: (input: SaveRoomAnswerInput) => ConversationRoom | null
-  deleteRoom: (roomId: string) => void
+  createRoom: (questionIds: string[]) => Promise<RoomSession>
+  getRoomById: (roomId: string) => Promise<ConversationRoom | null>
+  getRoomByCode: (roomCode: string) => Promise<ConversationRoom | null>
+  joinRoomByCode: (roomCode: string) => Promise<RoomSession | null>
+  saveAnswer: (input: SaveRoomAnswerInput) => Promise<ConversationRoom | null>
+  deleteRoom: (roomId: string) => Promise<void>
+  subscribeToRoom: (roomId: string, onChange: RoomChangeHandler) => RoomUnsubscribe
 }

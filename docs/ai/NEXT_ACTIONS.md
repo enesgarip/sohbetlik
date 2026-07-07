@@ -1,55 +1,30 @@
 # Next Actions
 
-Last updated: 2026-07-07
+Last updated: 2026-07-08
 
 ## Current Priority
 
-Implement real two-device sync with Supabase.
+Ship the pending work to production.
 
-## Step 1: Link Supabase Project
+Supabase production setup is DONE (2026-07-08): project `sohbetlik` (`ojhncwhagydpmfnygdfy`, eu-central-1) is linked, all migrations + anonymous auth are live, `.env.local` points at it, types are regenerated, Vercel production env vars are set, and the full e2e suite passes against the production project.
 
-- Get the new Supabase project ref from the dashboard.
-- Run `npx supabase login` if not authenticated.
-- Run `npx supabase link --project-ref <project-ref>`.
-- Add local env values in `.env.local`:
-  - `VITE_SUPABASE_URL`
-  - `VITE_SUPABASE_PUBLISHABLE_KEY`
-- Add the same frontend-safe env values to Vercel.
+## Step 1: Deploy And Verify Production
 
-## Step 2: Verify And Push Schema
+- Commit and push the pending work to `main`; Vercel Git integration deploys with the new env vars.
+- Open `https://sohbetlik.vercel.app` on two devices: host creates a room, guest joins via QR/link, both answer, results open on both.
+- Preview env vars are NOT set (CLI kept demanding a git branch); previews fall back to localStorage mode. Add via dashboard if preview sync is wanted.
 
-- Run local checks:
-  - `npm run db:start:local`
-  - `npm run db:lint:local`
-  - `npx supabase migration list --local`
-  - `npm run db:stop:local`
-- Run remote dry run:
-  - `npx supabase db push --linked --dry-run`
-- Push migrations if the dry run is correct:
-  - `npx supabase db push --linked`
-- Generate fresh types:
-  - `npx supabase gen types --linked --schema public > src/types/supabase.ts`
+## Step 2: AI Summary
 
-## Step 3: Implement Supabase Room Repository
-
-- Add anonymous sign-in bootstrap.
-- Add `supabaseRoomRepository` matching `RoomRepository`.
-- Keep `localRoomRepository` as fallback when Supabase env is missing.
-- Create/join rooms through Supabase tables.
-- Save answers through Supabase.
-- Read room progress from Supabase.
-
-## Step 4: Add Sync
-
-- Start with Supabase Realtime Postgres Changes for rooms, participants, answers, and result summaries.
-- Keep polling fallback if subscription fails.
-- Add e2e coverage for host and guest contexts.
-
-## Step 5: AI Summary
-
-- Add server-side Vercel Function for OpenAI summary generation.
-- Store generated summary in `result_summaries`.
+- Add a server-side Vercel Function for OpenAI summary generation (`OPENAI_API_KEY` stays server-side).
+- Store the generated summary in `result_summaries`.
 - Keep output language non-judgmental and conversation-focused.
+
+## Nice-To-Have Follow-Ups
+
+- Resolve the viewer's own participant on `/room/:roomId` instead of assuming host.
+- Debounce slider answer writes.
+- Room cleanup/retention for stale rooms.
 
 ## Do Not Start Yet
 

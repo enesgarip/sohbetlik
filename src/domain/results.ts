@@ -12,7 +12,32 @@ export function getAnswerLabel(question: Question, value: AnswerValue | undefine
   }
 
   if (question.type === 'slider') {
-    return `${value} / 5`
+    // Slider cevabı asla sayı olarak gösterilmez; konum uç etiketleriyle anlatılır.
+    const numeric = typeof value === 'number' ? value : Number(value)
+    const low = question.lowLabel
+    const high = question.highLabel
+
+    if (!Number.isFinite(numeric) || !low || !high) {
+      return 'İkisinin ortasında'
+    }
+
+    if (numeric <= 1) {
+      return `Tam "${low}"`
+    }
+
+    if (numeric === 2) {
+      return `"${low}" tarafına yakın`
+    }
+
+    if (numeric === 4) {
+      return `"${high}" tarafına yakın`
+    }
+
+    if (numeric >= 5) {
+      return `Tam "${high}"`
+    }
+
+    return 'İkisinin ortasında'
   }
 
   return question.options.find((option) => option.id === value)?.label ?? String(value)

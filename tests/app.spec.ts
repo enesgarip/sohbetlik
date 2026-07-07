@@ -12,7 +12,7 @@ test('creates a room and completes the sample conversation flow', async ({ page 
 
   await expect(page.locator('.question-panel')).toBeVisible()
 
-  for (let index = 0; index < 8; index += 1) {
+  for (let index = 0; index < 24; index += 1) {
     const range = page.getByRole('slider')
     if (await range.count()) {
       await range.fill('4')
@@ -20,7 +20,7 @@ test('creates a room and completes the sample conversation flow', async ({ page 
       await page.locator('.answer-option').first().click()
     }
 
-    await page.getByRole('button', { name: index === 7 ? 'Cevapları tamamla' : 'Sonraki soru' }).click()
+    await page.getByRole('button', { name: index === 23 ? 'Cevapları tamamla' : 'Sonraki soru' }).click()
   }
 
   await expect(page.getByRole('heading', { name: 'Cevaplar tamamlandı.' })).toBeVisible()

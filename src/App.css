@@ -599,3 +599,9 @@ output {
     animation-iteration-count: 1 !important;
   }
 }
+
+.form-error {
+  margin: 0;
+  color: #a4443c;
+  font-size: 0.95rem;
+}

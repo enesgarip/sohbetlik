@@ -59,7 +59,12 @@ describe('conversation results', () => {
     expect(serialized).not.toContain('uygun')
   })
 
-  it('renders slider values in a compact label', () => {
-    expect(getAnswerLabel(questions[1], 4)).toBe('4 / 5')
+  it('renders slider values as end-label positions, never numbers', () => {
+    expect(getAnswerLabel(questions[1], 1)).toBe('Tam "Az ama net"')
+    expect(getAnswerLabel(questions[1], 2)).toBe('"Az ama net" tarafına yakın')
+    expect(getAnswerLabel(questions[1], 3)).toBe('İkisinin ortasında')
+    expect(getAnswerLabel(questions[1], 4)).toBe('"Sık temas iyi gelir" tarafına yakın')
+    expect(getAnswerLabel(questions[1], 5)).toBe('Tam "Sık temas iyi gelir"')
+    expect(getAnswerLabel(questions[1], 4)).not.toMatch(/\d/)
   })
 })

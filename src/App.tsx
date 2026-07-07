@@ -10,7 +10,7 @@ import {
   Users,
 } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   BrowserRouter,
   Link as RouterLink,
@@ -26,15 +26,22 @@ import {
   getHostParticipant,
   getParticipant,
   getParticipantProgress,
+  saveParticipantAnswer,
   type ConversationRoom,
   type ParticipantProgress,
 } from './domain/rooms'
+import { getDisplayOptions } from './domain/optionOrder'
 import { buildConversationInsights, getAnswerLabel } from './domain/results'
-import { localRoomRepository } from './repositories/localRoomRepository'
-import { questionRepository } from './repositories/questionRepository'
+import { useRoom } from './hooks/useRoom'
+import {
+  applyPendingAnswers,
+  resolvePendingAnswer,
+  trackPendingAnswer,
+} from './lib/pendingAnswers'
+import { getSeenQuestionSlugs, recordSeenQuestions } from './lib/seenQuestions'
+import { roomRepository } from './repositories/activeRoomRepository'
+import { questionRepository, SESSION_QUESTION_COUNT } from './repositories/questionRepository'
 import type { AnswerValue } from './types/domain'
-
-const sessionQuestionCount = questionRepository.getSessionQuestionIds().length
 
 function getInviteLink(roomCode: string) {
   return `${window.location.origin}/join/${roomCode.toLowerCase()}`
@@ -107,15 +114,31 @@ function App() {
 
 function HomePage() {
   const navigate = useNavigate()
+  const [isCreating, setIsCreating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  function createRoom(target: 'invite' | 'answer') {
-    const session = localRoomRepository.createRoom(questionRepository.getSessionQuestionIds())
-    const destination =
-      target === 'answer'
-        ? `/answer/${session.room.id}/${session.participantId}`
-        : `/room/${session.room.id}`
+  async function createRoom(target: 'invite' | 'answer') {
+    if (isCreating) {
+      return
+    }
 
-    navigate(destination)
+    setIsCreating(true)
+    setError(null)
+
+    try {
+      const questionIds = questionRepository.getSessionQuestionIds(getSeenQuestionSlugs())
+      const session = await roomRepository.createRoom(questionIds)
+      recordSeenQuestions(session.room.questionIds)
+      const destination =
+        target === 'answer'
+          ? `/answer/${session.room.id}/${session.participantId}`
+          : `/room/${session.room.id}`
+
+      navigate(destination)
+    } catch {
+      setError('Oda oluşturulamadı. Bağlantını kontrol edip tekrar dener misin?')
+      setIsCreating(false)
+    }
   }
 
   return (
@@ -127,24 +150,39 @@ function HomePage() {
           ve konuşmaya değer başlıkları birlikte görün.
         </p>
         <div className="action-row">
-          <button className="primary-action" type="button" onClick={() => createRoom('invite')}>
+          <button
+            className="primary-action"
+            type="button"
+            disabled={isCreating}
+            onClick={() => void createRoom('invite')}
+          >
             <span>Oda oluştur</span>
             <ArrowRight size={18} aria-hidden="true" />
           </button>
-          <button className="secondary-action" type="button" onClick={() => createRoom('answer')}>
+          <button
+            className="secondary-action"
+            type="button"
+            disabled={isCreating}
+            onClick={() => void createRoom('answer')}
+          >
             Örnek akışı dene
           </button>
         </div>
+        {error && (
+          <p className="form-error" role="alert">
+            {error}
+          </p>
+        )}
       </div>
 
       <div className="phone-preview" aria-label="Uygulama önizlemesi">
         <div className="phone-speaker" />
         <div className="preview-card">
-          <span className="soft-label">Soru 4/{sessionQuestionCount}</span>
-          <h2>Enerjin daha çok ne zaman açılır?</h2>
+          <span className="soft-label">Soru 4/{SESSION_QUESTION_COUNT}</span>
+          <h2>Herkes uyurken sana bir saat hediye edildi. Günün hangi ucuna eklersin?</h2>
           <div className="choice-stack">
-            <span>Sabah</span>
-            <span className="selected-choice">Gece</span>
+            <span>Sabaha — gün doğarken</span>
+            <span className="selected-choice">Geceye — herkes susunca</span>
           </div>
         </div>
         <div className="mini-result">
@@ -159,7 +197,7 @@ function HomePage() {
 function RoomPage() {
   const { roomId } = useParams()
   const navigate = useNavigate()
-  const [room] = useState(() => (roomId ? localRoomRepository.getRoomById(roomId) : null))
+  const { room, isLoading } = useRoom(roomId)
   const [copied, setCopied] = useState(false)
   const questions = useMemo(() => (room ? getRoomQuestions(room) : []), [room])
   const inviteLink = useMemo(() => (room ? getInviteLink(room.code) : ''), [room])
@@ -170,6 +208,10 @@ function RoomPage() {
     await writeClipboard(inviteLink)
     setCopied(true)
     window.setTimeout(() => setCopied(false), 1600)
+  }
+
+  if (isLoading) {
+    return <LoadingState />
   }
 
   if (!room || !hostParticipant) {
@@ -228,18 +270,70 @@ function RoomPage() {
 function JoinPage() {
   const { roomCode } = useParams()
   const navigate = useNavigate()
-  const room = roomCode ? localRoomRepository.getRoomByCode(roomCode) : null
+  const [room, setRoom] = useState<ConversationRoom | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isJoining, setIsJoining] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  function joinRoom() {
+  useEffect(() => {
     if (!roomCode) {
+      setRoom(null)
+      setIsLoading(false)
       return
     }
 
-    const session = localRoomRepository.joinRoomByCode(roomCode)
+    let active = true
+    setIsLoading(true)
 
-    if (session) {
-      navigate(`/answer/${session.room.id}/${session.participantId}`)
+    roomRepository
+      .getRoomByCode(roomCode)
+      .then((found) => {
+        if (active) {
+          setRoom(found)
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setRoom(null)
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setIsLoading(false)
+        }
+      })
+
+    return () => {
+      active = false
     }
+  }, [roomCode])
+
+  async function joinRoom() {
+    if (!roomCode || isJoining) {
+      return
+    }
+
+    setIsJoining(true)
+    setError(null)
+
+    try {
+      const session = await roomRepository.joinRoomByCode(roomCode)
+
+      if (session) {
+        navigate(`/answer/${session.room.id}/${session.participantId}`)
+        return
+      }
+
+      setError('Odaya şu anda katılamıyorsun. Oda dolmuş olabilir.')
+    } catch {
+      setError('Katılırken bir sorun oldu. Tekrar dener misin?')
+    }
+
+    setIsJoining(false)
+  }
+
+  if (isLoading) {
+    return <LoadingState />
   }
 
   if (!room) {
@@ -261,10 +355,15 @@ function JoinPage() {
       <span className="soft-label">Oda {room.code}</span>
       <h1 id="join-title">Davete katıl.</h1>
       <p>Aynı soru setini kendi sıranla cevaplayacaksın; sonuçta konuşmayı açacak başlıklar birlikte görünecek.</p>
-      <button className="primary-action" type="button" onClick={joinRoom}>
+      <button className="primary-action" type="button" disabled={isJoining} onClick={() => void joinRoom()}>
         <span>Sorulara geç</span>
         <ArrowRight size={18} aria-hidden="true" />
       </button>
+      {error && (
+        <p className="form-error" role="alert">
+          {error}
+        </p>
+      )}
     </section>
   )
 }
@@ -272,34 +371,56 @@ function JoinPage() {
 function AnswerPage() {
   const { roomId, participantId } = useParams()
   const navigate = useNavigate()
-  const [room, setRoom] = useState(() => (roomId ? localRoomRepository.getRoomById(roomId) : null))
+  const { room, setRoom, isLoading } = useRoom(roomId)
   const questions = useMemo(() => (room ? getRoomQuestions(room) : []), [room])
   const participant = room && participantId ? getParticipant(room, participantId) : null
-  const initialQuestionIndex = participant ? getFirstUnansweredQuestionIndex(participant, questions) : 0
-  const [activeIndex, setActiveIndex] = useState(initialQuestionIndex)
-  const safeActiveIndex = Math.min(activeIndex, Math.max(questions.length - 1, 0))
+  const [activeIndex, setActiveIndex] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (activeIndex === null && room && participant) {
+      setActiveIndex(getFirstUnansweredQuestionIndex(participant, getRoomQuestions(room)))
+    }
+  }, [activeIndex, room, participant])
+
+  const safeActiveIndex = Math.min(activeIndex ?? 0, Math.max(questions.length - 1, 0))
   const activeQuestion = questions[safeActiveIndex]
   const answerCount = participant ? Object.keys(participant.answers).length : 0
   const progress = questions.length > 0 ? Math.round((answerCount / questions.length) * 100) : 0
   const selectedAnswer = activeQuestion && participant ? participant.answers[activeQuestion.id] : undefined
   const canContinue = selectedAnswer !== undefined
   const progressRows = room ? getProgressRows(room, questions.length) : []
+  // Seçenek sırası oda+soru seed'iyle karıştırılır; iki cihaz aynı sırayı görür.
+  const displayOptions = useMemo(
+    () => (room && activeQuestion ? getDisplayOptions(room.id, activeQuestion) : []),
+    [room, activeQuestion],
+  )
 
   function selectAnswer(value: AnswerValue) {
     if (!room || !participantId || !activeQuestion) {
       return
     }
 
-    const nextRoom = localRoomRepository.saveAnswer({
-      roomId: room.id,
-      participantId,
-      questionId: activeQuestion.id,
-      value,
-    })
+    const questionId = activeQuestion.id
 
-    if (nextRoom) {
-      setRoom(nextRoom)
-    }
+    // Optimistic update; the repository write and polling reconcile later.
+    // Yazım tamamlanana dek defterde tutulur ki araya giren eski bir
+    // snapshot bu cevabı görünürde silmesin.
+    trackPendingAnswer(participantId, questionId, value)
+    setRoom(saveParticipantAnswer(room, participantId, questionId, value))
+
+    void roomRepository
+      .saveAnswer({
+        roomId: room.id,
+        participantId,
+        questionId,
+        value,
+      })
+      .then((nextRoom) => {
+        if (nextRoom) {
+          resolvePendingAnswer(participantId, questionId, value)
+          setRoom(applyPendingAnswers(nextRoom))
+        }
+      })
   }
 
   function nextQuestion() {
@@ -312,7 +433,11 @@ function AnswerPage() {
       return
     }
 
-    setActiveIndex((current) => current + 1)
+    setActiveIndex(safeActiveIndex + 1)
+  }
+
+  if (isLoading) {
+    return <LoadingState />
   }
 
   if (!room || !participant || !activeQuestion) {
@@ -360,7 +485,7 @@ function AnswerPage() {
           </div>
         ) : (
           <div className="answer-grid">
-            {activeQuestion.options.map((option) => (
+            {displayOptions.map((option) => (
               <button
                 className={selectedAnswer === option.id ? 'answer-option active' : 'answer-option'}
                 key={option.id}
@@ -387,9 +512,13 @@ function AnswerPage() {
 function WaitingPage() {
   const { roomId, participantId } = useParams()
   const navigate = useNavigate()
-  const [room] = useState(() => (roomId ? localRoomRepository.getRoomById(roomId) : null))
+  const { room, isLoading } = useRoom(roomId)
   const questions = useMemo(() => (room ? getRoomQuestions(room) : []), [room])
   const progressRows = room ? getProgressRows(room, questions.length) : []
+
+  if (isLoading) {
+    return <LoadingState />
+  }
 
   if (!room || !participantId) {
     return (
@@ -427,7 +556,7 @@ function WaitingPage() {
 function ResultsPage() {
   const { roomId, participantId } = useParams()
   const navigate = useNavigate()
-  const [room] = useState(() => (roomId ? localRoomRepository.getRoomById(roomId) : null))
+  const { room, isLoading } = useRoom(roomId)
   const questions = useMemo(() => (room ? getRoomQuestions(room) : []), [room])
   const participant = room && participantId ? getParticipant(room, participantId) : null
   const counterpart = room?.participants.find((candidate) => candidate.id !== participantId) ?? null
@@ -440,10 +569,14 @@ function ResultsPage() {
 
   function resetRoom() {
     if (room) {
-      localRoomRepository.deleteRoom(room.id)
+      void roomRepository.deleteRoom(room.id)
     }
 
     navigate('/')
+  }
+
+  if (isLoading) {
+    return <LoadingState />
   }
 
   if (!room || !participant) {
@@ -508,6 +641,18 @@ function ProgressList({ rows }: { rows: ParticipantProgress[] }) {
         </div>
       ))}
     </div>
+  )
+}
+
+function LoadingState() {
+  return (
+    <section className="empty-layout" aria-busy="true">
+      <div className="pulse-orbit">
+        <Sparkles size={34} aria-hidden="true" />
+      </div>
+      <h1>Oda yükleniyor…</h1>
+      <p>Bir saniye, bilgiler geliyor.</p>
+    </section>
   )
 }
 

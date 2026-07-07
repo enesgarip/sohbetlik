@@ -16,6 +16,8 @@ export type Question = {
   options: QuestionOption[]
   lowLabel?: string
   highLabel?: string
+  // true ise seçenek sırası cevap ekranında (oda bazlı sabit seed'le) karıştırılır.
+  shuffleOptions?: boolean
 }
 
 export type AnswerValue = string | number
