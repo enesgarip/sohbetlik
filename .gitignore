@@ -12,6 +12,8 @@ dist
 dist-ssr
 *.local
 .vercel
+test-results
+playwright-report
 supabase/.branches
 supabase/.temp
 
