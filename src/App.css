@@ -186,6 +186,30 @@ button {
   background: rgba(255, 255, 255, 0.68);
 }
 
+.ghost-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  background: none;
+  border: 1px dashed rgba(34, 32, 28, 0.15);
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 180ms ease;
+}
+
+.ghost-action:hover {
+  opacity: 1;
+}
+
+.ghost-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
 .wide {
   width: 100%;
 }

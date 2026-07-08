@@ -565,9 +565,33 @@ function AnswerPage() {
 function WaitingPage() {
   const { roomId, participantId } = useParams()
   const navigate = useNavigate()
-  const { room, isLoading } = useRoom(roomId)
+  const { room, isLoading, refresh } = useRoom(roomId)
   const questions = useMemo(() => (room ? getRoomQuestions(room) : []), [room])
   const progressRows = room ? getProgressRows(room, questions.length) : []
+  const hasGuest = room?.participants.some((p) => p.role === 'guest') ?? false
+  const [isSimulating, setIsSimulating] = useState(false)
+
+  async function simulateGuest() {
+    if (!room || isSimulating) {
+      return
+    }
+
+    setIsSimulating(true)
+
+    try {
+      const response = await fetch('/api/simulate-guest', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomCode: room.code }),
+      })
+
+      if (response.ok) {
+        await refresh()
+      }
+    } finally {
+      setIsSimulating(false)
+    }
+  }
 
   if (isLoading) {
     return <LoadingState />
@@ -602,6 +626,17 @@ function WaitingPage() {
           Davet linki
         </button>
       </div>
+      {!hasGuest && (
+        <button
+          className="ghost-action"
+          type="button"
+          disabled={isSimulating}
+          onClick={() => void simulateGuest()}
+        >
+          <Users size={17} aria-hidden="true" />
+          {isSimulating ? 'Simüle ediliyor…' : 'Karşı tarafı simüle et'}
+        </button>
+      )}
     </section>
   )
 }
