@@ -654,15 +654,15 @@ function ResultsPage() {
   )
   const [aiInsights, setAiInsights] = useState<ConversationInsight[] | null>(null)
   const [aiLoading, setAiLoading] = useState(false)
-  const [aiAttempted, setAiAttempted] = useState(false)
+  const aiAttemptedRef = useRef(false)
   const hasBothAnswers = Boolean(participant && counterpart && Object.keys(counterpart.answers).length > 0)
 
   useEffect(() => {
-    if (!hasBothAnswers || aiAttempted || !participant || !counterpart || questions.length === 0) {
+    if (!hasBothAnswers || aiAttemptedRef.current || !participant || !counterpart || questions.length === 0) {
       return
     }
 
-    setAiAttempted(true)
+    aiAttemptedRef.current = true
     setAiLoading(true)
     fetchAiSummary(questions, participant.answers, counterpart.answers)
       .then((result) => {
@@ -671,7 +671,7 @@ function ResultsPage() {
         }
       })
       .finally(() => setAiLoading(false))
-  }, [hasBothAnswers, aiAttempted, participant, counterpart, questions])
+  }, [hasBothAnswers, participant, counterpart, questions])
 
   const insights = aiInsights ?? localInsights
   const lastAnsweredQuestion =
