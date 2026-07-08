@@ -9,6 +9,8 @@
 - Production Supabase: dry-run showed only `20260710090000_seed_level3_level4_questions.sql`; pushed it to the linked project, confirmed remote migration history includes `20260710090000`, and authenticated production reads show active question counts L1=24, L2=24, L3=24, L4=24. CLI emitted the known non-fatal pg-delta catalog cache warning after applying the migration.
 - Rebasing onto the latest `origin/main` brought in the new tendency/results work. Fixed its unused type imports, added an `answerWeights` undefined guard required by TypeScript, and updated the Playwright app smoke to complete a real two-person room now that results wait for both participants.
 - Checks: `npm run questions:lint`, `npm run lint`, `npm run test:unit` (24), `npm run build`, and `npm run test:e2e` (6, with local Supabase env override) passed.
+- Production deploy: pushed `ad1dc06` + `dd3f1e5` to `main`; Vercel built `sohbetlik-h4hzuwrbn-enesgarips-projects.vercel.app` and aliased it to `https://sohbetlik.vercel.app`.
+- Live production QA: two browser contexts completed Levels 1, 2, 3, and 4 (24 answers per participant per level), opened results at each level, saw `Seviye 2'ye geç`, `Seviye 3'e geç`, and `Seviye 4'e geç`, and confirmed Level 4 has no Level 5 CTA. Vercel runtime error/fatal logs for the deployment were clean.
 
 ## 2026-07-08 (Codex, preview backend docs)
 

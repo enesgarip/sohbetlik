@@ -16,7 +16,7 @@ Core slogan:
 
 - Production: <https://sohbetlik.vercel.app>
 - GitHub: <https://github.com/enesgarip/sohbetlik>
-- Latest production deploy verified: 2026-07-08 (`sohbetlik-cnfvxaape-enesgarips-projects.vercel.app`, aliased to `https://sohbetlik.vercel.app`; Level 1 -> Level 2 flow verified)
+- Latest production deploy verified: 2026-07-08 (`sohbetlik-h4hzuwrbn-enesgarips-projects.vercel.app`, aliased to `https://sohbetlik.vercel.app`; Level 1 -> Level 4 flow verified)
 
 ## Current Implementation
 
@@ -37,10 +37,10 @@ Core slogan:
 - `activeRoomRepository` picks Supabase when `VITE_SUPABASE_*` env exists, else the localStorage `localRoomRepository`.
 - `useRoom` hook drives all room pages: initial fetch + Realtime + 3s polling fallback.
 - Two-device sync is verified end-to-end against the local Supabase stack (`tests/sync.spec.ts`).
-- Two-device sync is verified end-to-end against production on `https://sohbetlik.vercel.app` (host + guest contexts, 24 answers each, results visible on both).
+- Two-device sync and next-level progression are verified end-to-end against production on `https://sohbetlik.vercel.app` (host + guest contexts completed Levels 1-4, 24 answers each per level, results visible and no Level 5 CTA).
 - Question system is implemented (2026-07-08):
   - Content-as-code: `src/content/` holds categories, trait registry, and 24-question pools for Levels 1-4.
-  - Level 2 has a production seed migration and next-level/rematch UI is generalized through Level 4: after both participants complete a room, results can offer the next level while `currentLevel < 4`.
+  - Levels 2-4 have production seed migrations and next-level/rematch UI is generalized through Level 4: after both participants complete a room, results can offer the next level while `currentLevel < 4`.
   - Quality docs: `docs/product/QUESTION_WRITING_GUIDE.md` (standard), `docs/product/QUESTION_SYSTEM_DESIGN.md` (architecture), `docs/product/QUESTIONS_LEVEL1.md` (approved pool).
   - `src/domain/questionSelection.ts` picks and orders 24 questions per session (level mix, trait/category caps, type pacing, opener/closer slots).
   - Mechanical content gate: `npm run questions:lint` (also runs inside `test:unit`).
@@ -94,6 +94,7 @@ Core slogan:
 - Optimistic answer writes are protected by a pending-answers ledger (`src/lib/pendingAnswers.ts`); stale snapshots can no longer wipe a just-given answer.
 - Result AI generation uses Groq (Llama 3.3 70B) via Vercel Function (`api/summary.ts`); falls back to local logic if API unavailable. Results page shows a green "Cevaplarınıza özel AI analizi" badge when AI insights are present. `GROQ_API_KEY` env var needed on Vercel production.
 - Simulate-guest UI button removed; `api/simulate-guest.ts` endpoint kept for programmatic testing only.
-- Initial sessions still start at Level 1. After both participants complete the room, the results page can offer the next level through Level 4. Production has only been live-verified through the Level 1 -> Level 2 transition so far.
+- Initial sessions still start at Level 1. After both participants complete the room, the results page can offer the next level through Level 4.
+- Behavioral tendency `answerWeights` are currently populated for Levels 1-2; Levels 3-4 can be weighted later so the new tendency cards reflect deeper-level answers too.
 - `rooms.previous_room_id` is now written for next-level rooms; the current hard non-repeat guarantee covers the immediately previous room's question slugs.
 - Guest device history cannot be excluded at initial room creation (guest joins later); the room-chain layer handles the next-level hard guarantee.
