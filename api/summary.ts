@@ -19,7 +19,7 @@ type RequestBody = {
   pairs: AnswerPair[]
 }
 
-const GEMINI_MODEL = 'gemini-2.0-flash'
+const GEMINI_MODEL = 'gemini-2.0-flash-lite'
 
 function buildPrompt(pairs: AnswerPair[]): string {
   const pairLines = pairs
