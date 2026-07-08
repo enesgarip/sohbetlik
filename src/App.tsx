@@ -402,7 +402,8 @@ function AnswerPage() {
   const answerCount = participant ? Object.keys(participant.answers).length : 0
   const progress = questions.length > 0 ? Math.round((answerCount / questions.length) * 100) : 0
   const selectedAnswer = activeQuestion && participant ? participant.answers[activeQuestion.id] : undefined
-  const canContinue = selectedAnswer !== undefined
+  // Slider always has a visual value (defaults to 3), so allow continuing even without explicit interaction
+  const canContinue = selectedAnswer !== undefined || activeQuestion?.type === 'slider'
   const progressRows = room ? getProgressRows(room, questions.length) : []
   const displayOptions = useMemo(
     () => (room && activeQuestion ? getDisplayOptions(room.id, activeQuestion) : []),
@@ -424,21 +425,6 @@ function AnswerPage() {
         }
       })
   }
-
-  // Auto-select middle value for slider questions so the user can proceed without moving the thumb
-  useEffect(() => {
-    if (!room || !participantId || !activeQuestion) {
-      return
-    }
-
-    if (activeQuestion.type === 'slider' && participant && participant.answers[activeQuestion.id] === undefined) {
-      const defaultValue = 3
-      trackPendingAnswer(participantId, activeQuestion.id, defaultValue)
-      setRoom(saveParticipantAnswer(room, participantId, activeQuestion.id, defaultValue))
-      persistAnswer(room, participantId, activeQuestion.id, defaultValue)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeQuestion?.id])
 
   function selectAnswer(value: AnswerValue) {
     if (!room || !participantId || !activeQuestion) {
@@ -486,8 +472,16 @@ function AnswerPage() {
   }
 
   function nextQuestion() {
-    if (!room || !participantId || !canContinue) {
+    if (!room || !participantId || !activeQuestion) {
       return
+    }
+
+    // For slider questions where the user didn't move the thumb, save the default middle value
+    if (activeQuestion.type === 'slider' && selectedAnswer === undefined) {
+      const defaultValue = 3
+      trackPendingAnswer(participantId, activeQuestion.id, defaultValue)
+      setRoom(saveParticipantAnswer(room, participantId, activeQuestion.id, defaultValue))
+      persistAnswer(room, participantId, activeQuestion.id, defaultValue)
     }
 
     flushSliderDebounce()
