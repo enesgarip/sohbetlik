@@ -514,6 +514,19 @@ output {
   50% { opacity: 0.5; }
 }
 
+.ai-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #5a6b50;
+  background: linear-gradient(135deg, rgba(129, 168, 143, 0.18), rgba(239, 211, 108, 0.12));
+  border: 1px solid rgba(129, 168, 143, 0.25);
+}
+
 .insight-list {
   display: grid;
   gap: 12px;

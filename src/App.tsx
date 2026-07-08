@@ -565,34 +565,9 @@ function AnswerPage() {
 function WaitingPage() {
   const { roomId, participantId } = useParams()
   const navigate = useNavigate()
-  const { room, isLoading, refresh } = useRoom(roomId)
+  const { room, isLoading } = useRoom(roomId)
   const questions = useMemo(() => (room ? getRoomQuestions(room) : []), [room])
   const progressRows = room ? getProgressRows(room, questions.length) : []
-  const hasGuest = room?.participants.some((p) => p.role === 'guest') ?? false
-  const [isSimulating, setIsSimulating] = useState(false)
-
-  async function simulateGuest() {
-    if (!room || isSimulating) {
-      return
-    }
-
-    setIsSimulating(true)
-
-    try {
-      const response = await fetch('/api/simulate-guest', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomCode: room.code }),
-      })
-
-      if (response.ok) {
-        await refresh()
-      }
-    } finally {
-      setIsSimulating(false)
-    }
-  }
-
   if (isLoading) {
     return <LoadingState />
   }
@@ -626,17 +601,6 @@ function WaitingPage() {
           Davet linki
         </button>
       </div>
-      {!hasGuest && (
-        <button
-          className="ghost-action"
-          type="button"
-          disabled={isSimulating}
-          onClick={() => void simulateGuest()}
-        >
-          <Users size={17} aria-hidden="true" />
-          {isSimulating ? 'Simüle ediliyor…' : 'Karşı tarafı simüle et'}
-        </button>
-      )}
     </section>
   )
 }
@@ -703,7 +667,7 @@ function ResultsPage() {
   return (
     <section className="results-layout" aria-labelledby="results-title">
       <div className="results-head">
-        <span className="soft-label">{aiInsights ? 'AI özet' : 'Ortak özet'}</span>
+        <span className="soft-label">Ortak özet</span>
         <h1 id="results-title">Konuşmanın güzel yerleri burada.</h1>
         <p>Bu ekran bir karar vermek için değil, sohbeti daha rahat devam ettirmek için.</p>
       </div>
@@ -712,6 +676,13 @@ function ResultsPage() {
         <div className="ai-loading" aria-busy="true">
           <Sparkles size={18} aria-hidden="true" />
           <span>AI özet hazırlanıyor…</span>
+        </div>
+      )}
+
+      {aiInsights && (
+        <div className="ai-badge">
+          <Sparkles size={14} aria-hidden="true" />
+          <span>Cevaplarınıza özel AI analizi</span>
         </div>
       )}
 
