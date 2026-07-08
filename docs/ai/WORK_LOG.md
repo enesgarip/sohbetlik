@@ -1,5 +1,15 @@
 # Work Log
 
+## 2026-07-08 (Codex, Level 3-4 continuation)
+
+- Picked up after `908f5df` (`Add Level 3 and Level 4 question pools with full 4-level progression`): code was committed locally and `main` was ahead of `origin/main` by one commit; the Level 3-4 seed migration was present but untracked.
+- Verified the L3/L4 seed migration against the TypeScript source: 48 slugs total, Level 3 = 24, Level 4 = 24, with no missing, extra, or duplicate slugs.
+- Fixed one source/seed mismatch in Level 4 (`guclü` option id -> `guclu`) and tightened `questions:lint` so option ids must be ASCII kebab-case like slugs.
+- Local Supabase verification: `db reset --local` applied all six migrations including `20260710090000_seed_level3_level4_questions.sql`; `db lint --local` passed; local active question counts are L1=24, L2=24, L3=24, L4=24.
+- Production Supabase: dry-run showed only `20260710090000_seed_level3_level4_questions.sql`; pushed it to the linked project, confirmed remote migration history includes `20260710090000`, and authenticated production reads show active question counts L1=24, L2=24, L3=24, L4=24. CLI emitted the known non-fatal pg-delta catalog cache warning after applying the migration.
+- Rebasing onto the latest `origin/main` brought in the new tendency/results work. Fixed its unused type imports, added an `answerWeights` undefined guard required by TypeScript, and updated the Playwright app smoke to complete a real two-person room now that results wait for both participants.
+- Checks: `npm run questions:lint`, `npm run lint`, `npm run test:unit` (24), `npm run build`, and `npm run test:e2e` (6, with local Supabase env override) passed.
+
 ## 2026-07-08 (Codex, preview backend docs)
 
 - Documented the preview backend decision: preview deploys leave `VITE_SUPABASE_*` unset by default and use localStorage fallback unless a separate preview Supabase project exists.

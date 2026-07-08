@@ -33,7 +33,7 @@ import {
 import { getDisplayOptions } from './domain/optionOrder'
 import { buildConversationInsights, getAnswerLabel } from './domain/results'
 import { calculateTendencies, compareTendencies } from './domain/tendencyScoring'
-import type { TendencyScore, AreaSummary } from './domain/tendencyScoring'
+import type { AreaSummary } from './domain/tendencyScoring'
 import { useRoom } from './hooks/useRoom'
 import {
   applyPendingAnswers,

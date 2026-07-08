@@ -73,6 +73,7 @@ describe('question pool content rules', () => {
         expect(new Set(ids).size, question.slug).toBe(ids.length)
 
         for (const option of options) {
+          expect(option.id, `${question.slug}:${option.id}`).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/)
           expect(option.label.length, `${question.slug}:${option.id}`).toBeGreaterThan(2)
           expect(option.label.length, `${question.slug}:${option.id}`).toBeLessThanOrEqual(80)
         }

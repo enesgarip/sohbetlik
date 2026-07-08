@@ -4,7 +4,7 @@ Last updated: 2026-07-09
 
 ## Current Priority
 
-Pick the next product milestone. Level 2 next-level flow is live, production monitoring is clean, and the preview backend strategy is documented.
+Roll out the Level 3-4 expansion: push the pending code, deploy, and verify the production next-level flow through Level 4.
 
 ## Recently Completed
 
@@ -21,14 +21,15 @@ Pick the next product milestone. Level 2 next-level flow is live, production mon
 - Production app: `sohbetlik.vercel.app` is aliased to the Level 2 deployment and a live two-device L1 -> L2 browser QA reached the first Level 2 question with no console errors or failed requests.
 - Production monitoring: Vercel runtime error clusters, error/fatal logs, 5xx counts, and 4xx counts are clean after the Level 2 rollout.
 - Preview backend strategy: preview deploys keep `VITE_SUPABASE_*` unset by default and use localStorage fallback; production Supabase env vars must not be reused for previews. `.env.example`, README, CI/CD, Supabase setup, and decision docs now use `GROQ_API_KEY`.
+- Level 3-4 expansion: `src/content/questions/level3.ts` and `src/content/questions/level4.ts` each contain 24 active questions, `questionContents` includes both pools, next-level UI is generalized through Level 4, and `20260710090000_seed_level3_level4_questions.sql` seeds both pools idempotently. Local and production Supabase verification both show active question counts L1=24, L2=24, L3=24, L4=24.
 
 ## Nice-To-Have Follow-Ups
 
+- Do a full production browser QA from Level 1 through Level 4 after the Level 3-4 code and migration are deployed.
 - Create a separate preview Supabase project if two-device preview deployment testing becomes necessary.
 
 ## Do Not Start Yet
 
-- Level 3-4 question pool expansion.
 - Paid features.
 - Full account system.
 - Public admin panel.

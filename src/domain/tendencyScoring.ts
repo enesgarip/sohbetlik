@@ -1,7 +1,7 @@
 import { traits, tendencyAreas, type TendencyAreaSlug, type TraitSlug } from '../content/traits'
 import { activeQuestionContents } from '../content'
 import { getAnswerLabel } from './results'
-import type { AnswerMap, AnswerValue, Question } from '../types/domain'
+import type { AnswerMap, Question } from '../types/domain'
 
 // ── Types ──
 
@@ -73,6 +73,8 @@ export function calculateTendencies(
     if (!traitScores) continue
 
     for (const [traitSlug, score] of Object.entries(traitScores)) {
+      if (score === undefined) continue
+
       if (!contributions[traitSlug]) {
         contributions[traitSlug] = { scores: [], weights: [] }
       }

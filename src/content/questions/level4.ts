@@ -269,7 +269,7 @@ export const level4Questions: QuestionContent[] = [
     prompt: 'Birlikte yaşandığında ev içi sorumluluklar nasıl bölünmeli?',
     options: [
       { id: 'esit', label: 'Eşit ve net — kim ne yapıyor, belli olsun' },
-      { id: 'guclü', label: 'Herkes güçlü olduğu işi üstlensin — adalet eşitlik değil' },
+      { id: 'guclu', label: 'Herkes güçlü olduğu işi üstlensin — adalet eşitlik değil' },
       { id: 'donusum', label: 'Dönüşümlü — alışkanlık olmasın, herkes her işi bilsin' },
       { id: 'dogal', label: 'Doğal akışına bıraksın — liste tutmak ilişkiye zarar verir' },
     ],
