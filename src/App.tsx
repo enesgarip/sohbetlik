@@ -389,6 +389,21 @@ function AnswerPage() {
     }
   }, [activeIndex, room, participant])
 
+  // Auto-select middle value for slider questions so the user can proceed without moving the thumb
+  useEffect(() => {
+    if (!room || !participantId || !activeQuestion) {
+      return
+    }
+
+    if (activeQuestion.type === 'slider' && participant && participant.answers[activeQuestion.id] === undefined) {
+      const defaultValue = 3
+      trackPendingAnswer(participantId, activeQuestion.id, defaultValue)
+      setRoom(saveParticipantAnswer(room, participantId, activeQuestion.id, defaultValue))
+      persistAnswer(room, participantId, activeQuestion.id, defaultValue)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeQuestion?.id])
+
   useEffect(() => {
     return () => {
       if (sliderTimerRef.current !== null) {
@@ -564,6 +579,8 @@ function WaitingPage() {
   const { room, isLoading } = useRoom(roomId)
   const questions = useMemo(() => (room ? getRoomQuestions(room) : []), [room])
   const progressRows = room ? getProgressRows(room, questions.length) : []
+  const allComplete = progressRows.length > 0 && progressRows.every((row) => row.isComplete)
+
   if (isLoading) {
     return <LoadingState />
   }
@@ -584,12 +601,26 @@ function WaitingPage() {
       <div className="pulse-orbit">
         <Sparkles size={34} aria-hidden="true" />
       </div>
-      <h1 id="waiting-title">Cevaplar tamamlandı.</h1>
-      <p>Ortak noktalar, tatlı farklar ve konuşmayı açabilecek başlıklar hazır.</p>
+      {allComplete ? (
+        <>
+          <h1 id="waiting-title">İkiniz de tamamladınız!</h1>
+          <p>Ortak noktalar, tatlı farklar ve konuşmayı açabilecek başlıklar hazır.</p>
+        </>
+      ) : (
+        <>
+          <h1 id="waiting-title">Senin cevapların tamam.</h1>
+          <p>Diğer kişi soruları bitirince sonuçlar birlikte açılacak.</p>
+        </>
+      )}
       <ProgressList rows={progressRows} />
       <div className="action-row center">
-        <button className="primary-action" type="button" onClick={() => navigate(`/results/${room.id}/${participantId}`)}>
-          <span>Sonuçları aç</span>
+        <button
+          className="primary-action"
+          type="button"
+          disabled={!allComplete}
+          onClick={() => navigate(`/results/${room.id}/${participantId}`)}
+        >
+          <span>{allComplete ? 'Sonuçları aç' : 'Bekleniyor…'}</span>
           <ArrowRight size={18} aria-hidden="true" />
         </button>
         <button className="secondary-action" type="button" onClick={() => navigate(`/room/${room.id}`)}>
