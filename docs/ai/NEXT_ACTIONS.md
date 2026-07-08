@@ -22,7 +22,7 @@ Monitor the Level 3-4 rollout, then pick the next product milestone.
 - Production monitoring: Vercel runtime error clusters, error/fatal logs, 5xx counts, and 4xx counts are clean after the Level 2 rollout.
 - Preview backend strategy: preview deploys keep `VITE_SUPABASE_*` unset by default and use localStorage fallback; production Supabase env vars must not be reused for previews. `.env.example`, README, CI/CD, Supabase setup, and decision docs now use `GROQ_API_KEY`.
 - Level 3-4 expansion: `src/content/questions/level3.ts` and `src/content/questions/level4.ts` each contain 24 active questions, `questionContents` includes both pools, next-level UI is generalized through Level 4, and `20260710090000_seed_level3_level4_questions.sql` seeds both pools idempotently. Local and production Supabase verification both show active question counts L1=24, L2=24, L3=24, L4=24.
-- Production app: `sohbetlik.vercel.app` is aliased to `sohbetlik-h4hzuwrbn-enesgarips-projects.vercel.app` from commit `dd3f1e5`. Live two-device browser QA completed Levels 1-4, verified L2/L3/L4 next-level CTAs, verified no Level 5 CTA after Level 4, and Vercel runtime error/fatal logs were clean for the deployment.
+- Production app: runtime flow from commit `dd3f1e5` is live-verified on `sohbetlik.vercel.app`. Live two-device browser QA completed Levels 1-4, verified L2/L3/L4 next-level CTAs, verified no Level 5 CTA after Level 4, and Vercel runtime error/fatal logs were clean for the deployment. Follow-up docs-only deploys were also READY.
 
 ## Nice-To-Have Follow-Ups
 
