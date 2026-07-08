@@ -389,21 +389,6 @@ function AnswerPage() {
     }
   }, [activeIndex, room, participant])
 
-  // Auto-select middle value for slider questions so the user can proceed without moving the thumb
-  useEffect(() => {
-    if (!room || !participantId || !activeQuestion) {
-      return
-    }
-
-    if (activeQuestion.type === 'slider' && participant && participant.answers[activeQuestion.id] === undefined) {
-      const defaultValue = 3
-      trackPendingAnswer(participantId, activeQuestion.id, defaultValue)
-      setRoom(saveParticipantAnswer(room, participantId, activeQuestion.id, defaultValue))
-      persistAnswer(room, participantId, activeQuestion.id, defaultValue)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeQuestion?.id])
-
   useEffect(() => {
     return () => {
       if (sliderTimerRef.current !== null) {
@@ -439,6 +424,21 @@ function AnswerPage() {
         }
       })
   }
+
+  // Auto-select middle value for slider questions so the user can proceed without moving the thumb
+  useEffect(() => {
+    if (!room || !participantId || !activeQuestion) {
+      return
+    }
+
+    if (activeQuestion.type === 'slider' && participant && participant.answers[activeQuestion.id] === undefined) {
+      const defaultValue = 3
+      trackPendingAnswer(participantId, activeQuestion.id, defaultValue)
+      setRoom(saveParticipantAnswer(room, participantId, activeQuestion.id, defaultValue))
+      persistAnswer(room, participantId, activeQuestion.id, defaultValue)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeQuestion?.id])
 
   function selectAnswer(value: AnswerValue) {
     if (!room || !participantId || !activeQuestion) {
