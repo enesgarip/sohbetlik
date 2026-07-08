@@ -2,6 +2,8 @@ import type { ConversationInsight, Question } from '../types/domain'
 import type { AnswerMap } from '../types/domain'
 import { activeQuestionContents } from '../content'
 import { getAnswerLabel } from '../domain/results'
+import { calculateTendencies } from '../domain/tendencyScoring'
+import type { BehaviorSnapshot } from '../domain/tendencyScoring'
 
 type AnswerPair = {
   prompt: string
@@ -10,6 +12,17 @@ type AnswerPair = {
   person2: string
   followup: string
   aiHint?: string
+}
+
+type TendencySummary = {
+  trait: string
+  area: string
+  areaLabel: string
+  areaEmoji: string
+  spectrum: [string, string]
+  score: number
+  confidence: string
+  variance: number
 }
 
 function buildPairs(
@@ -40,22 +53,51 @@ function buildPairs(
   }, [])
 }
 
+function snapshotToSummaries(snapshot: BehaviorSnapshot): TendencySummary[] {
+  return snapshot.tendencies
+    .filter((t) => t.confidence !== 'low')
+    .map((t) => ({
+      trait: t.trait,
+      area: t.area,
+      areaLabel: t.areaLabel,
+      areaEmoji: t.areaEmoji,
+      spectrum: t.spectrum,
+      score: Math.round(t.rawScore * 100) / 100,
+      confidence: t.confidence,
+      variance: Math.round(t.variance * 100) / 100,
+    }))
+}
+
+export type AiSummaryResult = {
+  insights: ConversationInsight[]
+  personTendencies: TendencySummary[]
+  counterpartTendencies: TendencySummary[]
+}
+
 export async function fetchAiSummary(
   questions: Question[],
   currentAnswers: AnswerMap,
   counterpartAnswers: AnswerMap,
-): Promise<ConversationInsight[] | null> {
+): Promise<AiSummaryResult | null> {
   const pairs = buildPairs(questions, currentAnswers, counterpartAnswers)
 
   if (pairs.length === 0) {
     return null
   }
 
+  // Calculate tendency scores
+  const personSnapshot = calculateTendencies(questions, currentAnswers)
+  const counterpartSnapshot = calculateTendencies(questions, counterpartAnswers)
+
   try {
     const response = await fetch('/api/summary', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pairs }),
+      body: JSON.stringify({
+        pairs,
+        personTendencies: snapshotToSummaries(personSnapshot),
+        counterpartTendencies: snapshotToSummaries(counterpartSnapshot),
+      }),
     })
 
     if (!response.ok) {
@@ -68,7 +110,11 @@ export async function fetchAiSummary(
       return null
     }
 
-    return data.insights as ConversationInsight[]
+    return {
+      insights: data.insights as ConversationInsight[],
+      personTendencies: snapshotToSummaries(personSnapshot),
+      counterpartTendencies: snapshotToSummaries(counterpartSnapshot),
+    }
   } catch {
     return null
   }

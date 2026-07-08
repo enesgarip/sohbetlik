@@ -28,6 +28,10 @@ export const level2Questions: QuestionContent[] = [
       'Hesap geldiğinde en tuhaf yaşadığınız anı anlatın. Kim ödedi, nasıl bitti?',
     qualityNote:
       'Para alışkanlığını doğrudan sormak yerine tanıdık bir sahneye oturtur; iki seçenek de meşru ve hafif espri taşır.',
+    answerWeights: {
+      ortala: { 'para-keyif-dengesi': -0.5, 'paylasim-istahi': 0.5 },
+      ayri: { 'para-keyif-dengesi': 1 },
+    },
     status: 'active',
   },
   {
@@ -54,6 +58,12 @@ export const level2Questions: QuestionContent[] = [
     aiHint: 'Harcama tercihi kişilik yansıtır ama doğru/yanlış yoktur; tutumluluğu erdem olarak çerçeveleme.',
     qualityNote:
       'Rakam sormadan harcama refleksini ortaya koyar; kontrast formatı ("şuna evet, buna hayır") sohbet malzemesi üretir.',
+    answerWeights: {
+      yemek: { 'para-keyif-dengesi': -0.5 },
+      deneyim: { 'para-keyif-dengesi': -1, 'macera-istahi': 0.5 },
+      kiyafet: { 'para-keyif-dengesi': 0.5 },
+      teknoloji: { 'para-keyif-dengesi': 0.5 },
+    },
     status: 'active',
   },
   {
@@ -79,6 +89,12 @@ export const level2Questions: QuestionContent[] = [
       'Beklenmedik gelen paranın en güzel harcandığı anınızı anlatın.',
     qualityNote:
       'Para psikolojisini somut sahneyle; dört seçenek dört farklı değer sistemini yansıtır, hiçbiri "doğru" değil.',
+    answerWeights: {
+      sakla: { 'risk-istahi': -1.5, 'plan-sevgisi': 0.5 },
+      harca: { 'risk-istahi': 1, 'spontanlik': 0.5 },
+      borc: { 'risk-istahi': -0.5, 'plan-sevgisi': 1 },
+      paylas: { 'paylasim-istahi': 1 },
+    },
     status: 'active',
   },
   // Sosyal Dünya (L2 derinlik)
@@ -105,6 +121,11 @@ export const level2Questions: QuestionContent[] = [
       'Bir haftanızı birlikte planlasanız, kaç akşam dışarıda olurdunuz? Üzerinde anlaşın.',
     qualityNote:
       "L1'deki gece-sonrası sorusunun bir katman altı; sosyal iştahı daha doğrudan ama yine yargısız ölçer.",
+    answerWeights: {
+      low: { 'sosyal-istah': -1.5, 'alan-ihtiyaci': 1 },
+      mid: {},
+      high: { 'sosyal-istah': 1.5, 'enerji-kaynagi': -0.5 },
+    },
     status: 'active',
   },
   {
@@ -129,6 +150,10 @@ export const level2Questions: QuestionContent[] = [
     aiHint: 'İki cevap da sosyal birini gösterir; fark sadece hazırlık ihtiyacında.',
     qualityNote:
       'L1 spontanlığını (gece-yolculugu-teklifi) daha gündelik bir sahneye taşır; "bu sefer tamam" seçeneği kapıyı tamamen kapatmaz.',
+    answerWeights: {
+      hadi: { 'spontanlik': 1.5 },
+      uyari: { 'spontanlik': -0.5, 'plan-sevgisi': 0.5 },
+    },
     status: 'active',
   },
   {
@@ -156,6 +181,12 @@ export const level2Questions: QuestionContent[] = [
       'Dört tarz da sağlıklı olabilir; "kaçınma" veya "yüzleşme sorunu" çerçevesi kurma.',
     qualityNote:
       'L2 derinliğinde çatışma yönetimi — arkadaşlık çerçevesinde sorularak güvenli kalır. Dört stil de olgun.',
+    answerWeights: {
+      hemen: { 'tartisma-tarzi': -1.5, 'ifade-tarzi': -0.5 },
+      bekle: { 'tartisma-tarzi': 1, 'alan-ihtiyaci': 0.5 },
+      yaz: { 'tartisma-tarzi': 0.5, 'ifade-tarzi': 1 },
+      ges: { 'tartisma-tarzi': 1.5 },
+    },
     status: 'active',
   },
   // Ev Hâli (L2 derinlik)
@@ -180,6 +211,10 @@ export const level2Questions: QuestionContent[] = [
       'Misafir gelmeden önce sakladığınız en komik eşya ne? İtiraf turu.',
     qualityNote:
       'L1 kaos-sistemi sorusunun somut sahneye taşınmış hâli; iki seçenek de güldürür.',
+    answerWeights: {
+      panik: { 'duzen-kaos': -1 },
+      rahat: { 'duzen-kaos': 1.5 },
+    },
     status: 'active',
   },
   {
@@ -206,6 +241,12 @@ export const level2Questions: QuestionContent[] = [
     aiHint: 'Alan ihtiyacı kişilikle ilgili, olgunlukla değil; kuralcı olmayı olumsuz çerçeveleme.',
     qualityNote:
       'Ev paylaşımı L2 derinliği: alan ve sınır ihtiyacını güvenli bir çerçevede yoklar.',
+    answerWeights: {
+      sessizlik: { 'alan-ihtiyaci': 1.5 },
+      mutfak: { 'duzen-kaos': -1 },
+      alan: { 'alan-ihtiyaci': 1.5, 'bagimsizlik-dengesi': 1 },
+      spontan: { 'spontanlik': 0.5, 'alan-ihtiyaci': -0.5 },
+    },
     status: 'active',
   },
   {
@@ -231,6 +272,12 @@ export const level2Questions: QuestionContent[] = [
       'Kötü gün ilacınız ne? Birbirinize reçete yazın.',
     qualityNote:
       'Stresle başa çıkma L2 konusu; ev sahnesiyle somutlaştırılmış, dört yol da sağlıklı.',
+    answerWeights: {
+      yatak: { 'alan-ihtiyaci': 1 },
+      mutfak: { 'ritual-bagliligi': 0.5 },
+      ekran: { 'alan-ihtiyaci': 0.5 },
+      disari: { 'enerji-kaynagi': -0.5, 'ev-disari-dengesi': 1 },
+    },
     status: 'active',
   },
   // Günlük Ritim (L2 derinlik)
@@ -255,6 +302,10 @@ export const level2Questions: QuestionContent[] = [
       'Sabahları kendinize kaç dakikada insan hissettirirsiniz? Dürüstlük turu.',
     qualityNote:
       'L1 hediye-saat sorusunun pratik günlük hâli; evrensel ve güldüren bir küçük itiraf.',
+    answerWeights: {
+      ilk: { 'sabah-gece-ritmi': -1, 'plan-sevgisi': 0.5 },
+      ertele: { 'sabah-gece-ritmi': 1 },
+    },
     status: 'active',
   },
   {
@@ -280,6 +331,11 @@ export const level2Questions: QuestionContent[] = [
       'Birlikte bir hafta sonu planlasanız: planı kim yapar, kim akışına bırakır?',
     qualityNote:
       'L1 boş-pazar sorusunun plan boyutuna odaklanan versiyonu; spektrum gerçek ve iki uç da cazip.',
+    answerWeights: {
+      low: { 'plan-sevgisi': 1.5 },
+      mid: {},
+      high: { 'plan-sevgisi': -1, 'spontanlik': 1 },
+    },
     status: 'active',
   },
   {
@@ -304,6 +360,11 @@ export const level2Questions: QuestionContent[] = [
       'En çok geç kaldığınız anınız: ne kadar geç, ne oldu sonra?',
     qualityNote:
       'Zaman yönetimi herkesin bildiği bir alışkanlık; üç seçenek de karakterli ve kimse "yanlış" değil.',
+    answerWeights: {
+      erken: { 'tempo': -0.5, 'plan-sevgisi': 0.5 },
+      tam: { 'plan-sevgisi': 1 },
+      gec: { 'tempo': 0.5, 'spontanlik': 0.5 },
+    },
     status: 'active',
   },
   // Tat & Mutfak (L2 derinlik)
@@ -330,6 +391,12 @@ export const level2Questions: QuestionContent[] = [
       'Birbirinize en iyi yaptığınız yemeği ve en büyük mutfak felaketinizi anlatın.',
     qualityNote:
       'L1 lezzet sorularının davranış katmanı: yemek yapma-yapmama tercihi L2 derinliğinde kişilik yansıtır.',
+    answerWeights: {
+      sevgi: { 'paylasim-istahi': 1, 'ritual-bagliligi': 0.5 },
+      surec: { 'ritual-bagliligi': 1.5 },
+      hizli: { 'tempo': 1 },
+      disari: { 'ev-disari-dengesi': 1 },
+    },
     status: 'active',
   },
   {
@@ -355,6 +422,11 @@ export const level2Questions: QuestionContent[] = [
       'Şimdiye kadar denediğiniz en tuhaf yemeği anlatın. Tekrar yer miydiniz?',
     qualityNote:
       'L1 hep-aldigim-sey sorusunun slider formatında daha direkt versiyonu; farklı trait olmasa da merak tarzının başka yüzü.',
+    answerWeights: {
+      low: { 'merak-tarzi': -1, 'konfor-alani': 1 },
+      mid: {},
+      high: { 'merak-tarzi': 1.5, 'risk-istahi': 0.5 },
+    },
     status: 'active',
   },
   {
@@ -378,6 +450,10 @@ export const level2Questions: QuestionContent[] = [
       'Rüya kahvaltınızı tarif edin: nerede, ne var masada, yanınızda kim?',
     qualityNote:
       'Kahvaltı alışkanlığı L2 derinliğinde günlük ritüel ve yaşam temposunu yansıtır; klişeyi sahneyle aşar.',
+    answerWeights: {
+      kutsal: { 'ritual-bagliligi': 1.5, 'tempo': -0.5 },
+      atlanan: { 'ritual-bagliligi': -1, 'tempo': 0.5 },
+    },
     status: 'active',
   },
   // Seyahat & Keşif (L2 derinlik)
@@ -403,6 +479,10 @@ export const level2Questions: QuestionContent[] = [
     aiHint: 'İki yaklaşım da geçerli; "cesaret" ve "korkaklık" çerçevesi kurma.',
     qualityNote:
       'L1 kesif sorularının pratik versiyonu: kaybolma refleksi macera iştahını doğrudan gösterir.',
+    answerWeights: {
+      kaybol: { 'macera-istahi': 1.5, 'spontanlik': 0.5 },
+      sor: { 'macera-istahi': -0.5, 'plan-sevgisi': 0.5 },
+    },
     status: 'active',
   },
   {
@@ -428,6 +508,12 @@ export const level2Questions: QuestionContent[] = [
       'Birlikte tatil planlasanız bütçeyi neye harcardınız? Üzerinde anlaşın.',
     qualityNote:
       'Keşif ve para kesişimi: tatil bütçe tercihi kişinin yolculukta neyi öncelediğini görünür kılar.',
+    answerWeights: {
+      konaklama: { 'konfor-alani': 1, 'oncelik-pusulasi': 0.5 },
+      yemek: { 'merak-tarzi': 0.5 },
+      deneyim: { 'macera-istahi': 1, 'oncelik-pusulasi': -0.5 },
+      hepsi: { 'para-keyif-dengesi': 1, 'oncelik-pusulasi': -1 },
+    },
     status: 'active',
   },
   {
@@ -453,6 +539,11 @@ export const level2Questions: QuestionContent[] = [
       'En son rutininizi kırdığınızda ne oldu? İyi mi bitti, kötü mü?',
     qualityNote:
       'L2 derinliğinde konfor alanı: rutine bağlılık spektrumu iki ucu da pozitif çerçeveler.',
+    answerWeights: {
+      low: { 'konfor-alani': 1.5, 'ritual-bagliligi': 1 },
+      mid: {},
+      high: { 'konfor-alani': -1.5, 'spontanlik': 0.5 },
+    },
     status: 'active',
   },
   // Kültür & Eğlence (L2)
@@ -477,6 +568,10 @@ export const level2Questions: QuestionContent[] = [
       'Tavsiye üzerine izleyip/okuyup/dinleyip aşık olduğunuz bir şey var mı? Ya da tam tersi?',
     qualityNote:
       'Kültür tüketimindeki bağımsızlık refleksi: "tavsiye direnci" tanıdık ve güldüren bir alışkanlık.',
+    answerWeights: {
+      hemen: { 'konfor-alani': -0.5, 'merak-tarzi': 0.5 },
+      ters: { 'konfor-alani': 1 },
+    },
     status: 'active',
   },
   {
@@ -502,6 +597,11 @@ export const level2Questions: QuestionContent[] = [
       'En çok tekrar ettiğiniz şeyi söyleyin: film, şarkı, kitap, ne olursa. Kaç kez?',
     qualityNote:
       'L1 ezber-film sorusunun slider formatında genişletilmiş hâli; farklı içerik türlerini kapsar.',
+    answerWeights: {
+      low: { 'nostalji-bagi': -1, 'merak-tarzi': 0.5 },
+      mid: {},
+      high: { 'nostalji-bagi': 1.5, 'konfor-alani': 0.5 },
+    },
     status: 'active',
   },
   // Nostalji (L2)
@@ -528,6 +628,12 @@ export const level2Questions: QuestionContent[] = [
       'O karakterin/kişinin size bıraktığı en büyük iz ne? Birbirinize anlatın.',
     qualityNote:
       'Çocukluk kahramanı L2 derinliğinde nostalji + değer yoklama: cevap hem anı hem karakter yansıtır.',
+    answerWeights: {
+      cizgi: { 'nostalji-bagi': 1 },
+      kitap: { 'nostalji-bagi': 1, 'merak-tarzi': 0.5 },
+      gercek: { 'nostalji-bagi': 0.5 },
+      oyun: { 'nostalji-bagi': 0.5 },
+    },
     status: 'active',
   },
   // Hayaller & Olasılıklar (L2)
@@ -555,6 +661,12 @@ export const level2Questions: QuestionContent[] = [
       'Paralel hayatınızın bir gününü detaylıca anlatın. Sabahtan akşama ne yapıyorsunuz?',
     qualityNote:
       'L1 bir-gunluk-hayat sorusunun L2 versiyonu: daha kalıcı bir hayat hayal ettirerek değer ve öncelik yansıtır.',
+    answerWeights: {
+      sanatci: { 'oncelik-pusulasi': 1, 'tempo': -0.5 },
+      gezgin: { 'macera-istahi': 1.5, 'koklenme-gocebelik': 1 },
+      akademik: { 'merak-tarzi': 1, 'oncelik-pusulasi': 0.5 },
+      isletme: { 'oncelik-pusulasi': -0.5, 'koklenme-gocebelik': -1 },
+    },
     status: 'active',
   },
   // Küçük İtiraflar (L2)
@@ -579,6 +691,10 @@ export const level2Questions: QuestionContent[] = [
       'Ertelemenin sizi en çok kurtardığı veya en çok batırdığı anı anlatın.',
     qualityNote:
       'Evrensel bir küçük itiraf; her iki taraf da övünülebilir şekilde yazılmış, L2 derinliğinde zaman yönetimini yoklar.',
+    answerWeights: {
+      erken: { 'plan-sevgisi': 1, 'tempo': -0.5 },
+      'son-gece': { 'spontanlik': 0.5, 'risk-istahi': 0.5 },
+    },
     status: 'active',
   },
   // İletişim & Duygular (L2)
@@ -605,6 +721,11 @@ export const level2Questions: QuestionContent[] = [
       'Son zamanlarda sizi heyecanlandıran bir şeyi anlatın; nasıl anlattığınıza da bakın.',
     qualityNote:
       'Duygu ifadesini güvenli ve olumlu bir sahneyle yoklar; ilişki konuşması değil, heyecan paylaşma biçimi.',
+    answerWeights: {
+      low: { 'ifade-tarzi': 1, 'paylasim-istahi': -1 },
+      mid: {},
+      high: { 'ifade-tarzi': -1.5, 'paylasim-istahi': 1.5 },
+    },
     status: 'active',
   },
 ]

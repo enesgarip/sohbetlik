@@ -9,6 +9,17 @@ type AnswerPair = {
   aiHint?: string
 }
 
+type TendencySummary = {
+  trait: string
+  area: string
+  areaLabel: string
+  areaEmoji: string
+  spectrum: [string, string]
+  score: number
+  confidence: string
+  variance: number
+}
+
 type Insight = {
   tone: 'common' | 'different' | 'prompt'
   title: string
@@ -17,9 +28,24 @@ type Insight = {
 
 type RequestBody = {
   pairs: AnswerPair[]
+  personTendencies?: TendencySummary[]
+  counterpartTendencies?: TendencySummary[]
 }
 
-function buildPrompt(pairs: AnswerPair[]): string {
+function formatTendency(t: TendencySummary): string {
+  const position =
+    t.score <= -1 ? `"${t.spectrum[0]}" ucuna yakın`
+    : t.score >= 1 ? `"${t.spectrum[1]}" ucuna yakın`
+    : 'ortada'
+  const varianceNote = t.variance > 1 ? ' (bağlama göre değişkenlik gösteriyor)' : ''
+  return `${t.areaEmoji} ${t.areaLabel} > ${t.trait}: ${position}${varianceNote}`
+}
+
+function buildPrompt(
+  pairs: AnswerPair[],
+  personTendencies?: TendencySummary[],
+  counterpartTendencies?: TendencySummary[],
+): string {
   const pairLines = pairs
     .map(
       (p, i) =>
@@ -27,14 +53,29 @@ function buildPrompt(pairs: AnswerPair[]): string {
     )
     .join('\n\n')
 
-  return `Sen iki kişilik bir date sohbet uygulamasının asistanısın. İki kişinin aynı sorulara verdiği cevapları analiz edip sohbet başlatıcı özetler üreteceksin.
+  let tendencySection = ''
+  if (personTendencies?.length || counterpartTendencies?.length) {
+    tendencySection = '\n\nDAVRANIŞ EĞİLİMLERİ (cevaplardan hesaplanmış):'
+    if (personTendencies?.length) {
+      tendencySection += '\n\nKişi A eğilimleri:\n' + personTendencies.map(formatTendency).join('\n')
+    }
+    if (counterpartTendencies?.length) {
+      tendencySection += '\n\nKişi B eğilimleri:\n' + counterpartTendencies.map(formatTendency).join('\n')
+    }
+  }
+
+  return `Sen iki kişilik bir sohbet uygulamasının asistanısın. İki kişinin aynı sorulara verdiği cevapları ve bu cevaplardan çıkan davranış eğilimlerini analiz edip sohbet başlatıcı özetler üreteceksin.
 
 KESİN KURALLAR:
 - Uyumluluk skoru, yüzde veya puan VERME.
 - Yargılayıcı, değerlendirici veya karşılaştırmalı dil KULLANMA ("daha iyi", "yanlış", "uyumsuz" gibi).
+- "Sen şöylesin" veya "Karakterin budur" gibi kesin ifadeler KULLANMA.
+- Onun yerine "Verdiğin cevaplara göre…", "Görünüşe göre…", "Bu oturumdaki cevaplarına dayanarak…" gibi yumuşak ifadeler kullan.
 - Her insight sohbeti derinleştirmek içindir, karar vermek için değil.
+- Farklılıkları yargılamadan, merak uyandıran bir tonla çerçevele.
+- Çelişkili eğilimleri "esneklik" veya "bağlama duyarlılık" olarak yorumla, tutarsızlık olarak değil.
 - Türkçe yaz, samimi ve sıcak bir tonla.
-- Cevapları "doğru" veya "yanlış" olarak sınıflandırma.
+- Eğilim verilerini kullanarak daha zengin yorumlar üret ama asla ham skor veya sayı gösterme.
 
 ÇIKTI FORMATI (sadece JSON, başka metin yok):
 [
@@ -48,11 +89,11 @@ tone değerleri:
 - "different": İlginç fark (yargısız, merak uyandıran tonda)
 - "prompt": Sohbeti açacak somut bir öneri
 
-3 ile 5 arası insight üret. En az 1 common, 1 different, 1 prompt olsun.
+4 ile 6 arası insight üret. En az 1 common, 1 different, 1 prompt olsun.
 
 İşte cevap çiftleri:
 
-${pairLines}`
+${pairLines}${tendencySection}`
 }
 
 async function callLlm(prompt: string, apiKey: string): Promise<Insight[]> {
@@ -66,7 +107,7 @@ async function callLlm(prompt: string, apiKey: string): Promise<Insight[]> {
       model: 'llama-3.3-70b-versatile',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
-      max_tokens: 1024,
+      max_tokens: 1500,
       response_format: { type: 'json_object' },
     }),
   })
@@ -113,7 +154,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const prompt = buildPrompt(body.pairs)
+    const prompt = buildPrompt(body.pairs, body.personTendencies, body.counterpartTendencies)
     const insights = await callLlm(prompt, apiKey)
     return res.status(200).json({ insights })
   } catch (err) {

@@ -658,8 +658,8 @@ function ResultsPage() {
     setAiLoading(true)
     fetchAiSummary(questions, participant.answers, counterpart.answers)
       .then((result) => {
-        if (result && result.length > 0) {
-          setAiInsights(result)
+        if (result && result.insights.length > 0) {
+          setAiInsights(result.insights)
         }
       })
       .finally(() => setAiLoading(false))
