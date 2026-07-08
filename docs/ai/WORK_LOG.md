@@ -12,6 +12,8 @@
 - Browser QA: local Supabase + two Playwright contexts completed host and guest 24/24, opened results, clicked `Seviye 2'ye geç`, and rendered the first Level 2 question (`Kültür & Eğlence · Seviye 2`). The only console error was a Vite-dev 404 from the summary API path; production/Vercel handles that API route.
 - Checks: `npm run questions:lint`, `npm run lint`, `npm run test:unit` (24), `npm run build`, and `npm run test:e2e` (6) passed.
 - Continued rollout: pushed `20260709093000_seed_level2_questions.sql` to production Supabase. Remote migration history now includes it, and authenticated production reads show active question counts L1=24 and L2=24. The app deploy and live L1 -> L2 browser verification are next.
+- Production deploy: committed `f37ab29` (`Add Level 2 next-level flow`), pushed to `main`, Vercel built `sohbetlik-cnfvxaape-enesgarips-projects.vercel.app`, and `sohbetlik.vercel.app` was manually re-aliased to it.
+- Live production QA: two separate browser contexts completed guest and host 24/24, opened results, saw `Seviye 2'ye geç`, created the next room, and rendered the first Level 2 question (`Para Alışkanlıkları · Seviye 2`). Browser console and failed request capture were clean; Vercel runtime error/fatal scan for the deployment found no logs.
 
 ## 2026-07-09 (Claude, nice-to-have polishes)
 

@@ -16,7 +16,7 @@ Core slogan:
 
 - Production: <https://sohbetlik.vercel.app>
 - GitHub: <https://github.com/enesgarip/sohbetlik>
-- Latest production deploy verified: 2026-07-09 (`sohbetlik-7v7p3d4bt-enesgarips-projects.vercel.app`, aliased to `https://sohbetlik.vercel.app`)
+- Latest production deploy verified: 2026-07-08 (`sohbetlik-cnfvxaape-enesgarips-projects.vercel.app`, aliased to `https://sohbetlik.vercel.app`; Level 1 -> Level 2 flow verified)
 
 ## Current Implementation
 

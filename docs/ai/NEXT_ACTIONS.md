@@ -4,7 +4,7 @@ Last updated: 2026-07-09
 
 ## Current Priority
 
-Deploy and verify the Level 2 next-level flow in production.
+Level 2 next-level flow is live; monitor production and pick the next milestone.
 
 ## Recently Completed
 
@@ -18,10 +18,11 @@ Deploy and verify the Level 2 next-level flow in production.
 - Level 2 exposure: `20260709093000_seed_level2_questions.sql` seeds Level 2 idempotently, room creation can carry `previous_room_id`, and results can open a Level 2 room after both participants complete Level 1 without repeating the previous room's question slugs.
 - Local verification: `questions:lint`, `lint`, `test:unit`, `build`, `test:e2e`, `db reset --local`, and `db lint --local` pass. Local DB active question counts are L1=24 and L2=24; local two-device browser QA reaches the first Level 2 question.
 - Production Supabase: Level 2 migration is pushed; remote active question counts are L1=24 and L2=24 after anonymous auth.
+- Production app: `sohbetlik.vercel.app` is aliased to the Level 2 deployment and a live two-device L1 -> L2 browser QA reached the first Level 2 question with no console errors or failed requests.
 
 ## Nice-To-Have Follow-Ups
 
-- Verify a live two-device L1 -> L2 path after the app deploy reaches production.
+- Monitor production logs after the first real Level 2 sessions.
 - Preview env vars on Vercel (currently falls back to localStorage).
 
 ## Do Not Start Yet
