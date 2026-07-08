@@ -19,8 +19,6 @@ type RequestBody = {
   pairs: AnswerPair[]
 }
 
-const GEMINI_MODEL = 'gemini-2.0-flash-lite'
-
 function buildPrompt(pairs: AnswerPair[]): string {
   const pairLines = pairs
     .map(
@@ -57,37 +55,38 @@ tone değerleri:
 ${pairLines}`
 }
 
-async function callGemini(prompt: string, apiKey: string): Promise<Insight[]> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`
-
-  const response = await fetch(url, {
+async function callLlm(prompt: string, apiKey: string): Promise<Insight[]> {
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
     body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 1024,
-        responseMimeType: 'application/json',
-      },
+      model: 'llama-3.3-70b-versatile',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 1024,
+      response_format: { type: 'json_object' },
     }),
   })
 
   if (!response.ok) {
     const text = await response.text()
-    throw new Error(`Gemini API error ${response.status}: ${text}`)
+    throw new Error(`Groq API error ${response.status}: ${text}`)
   }
 
   const data = await response.json()
-  const text: string = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '[]'
+  const text: string = data?.choices?.[0]?.message?.content ?? '[]'
 
   const parsed = JSON.parse(text)
+  const items: unknown[] = Array.isArray(parsed) ? parsed : parsed?.insights ?? parsed?.data ?? []
 
-  if (!Array.isArray(parsed)) {
-    throw new Error('Gemini returned non-array response')
+  if (!Array.isArray(items)) {
+    throw new Error('LLM returned non-array response')
   }
 
-  return parsed.map((item: Record<string, unknown>) => ({
+  return items.map((item: Record<string, unknown>) => ({
     tone: (['common', 'different', 'prompt'].includes(item.tone as string)
       ? item.tone
       : 'prompt') as Insight['tone'],
@@ -101,10 +100,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
-  const apiKey = process.env.GEMINI_API_KEY
+  const apiKey = process.env.GROQ_API_KEY
 
   if (!apiKey) {
-    return res.status(500).json({ error: 'GEMINI_API_KEY is not configured' })
+    return res.status(500).json({ error: 'GROQ_API_KEY is not configured' })
   }
 
   const body = req.body as RequestBody | undefined
@@ -115,7 +114,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const prompt = buildPrompt(body.pairs)
-    const insights = await callGemini(prompt, apiKey)
+    const insights = await callLlm(prompt, apiKey)
     return res.status(200).json({ insights })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
