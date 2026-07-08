@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-07-08
+Last updated: 2026-07-09
 
 ## Product
 
@@ -16,7 +16,7 @@ Core slogan:
 
 - Production: <https://sohbetlik.vercel.app>
 - GitHub: <https://github.com/enesgarip/sohbetlik>
-- Latest production deploy verified: 2026-07-08 (`sohbetlik-dq606gis8-enesgarips-projects.vercel.app`, aliased to `https://sohbetlik.vercel.app`)
+- Latest production deploy verified: 2026-07-09 (`sohbetlik-7v7p3d4bt-enesgarips-projects.vercel.app`, aliased to `https://sohbetlik.vercel.app`)
 
 ## Current Implementation
 
@@ -59,6 +59,7 @@ Core slogan:
   - `20260707112731_initial_mvp_schema.sql` (tables, RLS, grants, realtime publication)
   - `20260707150000_seed_questions_and_room_access.sql` (question slugs + seed, guest participant reads, room delete)
   - `20260708090000_question_metadata_and_level1_pool.sql` (question metadata columns, `rooms.previous_room_id`, demo questions deactivated, 24-question Level 1 pool seeded)
+  - `20260709090000_cleanup_stale_rooms.sql` (SECURITY DEFINER function to delete rooms >7 days old)
 - MVP question slugs map to DB uuids through `questions.slug`; questions are seeded in the migration (not `seed.sql`) so remote pushes get them.
 - Room `status` is intentionally never set to `completed` in MVP: guest RLS read access depends on the room staying open.
 - Upstash Redis remains only a fallback if Supabase becomes blocked again.
@@ -87,7 +88,8 @@ Core slogan:
 - Slider answer writes are debounced (300ms); the pending value is flushed on "Sonraki soru" to prevent loss.
 - Stale rooms (>7 days) are cleaned up via `cleanup_stale_rooms()` Postgres function, called from the client on homepage load (throttled to once per day).
 - Optimistic answer writes are protected by a pending-answers ledger (`src/lib/pendingAnswers.ts`); stale snapshots can no longer wipe a just-given answer.
-- Result AI generation uses Gemini 2.0 Flash via Vercel Function (`api/summary.ts`); falls back to local logic if API unavailable.
+- Result AI generation uses Groq (Llama 3.3 70B) via Vercel Function (`api/summary.ts`); falls back to local logic if API unavailable. Results page shows a green "Cevaplarınıza özel AI analizi" badge when AI insights are present. `GROQ_API_KEY` env var needed on Vercel production.
+- Simulate-guest UI button removed; `api/simulate-guest.ts` endpoint kept for programmatic testing only.
 - Only the Level 1 pool exists (24 questions); level 2-4 pools are not written yet and there is no level selector UI (sessions are Level 1).
 - `rooms.previous_room_id` exists in the schema but the "next level / rematch" flow that would use it is not built.
 - Guest device history cannot be excluded at room creation (guest joins later); the room-chain layer is the eventual hard guarantee.

@@ -7,7 +7,11 @@
 - Stale room cleanup: new migration `20260709090000_cleanup_stale_rooms.sql` — `SECURITY DEFINER` function deletes rooms >7 days old (CASCADE handles participants, answers, room_questions, result_summaries). Client calls `supabase.rpc('cleanup_stale_rooms')` on homepage load, throttled to once per 24h via localStorage timestamp. `src/types/supabase.ts` updated with function signature.
 - Checks: lint ✅, 23 unit tests ✅, build ✅, `db reset` (4 migrations) ✅, 6 e2e tests ✅.
 - Migration pushed to production Supabase, committed and pushed to main.
-- AI Summary implemented: `api/summary.ts` Vercel serverless function calls Gemini 2.0 Flash with answer pairs, followupPrompt, and aiHint. Prompt enforces no scores/judgments, Turkish, conversation-focused insights. Client (`src/lib/summaryApi.ts`) calls `/api/summary` on results page when both participants have answered; falls back to local `buildConversationInsights` if API unavailable. Loading spinner with pulse animation. `@vercel/node` added as devDependency. `vercel.json` updated to pass `/api/*` through. `GEMINI_API_KEY` needed as Vercel production env var.
+- AI Summary implemented: `api/summary.ts` Vercel serverless function. Initially tried Gemini 2.0 Flash but hit regional quota block (Turkey, `limit: 0` on all Gemini models). Switched to Groq (Llama 3.3 70B, OpenAI-compatible API). Prompt enforces no scores/judgments, Turkish, conversation-focused insights. Client (`src/lib/summaryApi.ts`) calls `/api/summary` on results page when both participants have answered; falls back to local `buildConversationInsights` if API unavailable. Loading spinner with pulse animation. `@vercel/node` added as devDependency. `vercel.json` updated to pass `/api/*` through. `GROQ_API_KEY` needed as Vercel production env var.
+- Fixed AI retry loop: `useEffect` was re-running because polling-driven re-renders created new object references for dependencies. Switched from `useState` guard to `useRef` (`aiAttemptedRef.current = true` is synchronous, prevents re-execution).
+- AI badge: results page shows green "Cevaplarınıza özel AI analizi" pill when AI insights are present, distinguishing them from local fallback.
+- Simulate-guest button removed from WaitingPage UI. `api/simulate-guest.ts` endpoint kept for programmatic testing only.
+- Production alias updated: `sohbetlik.vercel.app` → `sohbetlik-7v7p3d4bt-enesgarips-projects.vercel.app`.
 
 ## 2026-07-08 (Codex, production deploy verification)
 
