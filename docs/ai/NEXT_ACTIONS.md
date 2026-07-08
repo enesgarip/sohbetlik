@@ -4,7 +4,7 @@ Last updated: 2026-07-09
 
 ## Current Priority
 
-Level 2 next-level flow is live; monitor production and pick the next milestone.
+Pick the next milestone. Level 2 next-level flow is live and production monitoring is clean.
 
 ## Recently Completed
 
@@ -19,11 +19,11 @@ Level 2 next-level flow is live; monitor production and pick the next milestone.
 - Local verification: `questions:lint`, `lint`, `test:unit`, `build`, `test:e2e`, `db reset --local`, and `db lint --local` pass. Local DB active question counts are L1=24 and L2=24; local two-device browser QA reaches the first Level 2 question.
 - Production Supabase: Level 2 migration is pushed; remote active question counts are L1=24 and L2=24 after anonymous auth.
 - Production app: `sohbetlik.vercel.app` is aliased to the Level 2 deployment and a live two-device L1 -> L2 browser QA reached the first Level 2 question with no console errors or failed requests.
+- Production monitoring: Vercel runtime error clusters, error/fatal logs, 5xx counts, and 4xx counts are clean after the Level 2 rollout.
 
 ## Nice-To-Have Follow-Ups
 
-- Monitor production logs after the first real Level 2 sessions.
-- Preview env vars on Vercel (currently falls back to localStorage).
+- Decide preview backend strategy before setting Vercel preview env vars. Pointing previews at production Supabase would make test rooms write to production data.
 
 ## Do Not Start Yet
 

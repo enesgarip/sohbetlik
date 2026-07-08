@@ -19,14 +19,14 @@ Last updated: 2026-07-08
 - Set constraints: ≤2 questions per trait, ≤3 per category, ~35/45/20 type split, no same-trait/category neighbors, no 3 same-type in a row.
 - Slider answers are never displayed as numbers anywhere (answer screen, results, AI output); the scale lives in `questions.meta.slider` with two positively-framed end labels.
 - Option order is shuffled per question with a `roomId:questionId` seed so both participants see the identical order; questions with a punchline option opt out via `shuffle_options = false`.
-- Non-repeat: hard guarantee via room chain (`rooms.previous_room_id`, UI pending); soft layer via host-device localStorage history (90-day TTL, relaxed before a session can starve).
+- Non-repeat: hard guarantee via room chain (`rooms.previous_room_id`) for the next-level flow; soft layer via host-device localStorage history (90-day TTL, relaxed before a session can starve).
 - The original 8 demo questions are deactivated, not deleted (FK integrity + legacy rooms render from the client lookup map).
 
 ## Technical Decisions
 
 - Frontend is Vite + React + TypeScript.
 - UI uses the existing custom CSS direction and lucide icons.
-- Current live flow uses localStorage through `localRoomRepository`.
+- Current production flow uses Supabase through `supabaseRoomRepository`; `localRoomRepository` remains the no-env fallback.
 - Room logic is split from UI through `RoomRepository`.
 - Production is Vercel.
 - GitHub is public and CI/CD is configured.
@@ -39,7 +39,7 @@ Last updated: 2026-07-08
 - Supabase Realtime can power two-device room progress. Postgres Changes is acceptable for MVP; Broadcast can be considered later if scale/security needs grow.
 - Explicit grants and RLS are required for exposed tables.
 - Upstash Redis is fallback only if Supabase becomes blocked again.
-- Vercel Functions are still needed later for OpenAI result generation so `OPENAI_API_KEY` stays server-side.
+- Vercel Functions are used for server-side AI summary generation so model API keys stay off the client.
 - Frontend question ids stay human-readable slugs; `questions.slug` (unique) maps them to DB uuid primary keys.
 - MVP questions are seeded inside a migration (not `supabase/seed.sql`) so `db push` seeds remote too.
 - Room `status` is never set to `completed` in MVP because guest RLS read access requires an open status; revisit when access moves to membership-based policies.

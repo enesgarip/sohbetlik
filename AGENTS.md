@@ -62,4 +62,4 @@ npm run db:stop:local
 - The app should feel like a conversation helper, not a test.
 - Results must invite conversation and avoid judgment.
 - MVP should stay free-tier friendly.
-- Real two-device production sync is live and verified on `https://sohbetlik.vercel.app`; AI summary generation is the next technical milestone.
+- Real two-device production sync and the Level 1 -> Level 2 next-level flow are live and verified on `https://sohbetlik.vercel.app`.
