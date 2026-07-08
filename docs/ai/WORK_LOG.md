@@ -6,7 +6,8 @@
 - Slider debounce: split `selectAnswer` into two paths — choice/either_or writes immediately, slider debounces 300ms via `useRef` timer. `flushSliderDebounce()` fires on "Sonraki soru" to prevent answer loss at question boundary.
 - Stale room cleanup: new migration `20260709090000_cleanup_stale_rooms.sql` — `SECURITY DEFINER` function deletes rooms >7 days old (CASCADE handles participants, answers, room_questions, result_summaries). Client calls `supabase.rpc('cleanup_stale_rooms')` on homepage load, throttled to once per 24h via localStorage timestamp. `src/types/supabase.ts` updated with function signature.
 - Checks: lint ✅, 23 unit tests ✅, build ✅, `db reset` (4 migrations) ✅, 6 e2e tests ✅.
-- Remaining: push migration to production Supabase (`supabase db push --linked`), commit + push to main for Vercel deploy.
+- Migration pushed to production Supabase, committed and pushed to main.
+- AI Summary implemented: `api/summary.ts` Vercel serverless function calls Gemini 2.0 Flash with answer pairs, followupPrompt, and aiHint. Prompt enforces no scores/judgments, Turkish, conversation-focused insights. Client (`src/lib/summaryApi.ts`) calls `/api/summary` on results page when both participants have answered; falls back to local `buildConversationInsights` if API unavailable. Loading spinner with pulse animation. `@vercel/node` added as devDependency. `vercel.json` updated to pass `/api/*` through. `GEMINI_API_KEY` needed as Vercel production env var.
 
 ## 2026-07-08 (Codex, production deploy verification)
 

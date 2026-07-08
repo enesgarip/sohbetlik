@@ -87,7 +87,7 @@ Core slogan:
 - Slider answer writes are debounced (300ms); the pending value is flushed on "Sonraki soru" to prevent loss.
 - Stale rooms (>7 days) are cleaned up via `cleanup_stale_rooms()` Postgres function, called from the client on homepage load (throttled to once per day).
 - Optimistic answer writes are protected by a pending-answers ledger (`src/lib/pendingAnswers.ts`); stale snapshots can no longer wipe a just-given answer.
-- Result AI generation is still local/mock logic, not OpenAI-backed.
+- Result AI generation uses Gemini 2.0 Flash via Vercel Function (`api/summary.ts`); falls back to local logic if API unavailable.
 - Only the Level 1 pool exists (24 questions); level 2-4 pools are not written yet and there is no level selector UI (sessions are Level 1).
 - `rooms.previous_room_id` exists in the schema but the "next level / rematch" flow that would use it is not built.
 - Guest device history cannot be excluded at room creation (guest joins later); the room-chain layer is the eventual hard guarantee.
