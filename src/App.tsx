@@ -40,9 +40,10 @@ import {
 } from './lib/pendingAnswers'
 import { getSeenQuestionSlugs, recordSeenQuestions } from './lib/seenQuestions'
 import { maybeCleanupStaleRooms } from './lib/roomCleanup'
+import { fetchAiSummary } from './lib/summaryApi'
 import { roomRepository } from './repositories/activeRoomRepository'
 import { questionRepository, SESSION_QUESTION_COUNT } from './repositories/questionRepository'
-import type { AnswerValue } from './types/domain'
+import type { AnswerValue, ConversationInsight } from './types/domain'
 
 function getInviteLink(roomCode: string) {
   return `${window.location.origin}/join/${roomCode.toLowerCase()}`
@@ -612,10 +613,30 @@ function ResultsPage() {
   const questions = useMemo(() => (room ? getRoomQuestions(room) : []), [room])
   const participant = room && participantId ? getParticipant(room, participantId) : null
   const counterpart = room?.participants.find((candidate) => candidate.id !== participantId) ?? null
-  const insights = useMemo(
+  const localInsights = useMemo(
     () => buildConversationInsights(questions, participant?.answers ?? {}, counterpart?.answers),
     [counterpart?.answers, participant?.answers, questions],
   )
+  const [aiInsights, setAiInsights] = useState<ConversationInsight[] | null>(null)
+  const [aiLoading, setAiLoading] = useState(false)
+  const hasBothAnswers = Boolean(participant && counterpart && Object.keys(counterpart.answers).length > 0)
+
+  useEffect(() => {
+    if (!hasBothAnswers || !participant || !counterpart || questions.length === 0) {
+      return
+    }
+
+    setAiLoading(true)
+    fetchAiSummary(questions, participant.answers, counterpart.answers)
+      .then((result) => {
+        if (result && result.length > 0) {
+          setAiInsights(result)
+        }
+      })
+      .finally(() => setAiLoading(false))
+  }, [hasBothAnswers, participant, counterpart, questions])
+
+  const insights = aiInsights ?? localInsights
   const lastAnsweredQuestion =
     participant && [...questions].reverse().find((question) => participant.answers[question.id] !== undefined)
 
@@ -645,10 +666,17 @@ function ResultsPage() {
   return (
     <section className="results-layout" aria-labelledby="results-title">
       <div className="results-head">
-        <span className="soft-label">Ortak özet</span>
+        <span className="soft-label">{aiInsights ? 'AI özet' : 'Ortak özet'}</span>
         <h1 id="results-title">Konuşmanın güzel yerleri burada.</h1>
         <p>Bu ekran bir karar vermek için değil, sohbeti daha rahat devam ettirmek için.</p>
       </div>
+
+      {aiLoading && (
+        <div className="ai-loading" aria-busy="true">
+          <Sparkles size={18} aria-hidden="true" />
+          <span>AI özet hazırlanıyor…</span>
+        </div>
+      )}
 
       <div className="insight-list">
         {insights.map((insight) => (
