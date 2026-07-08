@@ -28,6 +28,10 @@ export const level1Questions: QuestionContent[] = [
       'Birbirinize "değişmez siparişim" dediğiniz klasiği ve onu ilk keşfettiğiniz anı anlatın.',
     qualityNote:
       'Merak tarzını sıfatla değil sahneyle yoklar; iki cevap da savunulabilir. "Senin tabağından alırım" iki kişilik bağlama göz kırpar.',
+    answerWeights: {
+      klasik: { 'merak-tarzi': -1, 'konfor-alani': 1 },
+      yeni: { 'merak-tarzi': 1, 'risk-istahi': 0.5 },
+    },
     status: 'active',
   },
   {
@@ -54,6 +58,12 @@ export const level1Questions: QuestionContent[] = [
       'Gece mutfağının en garip eserini itiraf etme turu: en tuhaf gece atıştırması hanginizde?',
     qualityNote:
       'Evrensel ve suçsuz bir küçük itiraf sahnesi; her seçenek mini bir karakter vinyeti, dördüncüsü kaçış değil espri.',
+    answerWeights: {
+      dolap: { 'spontanlik': 1 },
+      tatli: { 'ritual-bagliligi': 0.5 },
+      sandvic: { 'plan-sevgisi': 0.5 },
+      su: {},
+    },
     status: 'active',
   },
   {
@@ -79,6 +89,11 @@ export const level1Questions: QuestionContent[] = [
       'Masada tabak paylaşımının kuralları ne olmalı? İkiniz bir "çatal anayasası" yazın.',
     qualityNote:
       'İki uç da pozitif ve sahiplenilebilir; gerçek bir spektrum. Buluşma masasında sorulunca o masayı sohbet konusu yapar.',
+    answerWeights: {
+      low: { 'paylasim-istahi': -1, 'alan-ihtiyaci': 1 },
+      mid: {},
+      high: { 'paylasim-istahi': 1 },
+    },
     status: 'active',
   },
   // Seyahat & Keşif
@@ -106,6 +121,10 @@ export const level1Questions: QuestionContent[] = [
       'İki cevap da maceraya açık; fark sadece zamanlamada. "Biri cesur, biri temkinli" çerçevesi kurma.',
     qualityNote:
       'Spontanlığı etiketle değil sahneyle yoklar; "hayır" seçeneği bile iyi planlanmış bir macera olarak yazıldı.',
+    answerWeights: {
+      hemen: { 'spontanlik': 1.5, 'risk-istahi': 0.5 },
+      planla: { 'plan-sevgisi': 1, 'spontanlik': -1 },
+    },
     status: 'active',
   },
   {
@@ -132,6 +151,12 @@ export const level1Questions: QuestionContent[] = [
       'Bu dört akşamdan hangisi hayalinizdeki rotada olurdu? Bir sonraki tatil gününü birlikte kurgulayın.',
     qualityNote:
       'Anket sorusunu akşam muhasebesi sahnesine çevirir; dört seçenek dört farklı zevk, hiçbiri "doğru turist" değil.',
+    answerWeights: {
+      rota: { 'plan-sevgisi': 1.5 },
+      kayip: { 'spontanlik': 1, 'macera-istahi': 1 },
+      'sifir-acele': { 'tempo': -1 },
+      yerel: { 'merak-tarzi': 1, 'macera-istahi': 0.5 },
+    },
     status: 'active',
   },
   {
@@ -156,6 +181,11 @@ export const level1Questions: QuestionContent[] = [
     followupPrompt: 'Valizde asla eksik olmayan tuhaf eşyanız ne? İkiniz de birer tane söyleyin.',
     qualityNote:
       'İki uç da karakterli ve övünülebilir; sayı yok, orta nokta ("çoğu hazır, son gece panik") meşru bir konum.',
+    answerWeights: {
+      low: { 'plan-sevgisi': 1.5 },
+      mid: {},
+      high: { 'spontanlik': 1, 'plan-sevgisi': -1 },
+    },
     status: 'active',
   },
   // Kültür & Eğlence
@@ -186,6 +216,10 @@ export const level1Questions: QuestionContent[] = [
       'Replikleri ezbere bildiğiniz o yapımı söyleyin — ve neden hiç eskimediğini savunun.',
     qualityNote:
       'Liste sorusu yerine izleme davranışını sorar; "sarılma gibi" ve "israf gibi" ifadeleri iki tarafı duygusal olarak eşitler.',
+    answerWeights: {
+      ezber: { 'konfor-alani': 1, 'nostalji-bagi': 0.5 },
+      yeni: { 'merak-tarzi': 1, 'konfor-alani': -1 },
+    },
     status: 'active',
   },
   {
@@ -211,6 +245,12 @@ export const level1Questions: QuestionContent[] = [
       'Birbirinize "bunu keşfettiğimde kimseye söylemedim" dediğiniz bir şarkı gönderin.',
     qualityNote:
       'Zevk değil davranış sorusu; "ne dinlersin?" performans baskısını atlar. Farklı cevaplar "bana da gönderir misin?" kapısını açar.',
+    answerWeights: {
+      tuket: { 'ritual-bagliligi': 0.5 },
+      gonder: { 'paylasim-istahi': 1.5 },
+      sakla: { 'paylasim-istahi': -1 },
+      arsiv: { 'merak-tarzi': 1 },
+    },
     status: 'active',
   },
   // Nostalji & Çocukluk
@@ -237,6 +277,12 @@ export const level1Questions: QuestionContent[] = [
       'Gözünüzü kapatın: çocukluk yazlarından tek bir koku ya da ses seçin, birbirinize anlatın.',
     qualityNote:
       'Hatırlama anının kendisi keyifli; seçenekler etiket değil görüntü ve koku üzerinden yazıldı, cevap otomatik anı anlattırır.',
+    answerWeights: {
+      memleket: { 'nostalji-bagi': 1 },
+      mahalle: { 'nostalji-bagi': 1 },
+      deniz: { 'nostalji-bagi': 0.5 },
+      ev: { 'nostalji-bagi': 0.5, 'alan-ihtiyaci': 0.5 },
+    },
     status: 'active',
   },
   {
@@ -262,6 +308,10 @@ export const level1Questions: QuestionContent[] = [
       'Bu çocukluk anısıdır, bugünün finansal profili değil; yetişkin para yorumu yapma.',
     qualityNote:
       'Para eğilimini yetişkin finansı sormadan çocukluk sahnesine indirir: güvenli, tatlı, yine de kalıcı bir eğilimin ilk fotoğrafı.',
+    answerWeights: {
+      harcadi: { 'para-keyif-dengesi': -1, 'spontanlik': 0.5 },
+      biriktirdi: { 'para-keyif-dengesi': 1, 'plan-sevgisi': 0.5 },
+    },
     status: 'active',
   },
   {
@@ -287,6 +337,11 @@ export const level1Questions: QuestionContent[] = [
     aiHint: 'İki uç da romantize edilebilir: duygusal derinlik vs ileri bakış. Birini olgun gösterme.',
     qualityNote:
       'Gerçek bir spektrum; setin en düşündüren sorusu olarak zorluk 2, eğride ortalarda durmalı.',
+    answerWeights: {
+      low: { 'nostalji-bagi': 1.5 },
+      mid: {},
+      high: { 'nostalji-bagi': -1 },
+    },
     status: 'active',
   },
   // Günlük Ritim
@@ -312,6 +367,10 @@ export const level1Questions: QuestionContent[] = [
       'O hediye saatte tam olarak ne yapardınız? Sabahçı ve gececi birbirine kendi saatini anlatsın.',
     qualityNote:
       'Klişe "sabah insanı mısın?" sorusunun hediye-saat fantezisiyle bükülmüş hâli; iki uç da imrenilecek bir sahne.',
+    answerWeights: {
+      sabah: { 'sabah-gece-ritmi': -1 },
+      gece: { 'sabah-gece-ritmi': 1 },
+    },
     status: 'active',
   },
   {
@@ -336,6 +395,12 @@ export const level1Questions: QuestionContent[] = [
     followupPrompt: 'En son "mükemmel geçti" dediğiniz boş gün nasıldı? Detaylarıyla anlatın.',
     qualityNote:
       'Rehberdeki örnek sahnenin havuz hâli; dört meşru pazar, "tembel pazar" bile kutsal diye çerçevelenerek eşit prestije çekildi.',
+    answerWeights: {
+      kahvalti: { 'tempo': -1 },
+      disari: { 'ev-disari-dengesi': 1, 'macera-istahi': 0.5 },
+      topla: { 'enerji-kaynagi': -1, 'grup-rolu': -1 },
+      koltuk: { 'ev-disari-dengesi': -1, 'alan-ihtiyaci': 1 },
+    },
     status: 'active',
   },
   {
@@ -361,6 +426,11 @@ export const level1Questions: QuestionContent[] = [
       'Hanginiz kimi beklerken sabırsızlanırdı? Birlikte yavaşlamanız ya da hızlanmanız gereken bir an hayal edin.',
     qualityNote:
       '"Yürüyen merdivende de yürürüm" somut ve komik bir davranış imzası; soyut sıfat yerine görüntü verir.',
+    answerWeights: {
+      low: { 'tempo': -1.5 },
+      mid: {},
+      high: { 'tempo': 1.5 },
+    },
     status: 'active',
   },
   // Hayaller & Olasılıklar
@@ -387,6 +457,12 @@ export const level1Questions: QuestionContent[] = [
     followupPrompt: 'Seçtiğiniz hayatın o gününde ilk yapacağınız şey ne olurdu?',
     qualityNote:
       'Düşük risk, yüksek hayal gücü; seçenekler adrenalin/huzur/merak/tutku eksenlerine dağılır. "Tuvaleti dahil" fanteziye gerçeklik göz kırpması.',
+    answerWeights: {
+      sahne: { 'macera-istahi': 1, 'enerji-kaynagi': -0.5 },
+      sahaf: { 'macera-istahi': -1, 'tempo': -0.5 },
+      uzay: { 'macera-istahi': 1.5, 'merak-tarzi': 1 },
+      mutfak: { 'macera-istahi': 0.5 },
+    },
     status: 'active',
   },
   {
@@ -410,6 +486,10 @@ export const level1Questions: QuestionContent[] = [
       'Savunma turu: kendi gücünüzün neden açıkça daha iyi olduğuna birbirinizi ikna etmeye çalışın.',
     qualityNote:
       'Klişe süper güç sorusunun kusur eklenerek bükülmüş hâli: kusurlar seçimi gerçek bir tartıya çevirir, savunma turu garantidir.',
+    answerWeights: {
+      ucus: { 'macera-istahi': 1, 'tempo': -0.5 },
+      isinlanma: { 'konfor-alani': 0.5, 'plan-sevgisi': 0.5 },
+    },
     status: 'active',
   },
   {
@@ -434,6 +514,12 @@ export const level1Questions: QuestionContent[] = [
     followupPrompt: 'O "hep ertelediğim şey" ne? İkiniz de birer tane itiraf edin.',
     qualityNote:
       'Önceliklerin hayal çerçevesinde güvenli ön izlemesi: kimse hayat planını savunmak zorunda kalmaz ama cevaplar çok şey anlatır.',
+    answerWeights: {
+      bilet: { 'macera-istahi': 1, 'oncelik-pusulasi': -1 },
+      ogren: { 'merak-tarzi': 1, 'oncelik-pusulasi': 0.5 },
+      sevdikler: { 'oncelik-pusulasi': 1 },
+      proje: { 'oncelik-pusulasi': -0.5, 'plan-sevgisi': 0.5 },
+    },
     status: 'active',
   },
   // Küçük İtiraflar
@@ -460,6 +546,12 @@ export const level1Questions: QuestionContent[] = [
       'Cesaret turu: gizli keyfinizden birer somut örnek verin. Gülmek serbest, yargı yasak.',
     qualityNote:
       'Karşılıklı küçük itiraf, hızlı yakınlık üreten en güvenli mekanizma; seçenekler kategori verir, teşhiri kullanıcıya bırakır.',
+    answerWeights: {
+      dizi: { 'kucuk-keyifler': 1 },
+      sarki: { 'kucuk-keyifler': 1 },
+      internet: { 'merak-tarzi': 0.5, 'kucuk-keyifler': 1 },
+      yemek: { 'kucuk-keyifler': 1 },
+    },
     status: 'active',
   },
   {
@@ -485,6 +577,10 @@ export const level1Questions: QuestionContent[] = [
       'Bu bir arkadaşlık alışkanlığı itirafıdır; ilişki beklentisi yorumu yapma, geç cevabı kusur olarak çerçeveleme.',
     qualityNote:
       'Mesajlaşma beklentisini sormadan herkesin bildiği alışkanlığı itiraf çerçevesinde sorar; kusur komikleştirilerek güvenli kılındı.',
+    answerWeights: {
+      sonra: { 'temas-ritmi': 1 },
+      aninda: { 'temas-ritmi': -1 },
+    },
     status: 'active',
   },
   {
@@ -509,6 +605,11 @@ export const level1Questions: QuestionContent[] = [
     followupPrompt: 'Sizi en çok bu moda sokan şarkı hangisi? Birbirinize açın.',
     qualityNote:
       'Herkesin bildiği ama kimsenin sormadığı bir yalnızlık hâli; yüksek uç utanç değil coşku olarak yazıldı. Doğal kapanış sorusu.',
+    answerWeights: {
+      low: { 'kucuk-keyifler': -0.5 },
+      mid: {},
+      high: { 'kucuk-keyifler': 1 },
+    },
     status: 'active',
   },
   // Sosyal Dünya
@@ -534,6 +635,12 @@ export const level1Questions: QuestionContent[] = [
     followupPrompt: 'Grup tatillerinden birer efsane anı: plan tutmadığında ne oldu?',
     qualityNote:
       'Kendini dışarıdan görme tipi grup sahnesiyle birleşir; dört rol de sevgiyle yazıldı, roller yan yana gelince espri kendiliğinden doğar.',
+    answerWeights: {
+      organizator: { 'grup-rolu': -1.5, 'plan-sevgisi': 0.5 },
+      yolcu: { 'grup-rolu': 1, 'spontanlik': 0.5 },
+      revizyoncu: { 'grup-rolu': 0.5 },
+      moral: { 'grup-rolu': 1, 'mizah-tarzi': 1 },
+    },
     status: 'active',
   },
   {
@@ -558,6 +665,10 @@ export const level1Questions: QuestionContent[] = [
       'İki seçenek de geceyi sevmiş durumda; içe dönüklüğü eksiklik gibi yorumlama.',
     qualityNote:
       'İçe/dışa dönüklüğü gece sonrası tek anla sorar; iki seçenek de "gece güzeldi" dediği için sosyal damga yapısal olarak imkânsız.',
+    answerWeights: {
+      sarj: { 'enerji-kaynagi': -1.5 },
+      'pil-bitti': { 'enerji-kaynagi': 1.5, 'alan-ihtiyaci': 0.5 },
+    },
     status: 'active',
   },
   // Ev Hâli
@@ -585,6 +696,11 @@ export const level1Questions: QuestionContent[] = [
     aiHint: 'Düzenli ucu daha olgun gösterme; iki uç da işleyen birer sistemdir.',
     qualityNote:
       'Rehberin slider kuralının birebir uygulaması: "düzenli ↔ dağınık" yargı ekseni "iki farklı sistem" eksenine çevrildi.',
+    answerWeights: {
+      low: { 'duzen-kaos': -1.5 },
+      mid: {},
+      high: { 'duzen-kaos': 1.5 },
+    },
     status: 'active',
   },
   {
@@ -610,6 +726,12 @@ export const level1Questions: QuestionContent[] = [
       'Evden çıkmama günlerinizi birleştirseniz o evde neler olurdu? Menüsüyle kurgulayın.',
     qualityNote:
       'Evin en canlı köşesini sorarak mekân üzerinden alışkanlık anlattırır; "son bir bölüm yalanı" öz-ironiyle herkesin hâlini meşrulaştırır.',
+    answerWeights: {
+      mutfak: { 'ev-disari-dengesi': -1 },
+      koltuk: { 'ev-disari-dengesi': -1.5, 'tempo': -0.5 },
+      hobi: { 'ev-disari-dengesi': -0.5, 'merak-tarzi': 0.5 },
+      balkon: { 'ev-disari-dengesi': 0.5 },
+    },
     status: 'active',
   },
 ]

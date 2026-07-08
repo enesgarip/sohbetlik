@@ -47,4 +47,11 @@ export type QuestionContent = {
   // "Bu soru neden kaliteli" — yalnızca repoda kalır, veritabanına gitmez.
   qualityNote: string
   status: QuestionStatus
+  // Eğilim puanlama: her cevap seçeneğinin eğilim spektrumundaki etkisi.
+  // Anahtar = option id (choice/either_or) veya 'low'|'mid'|'high' (slider).
+  // Değer = { traitSlug: skor } haritası. Skor: -2 (güçlü sol uç) ... +2 (güçlü sağ uç).
+  // Opsiyonel: yoksa eğilim hesabına katılmaz (geriye uyumluluk).
+  answerWeights?: Record<string, Partial<Record<TraitSlug, number>>>
+  // Sorunun eğilim hesabındaki ağırlığı. Varsayılan 1.
+  tendencyWeight?: 1 | 1.5 | 2
 }
