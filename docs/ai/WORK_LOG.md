@@ -1,5 +1,10 @@
 # Work Log
 
+## 2026-07-08 (Codex, preview backend docs)
+
+- Documented the preview backend decision: preview deploys leave `VITE_SUPABASE_*` unset by default and use localStorage fallback unless a separate preview Supabase project exists.
+- Updated `.env.example`, README, CI/CD, Supabase setup, backend strategy, source index, product/MVP notes, Claude bootstrap, project state, next actions, and decision log to match the live Groq-backed summary setup (`GROQ_API_KEY`, server-side only).
+
 ## 2026-07-09 (Codex, home sample flow cleanup)
 
 - Removed the homepage `Örnek akışı dene` CTA so the static preview no longer creates a real 24-question room from the production pool.

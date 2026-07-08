@@ -4,7 +4,7 @@ Last updated: 2026-07-09
 
 ## Current Priority
 
-Pick the next milestone. Level 2 next-level flow is live and production monitoring is clean.
+Pick the next product milestone. Level 2 next-level flow is live, production monitoring is clean, and the preview backend strategy is documented.
 
 ## Recently Completed
 
@@ -20,10 +20,11 @@ Pick the next milestone. Level 2 next-level flow is live and production monitori
 - Production Supabase: Level 2 migration is pushed; remote active question counts are L1=24 and L2=24 after anonymous auth.
 - Production app: `sohbetlik.vercel.app` is aliased to the Level 2 deployment and a live two-device L1 -> L2 browser QA reached the first Level 2 question with no console errors or failed requests.
 - Production monitoring: Vercel runtime error clusters, error/fatal logs, 5xx counts, and 4xx counts are clean after the Level 2 rollout.
+- Preview backend strategy: preview deploys keep `VITE_SUPABASE_*` unset by default and use localStorage fallback; production Supabase env vars must not be reused for previews. `.env.example`, README, CI/CD, Supabase setup, and decision docs now use `GROQ_API_KEY`.
 
 ## Nice-To-Have Follow-Ups
 
-- Decide preview backend strategy before setting Vercel preview env vars. Pointing previews at production Supabase would make test rooms write to production data.
+- Create a separate preview Supabase project if two-device preview deployment testing becomes necessary.
 
 ## Do Not Start Yet
 

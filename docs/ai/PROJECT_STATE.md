@@ -50,6 +50,7 @@ Core slogan:
 ## Backend State
 
 - Production Supabase project is live (2026-07-08): `sohbetlik`, ref `ojhncwhagydpmfnygdfy`, region eu-central-1. Linked via CLI; all migrations pushed; anonymous sign-ins enabled via `config push`; `.env.local` points at it; Vercel production env vars set. DB password is in gitignored `db-password.local` on the dev machine.
+- Preview deployments should leave `VITE_SUPABASE_*` unset unless a dedicated preview Supabase project exists; this keeps previews on localStorage fallback and avoids writing test rooms to production data.
 - Primary backend direction is Supabase:
   - anonymous auth
   - Postgres tables

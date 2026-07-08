@@ -4,13 +4,13 @@ Date: 2026-07-07
 
 ## Decision
 
-For the first real two-device MVP, Sohbetlik will use Supabase as the primary backend:
+For the first real two-device MVP, Sohbetlik uses Supabase as the primary backend:
 
 - Supabase Auth with anonymous users.
 - Supabase Postgres for rooms, participants, questions, answers, and result summaries.
 - Supabase Realtime for room progress and result readiness.
 - Polling fallback if Realtime setup is delayed or fails.
-- Vercel Functions later for OpenAI result generation.
+- Vercel Functions for Groq-backed AI result generation.
 
 Upstash Redis is now fallback only. It was the temporary plan while the Supabase Free project slots were full, but a Supabase slot is available now.
 
@@ -86,7 +86,7 @@ Later scale path:
 - Use anonymous auth for participants.
 - Do not expose service-role or secret keys in frontend code.
 - Use only `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in browser code.
-- Keep `OPENAI_API_KEY` server-side only.
+- Keep `GROQ_API_KEY` server-side only.
 - Do not use `TO authenticated` alone as authorization; combine it with room membership/ownership predicates.
 - Do not use `auth.role()` in new policies.
 - Do not use user-editable metadata for authorization.
@@ -103,13 +103,10 @@ If Supabase becomes blocked again:
 
 This fallback should not be implemented unless Supabase is blocked or clearly too heavy for the MVP.
 
-## Next Implementation Steps
+## Operational Follow-Ups
 
-1. Link the repo to the new Supabase project.
-2. Add Supabase env vars locally and in Vercel.
-3. Dry-run and push the existing migration to the linked project.
-4. Generate fresh Supabase TypeScript types.
-5. Implement `supabaseRoomRepository`.
-6. Add anonymous auth bootstrap.
-7. Add Realtime subscriptions with polling fallback.
-8. Add e2e coverage for a host + guest two-context flow.
+1. Keep production Supabase env vars configured only in production Vercel unless a separate preview Supabase project exists.
+2. Leave preview `VITE_SUPABASE_*` env vars unset by default so preview deploys use localStorage fallback and cannot pollute production room data.
+3. Regenerate `src/types/supabase.ts` after future migration pushes.
+4. Consider Supabase Broadcast later if Postgres Changes becomes too noisy at scale.
+5. Add cleanup/retention automation if client-triggered stale room cleanup becomes insufficient.

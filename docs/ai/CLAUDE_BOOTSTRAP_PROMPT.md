@@ -20,10 +20,10 @@ Important context:
 - Product: Sohbetlik, a two-person AI-supported conversation PWA for dates.
 - It is not a compatibility test.
 - Do not produce scores, percentages, red flags, or suitable/unsuitable language.
-- Current live app uses localStorage through RoomRepository.
-- Primary backend direction is now Supabase because a free slot is available.
-- Next implementation target is Supabase anonymous auth + Postgres + Realtime.
-- Keep OpenAI keys server-side only.
+- Current live app uses Supabase through RoomRepository, with localStorage fallback when Supabase env vars are absent.
+- Primary backend is Supabase anonymous auth + Postgres + Realtime/polling fallback.
+- Production AI summary uses Groq through a Vercel Function.
+- Keep model API keys server-side only; current key is `GROQ_API_KEY`.
 - Never expose service_role keys in frontend code.
 - Use Turkish with me unless code/docs require English.
 

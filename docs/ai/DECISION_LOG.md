@@ -54,6 +54,7 @@ Last updated: 2026-07-08
   - `Supabase Schema`
 - Deploy workflow verifies releases. Vercel Git integration currently handles production deployment.
 - `VERCEL_TOKEN` is not required while Vercel Git integration is enough, but CLI deploy steps skip without it.
+- Preview deployments intentionally do not reuse production Supabase env vars. Until a separate preview Supabase project exists, previews leave `VITE_SUPABASE_*` unset and use the localStorage fallback so test rooms cannot pollute production data.
 
 ## Collaboration Decisions
 

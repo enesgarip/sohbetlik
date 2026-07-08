@@ -46,7 +46,7 @@ Finance project cizgisine yakin ilk stack:
 ## Faz 3: AI Sonuc Ozeti
 
 - Iki kisi tamamlayinca server-side endpoint calisir.
-- Cevaplar OpenAI API'ye yargilamayan sistem talimatiyla gonderilir.
+- Cevaplar Groq API'ye yargilamayan sistem talimatiyla server-side gonderilir.
 - Cikti `result_summaries` tablosuna yazilir.
 - Sonuc ekrani ortak yonleri, farkli bakis acilarini ve devam sorularini gosterir.
 

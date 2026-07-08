@@ -62,15 +62,17 @@ https://sohbetlik.vercel.app
 
 ## Required Vercel Environment Variables
 
-Set these in Vercel for production and preview environments:
+Set these in Vercel for the production environment:
 
 ```text
 VITE_SUPABASE_URL
 VITE_SUPABASE_PUBLISHABLE_KEY
-OPENAI_API_KEY
+GROQ_API_KEY
 ```
 
-`OPENAI_API_KEY` must never be exposed as a `VITE_` variable.
+`GROQ_API_KEY` must never be exposed as a `VITE_` variable.
+
+Preview deployments intentionally leave `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` unset by default, so they use the localStorage fallback instead of writing test rooms into production Supabase. Only set preview Supabase env vars after creating a separate preview Supabase project. Do not reuse production Supabase values for previews.
 
 ## Branch Protection Recommendation
 

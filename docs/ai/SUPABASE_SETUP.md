@@ -32,18 +32,22 @@ Create `.env.local` locally. Do not commit it.
 ```bash
 VITE_SUPABASE_URL=
 VITE_SUPABASE_PUBLISHABLE_KEY=
-OPENAI_API_KEY=
+GROQ_API_KEY=
 ```
 
-`OPENAI_API_KEY` is for server-side code only. Do not prefix it with `VITE_`.
+`GROQ_API_KEY` is for server-side code only. Do not prefix it with `VITE_`.
 
 ## Vercel Env
 
 Add these to Vercel project env:
 
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_PUBLISHABLE_KEY`
-- later: `OPENAI_API_KEY` for server-side AI summary
+- Production:
+  - `VITE_SUPABASE_URL`
+  - `VITE_SUPABASE_PUBLISHABLE_KEY`
+  - `GROQ_API_KEY` for server-side AI summary
+- Preview:
+  - Leave `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` unset unless a separate preview Supabase project exists.
+  - Do not point preview deployments at production Supabase.
 
 ## CLI Commands
 
@@ -105,4 +109,4 @@ npm run db:stop:local
 - Guest opens invite link, creates an anonymous session, and joins the room.
 - Both users can read room shell, participants, room questions, answers for that room, and final result summary.
 - Each user can only write their own participant row and answers.
-- AI summary generation should happen server-side later.
+- AI summary generation happens server-side through a Vercel Function using `GROQ_API_KEY`.

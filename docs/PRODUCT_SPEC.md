@@ -68,7 +68,7 @@ AI sunlari yapmaz:
 - Iki kisilik cevap akisi.
 - Bekleme ve tamamlanma durumlari.
 - Sonuc ekraninda ortak yonler, farkliliklar ve konusma onerileri.
-- OpenAI ile basit sonuc ozeti.
+- Groq ile server-side basit sonuc ozeti.
 
 ## Tasarim Referansi
 

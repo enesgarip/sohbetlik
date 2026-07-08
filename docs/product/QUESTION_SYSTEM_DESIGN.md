@@ -235,7 +235,7 @@ Havuz açlığında gevşetme sırası Bölüm 8/Faz 1'de tanımlandı.
 
 ## 11. Gelecekte AI Analizi
 
-AI (Vercel Function + OpenAI, `NEXT_ACTIONS` Adım 4) yalnızca iki taraf tamamlayınca çalışır. Bu tasarım AI'ya şu zemini hazırlar:
+AI (Vercel Function + Groq/OpenAI-compatible API) yalnızca iki taraf tamamlayınca çalışır. Bu tasarım AI'ya şu zemini hazırlar:
 
 **Girdi inşası** — her cevaplanmış soru için fonksiyona giden paket:
 
@@ -284,6 +284,6 @@ Cevaplar daima **etiket metni** olarak gider (id/sayı değil); slider cevabı i
 3. `src/domain/questionSelection.ts` + unit testler.
 4. Aşama 3: İlk Tanışma (S1) soruları — rehber kalite kapısıyla.
 5. Repository katmanına zincir dışlaması + cihaz geçmişi entegrasyonu.
-6. (Ayrı iş) AI fonksiyonu — `NEXT_ACTIONS` Adım 4 ile birleşir.
+6. (Ayrı iş) AI fonksiyonu — production'da Groq ile tamamlandı; provider değişirse aynı server-side sınır korunur.
 
 Not: Üretim önceliği hâlâ Supabase sync'in canlıya alınması (`NEXT_ACTIONS` Adım 1-3); bu tasarımın implementasyonu onu bloklamaz, migration'lar aynı akışla push edilir.

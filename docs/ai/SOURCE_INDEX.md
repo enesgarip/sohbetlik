@@ -1,6 +1,6 @@
 # Source Index
 
-Last updated: 2026-07-07
+Last updated: 2026-07-08
 
 Use this file to avoid re-discovering the same official docs.
 
@@ -36,10 +36,11 @@ Use this file to avoid re-discovering the same official docs.
 - Vercel Functions: <https://vercel.com/docs/functions>
 - Vercel Marketplace: <https://vercel.com/marketplace>
 
-## OpenAI Official Sources
+## Groq Official Sources
 
-- OpenAI API docs: <https://platform.openai.com/docs>
-- OpenAI API keys: <https://platform.openai.com/api-keys>
+- Groq quickstart and `GROQ_API_KEY`: <https://console.groq.com/docs/quickstart>
+- Groq API reference: <https://console.groq.com/docs/api-reference>
+- Groq OpenAI compatibility: <https://console.groq.com/docs/openai>
 
 ## Repo Commands
 
