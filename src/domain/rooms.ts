@@ -125,8 +125,8 @@ export function getParticipant(room: ConversationRoom, participantId: string) {
   return room.participants.find((participant) => participant.id === participantId) ?? null
 }
 
-export function getHostParticipant(room: ConversationRoom) {
-  return room.participants.find((participant) => participant.role === 'host') ?? room.participants[0] ?? null
+export function getViewerParticipant(room: ConversationRoom) {
+  return room.participants.find((participant) => participant.label === 'Sen') ?? null
 }
 
 export function saveParticipantAnswer(

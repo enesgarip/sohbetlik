@@ -1,5 +1,22 @@
 # Work Log
 
+## 2026-07-09 (Claude, nice-to-have polishes)
+
+- `/room/:roomId` viewer resolution: replaced `getHostParticipant` with `getViewerParticipant` (finds participant with label "Sen"). Non-participants are redirected to `/join/:roomCode` instead of seeing the host's view. Removed dead `getHostParticipant` export.
+- Slider debounce: split `selectAnswer` into two paths — choice/either_or writes immediately, slider debounces 300ms via `useRef` timer. `flushSliderDebounce()` fires on "Sonraki soru" to prevent answer loss at question boundary.
+- Stale room cleanup: new migration `20260709090000_cleanup_stale_rooms.sql` — `SECURITY DEFINER` function deletes rooms >7 days old (CASCADE handles participants, answers, room_questions, result_summaries). Client calls `supabase.rpc('cleanup_stale_rooms')` on homepage load, throttled to once per 24h via localStorage timestamp. `src/types/supabase.ts` updated with function signature.
+- Checks: lint ✅, 23 unit tests ✅, build ✅, `db reset` (4 migrations) ✅, 6 e2e tests ✅.
+- Remaining: push migration to production Supabase (`supabase db push --linked`), commit + push to main for Vercel deploy.
+
+## 2026-07-08 (Codex, production deploy verification)
+
+- Picked up after Claude. `main` was already clean and pushed at `0d4cd3f` (`Take two-device sync and the level 1 question system to production`), but `https://sohbetlik.vercel.app` still pointed at an older 8-question deployment.
+- Found the current production deployment (`sohbetlik-fegy1pp7j...`) had the 24-question build but failed room creation in the browser because the Vercel `VITE_SUPABASE_*` env values produced a non-Latin-1 header error during Supabase anonymous sign-in.
+- Re-set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in Vercel production from the local `.env.local` values without printing secrets, then forced a production deploy: `sohbetlik-dq606gis8-enesgarips-projects.vercel.app`.
+- Repointed `sohbetlik.vercel.app` to the new deployment with `vercel alias set`.
+- Verified live production with Playwright using separate host and guest browser contexts: 24-question build visible, room created, guest joined, host saw guest progress `1/24`, both completed 24 answers, and results opened on both. Browser console error capture was clean.
+- Checks run: `npm run lint` passed, `npm run test:unit` passed (23), `npm run build` passed, `vercel logs --level error --since 1h --environment production --limit 20` found no logs.
+
 ## 2026-07-08 (Claude, Supabase production setup)
 
 - Created the real Supabase project via CLI (user approved): name `sohbetlik`, ref `ojhncwhagydpmfnygdfy`, region `eu-central-1`, org `qvuzhiugndmlovoniegv`. DB password generated locally and saved to gitignored `db-password.local` (never echoed; user should move it to a password manager — it can also be reset in the dashboard).

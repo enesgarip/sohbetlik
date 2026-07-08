@@ -10,7 +10,7 @@ import {
   Users,
 } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   BrowserRouter,
   Link as RouterLink,
@@ -23,9 +23,9 @@ import {
 import './App.css'
 import {
   getFirstUnansweredQuestionIndex,
-  getHostParticipant,
   getParticipant,
   getParticipantProgress,
+  getViewerParticipant,
   saveParticipantAnswer,
   type ConversationRoom,
   type ParticipantProgress,
@@ -39,6 +39,7 @@ import {
   trackPendingAnswer,
 } from './lib/pendingAnswers'
 import { getSeenQuestionSlugs, recordSeenQuestions } from './lib/seenQuestions'
+import { maybeCleanupStaleRooms } from './lib/roomCleanup'
 import { roomRepository } from './repositories/activeRoomRepository'
 import { questionRepository, SESSION_QUESTION_COUNT } from './repositories/questionRepository'
 import type { AnswerValue } from './types/domain'
@@ -116,6 +117,10 @@ function HomePage() {
   const navigate = useNavigate()
   const [isCreating, setIsCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    maybeCleanupStaleRooms()
+  }, [])
 
   async function createRoom(target: 'invite' | 'answer') {
     if (isCreating) {
@@ -201,7 +206,7 @@ function RoomPage() {
   const [copied, setCopied] = useState(false)
   const questions = useMemo(() => (room ? getRoomQuestions(room) : []), [room])
   const inviteLink = useMemo(() => (room ? getInviteLink(room.code) : ''), [room])
-  const hostParticipant = room ? getHostParticipant(room) : null
+  const viewerParticipant = room ? getViewerParticipant(room) : null
   const progressRows = room ? getProgressRows(room, questions.length) : []
 
   async function copyInvite() {
@@ -214,7 +219,7 @@ function RoomPage() {
     return <LoadingState />
   }
 
-  if (!room || !hostParticipant) {
+  if (!room) {
     return (
       <EmptyState
         title="Oda bulunamadı."
@@ -223,6 +228,10 @@ function RoomPage() {
         onAction={() => navigate('/')}
       />
     )
+  }
+
+  if (!viewerParticipant) {
+    return <Navigate to={`/join/${room.code}`} replace />
   }
 
   return (
@@ -258,7 +267,7 @@ function RoomPage() {
       <button
         className="primary-action wide"
         type="button"
-        onClick={() => navigate(`/answer/${room.id}/${hostParticipant.id}`)}
+        onClick={() => navigate(`/answer/${room.id}/${viewerParticipant.id}`)}
       >
         <span>Soru setine başla</span>
         <ArrowRight size={18} aria-hidden="true" />
@@ -375,12 +384,21 @@ function AnswerPage() {
   const questions = useMemo(() => (room ? getRoomQuestions(room) : []), [room])
   const participant = room && participantId ? getParticipant(room, participantId) : null
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
+  const sliderTimerRef = useRef<number | null>(null)
 
   useEffect(() => {
     if (activeIndex === null && room && participant) {
       setActiveIndex(getFirstUnansweredQuestionIndex(participant, getRoomQuestions(room)))
     }
   }, [activeIndex, room, participant])
+
+  useEffect(() => {
+    return () => {
+      if (sliderTimerRef.current !== null) {
+        window.clearTimeout(sliderTimerRef.current)
+      }
+    }
+  }, [])
 
   const safeActiveIndex = Math.min(activeIndex ?? 0, Math.max(questions.length - 1, 0))
   const activeQuestion = questions[safeActiveIndex]
@@ -389,11 +407,26 @@ function AnswerPage() {
   const selectedAnswer = activeQuestion && participant ? participant.answers[activeQuestion.id] : undefined
   const canContinue = selectedAnswer !== undefined
   const progressRows = room ? getProgressRows(room, questions.length) : []
-  // Seçenek sırası oda+soru seed'iyle karıştırılır; iki cihaz aynı sırayı görür.
   const displayOptions = useMemo(
     () => (room && activeQuestion ? getDisplayOptions(room.id, activeQuestion) : []),
     [room, activeQuestion],
   )
+
+  function persistAnswer(targetRoom: ConversationRoom, targetParticipantId: string, questionId: string, value: AnswerValue) {
+    void roomRepository
+      .saveAnswer({
+        roomId: targetRoom.id,
+        participantId: targetParticipantId,
+        questionId,
+        value,
+      })
+      .then((nextRoom) => {
+        if (nextRoom) {
+          resolvePendingAnswer(targetParticipantId, questionId, value)
+          setRoom(applyPendingAnswers(nextRoom))
+        }
+      })
+  }
 
   function selectAnswer(value: AnswerValue) {
     if (!room || !participantId || !activeQuestion) {
@@ -402,31 +435,50 @@ function AnswerPage() {
 
     const questionId = activeQuestion.id
 
-    // Optimistic update; the repository write and polling reconcile later.
-    // Yazım tamamlanana dek defterde tutulur ki araya giren eski bir
-    // snapshot bu cevabı görünürde silmesin.
+    trackPendingAnswer(participantId, questionId, value)
+    setRoom(saveParticipantAnswer(room, participantId, questionId, value))
+    persistAnswer(room, participantId, questionId, value)
+  }
+
+  function selectSliderAnswer(value: AnswerValue) {
+    if (!room || !participantId || !activeQuestion) {
+      return
+    }
+
+    const questionId = activeQuestion.id
+
     trackPendingAnswer(participantId, questionId, value)
     setRoom(saveParticipantAnswer(room, participantId, questionId, value))
 
-    void roomRepository
-      .saveAnswer({
-        roomId: room.id,
-        participantId,
-        questionId,
-        value,
-      })
-      .then((nextRoom) => {
-        if (nextRoom) {
-          resolvePendingAnswer(participantId, questionId, value)
-          setRoom(applyPendingAnswers(nextRoom))
-        }
-      })
+    if (sliderTimerRef.current !== null) {
+      window.clearTimeout(sliderTimerRef.current)
+    }
+
+    const capturedRoom = room
+    const capturedParticipantId = participantId
+    sliderTimerRef.current = window.setTimeout(() => {
+      sliderTimerRef.current = null
+      persistAnswer(capturedRoom, capturedParticipantId, questionId, value)
+    }, 300)
+  }
+
+  function flushSliderDebounce() {
+    if (sliderTimerRef.current !== null) {
+      window.clearTimeout(sliderTimerRef.current)
+      sliderTimerRef.current = null
+
+      if (room && participantId && activeQuestion && selectedAnswer !== undefined) {
+        persistAnswer(room, participantId, activeQuestion.id, selectedAnswer)
+      }
+    }
   }
 
   function nextQuestion() {
     if (!room || !participantId || !canContinue) {
       return
     }
+
+    flushSliderDebounce()
 
     if (safeActiveIndex === questions.length - 1) {
       navigate(`/waiting/${room.id}/${participantId}`)
@@ -479,7 +531,7 @@ function AnswerPage() {
               min="1"
               max="5"
               value={Number(selectedAnswer ?? 3)}
-              onChange={(event) => selectAnswer(Number(event.target.value))}
+              onChange={(event) => selectSliderAnswer(Number(event.target.value))}
             />
             <output>{getAnswerLabel(activeQuestion, selectedAnswer ?? 3)}</output>
           </div>

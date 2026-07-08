@@ -36,6 +36,6 @@ If the task touches Supabase, backend sync, auth, database schema, or realtime, 
 
 - Current production URL: `https://sohbetlik.vercel.app`
 - GitHub repo: `https://github.com/enesgarip/sohbetlik`
-- Current backend direction: Supabase first, Upstash only as fallback.
-- The local app already has a room repository interface and localStorage implementation.
-- The next big implementation is a Supabase-backed room repository and real two-device sync.
+- Current backend: Supabase first, Upstash only as fallback.
+- The app has a room repository interface, localStorage fallback, and a Supabase-backed production repository.
+- Real two-device sync is live on `https://sohbetlik.vercel.app`; the next big implementation is server-side AI summary generation.

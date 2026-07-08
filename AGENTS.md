@@ -21,8 +21,8 @@ This repository is shared by Codex, Claude, and future AI agents. Start here bef
 - Product: two-person, AI-assisted conversation PWA for dates.
 - Principle: no scoring, no compatibility percentage, no "suitable / unsuitable" judgment.
 - Current frontend: Vite + React + TypeScript.
-- Current live flow: localStorage-backed room, invite, answer, waiting, and results flow.
-- Primary backend direction: Supabase Auth anonymous users + Postgres + Realtime.
+- Current live flow: Supabase-backed production room, invite, answer, waiting, and results flow, with localStorage fallback when Supabase env vars are absent.
+- Primary backend: Supabase Auth anonymous users + Postgres + Realtime.
 - Fallback backend direction: Upstash Redis only if Supabase becomes blocked again.
 
 ## Agent Working Protocol
@@ -62,4 +62,4 @@ npm run db:stop:local
 - The app should feel like a conversation helper, not a test.
 - Results must invite conversation and avoid judgment.
 - MVP should stay free-tier friendly.
-- Real two-device production sync is not complete yet; Supabase integration is the next technical milestone.
+- Real two-device production sync is live and verified on `https://sohbetlik.vercel.app`; AI summary generation is the next technical milestone.

@@ -16,6 +16,7 @@ Core slogan:
 
 - Production: <https://sohbetlik.vercel.app>
 - GitHub: <https://github.com/enesgarip/sohbetlik>
+- Latest production deploy verified: 2026-07-08 (`sohbetlik-dq606gis8-enesgarips-projects.vercel.app`, aliased to `https://sohbetlik.vercel.app`)
 
 ## Current Implementation
 
@@ -36,6 +37,7 @@ Core slogan:
 - `activeRoomRepository` picks Supabase when `VITE_SUPABASE_*` env exists, else the localStorage `localRoomRepository`.
 - `useRoom` hook drives all room pages: initial fetch + Realtime + 3s polling fallback.
 - Two-device sync is verified end-to-end against the local Supabase stack (`tests/sync.spec.ts`).
+- Two-device sync is verified end-to-end against production on `https://sohbetlik.vercel.app` (host + guest contexts, 24 answers each, results visible on both).
 - Question system is implemented (2026-07-08):
   - Content-as-code: `src/content/` holds categories, trait registry, and the 24-question Level 1 pool; DB is seeded from it via migration.
   - Quality docs: `docs/product/QUESTION_WRITING_GUIDE.md` (standard), `docs/product/QUESTION_SYSTEM_DESIGN.md` (architecture), `docs/product/QUESTIONS_LEVEL1.md` (approved pool).
@@ -80,9 +82,10 @@ Core slogan:
 
 ## Known Gaps
 
-- Production deploy pending: backend is fully set up and e2e-verified against the production project, but the new code isn't pushed to `main` yet, so `sohbetlik.vercel.app` still runs the old build without Supabase env.
 - `src/types/supabase.ts` is now CLI-generated from the linked project; regenerate after future migration pushes.
-- `/room/:roomId` assumes the viewer is the host (no per-viewer participant resolution on that page).
+- `/room/:roomId` now resolves the viewer's own participant via `getViewerParticipant`; non-participants are redirected to `/join/:roomCode`.
+- Slider answer writes are debounced (300ms); the pending value is flushed on "Sonraki soru" to prevent loss.
+- Stale rooms (>7 days) are cleaned up via `cleanup_stale_rooms()` Postgres function, called from the client on homepage load (throttled to once per day).
 - Optimistic answer writes are protected by a pending-answers ledger (`src/lib/pendingAnswers.ts`); stale snapshots can no longer wipe a just-given answer.
 - Result AI generation is still local/mock logic, not OpenAI-backed.
 - Only the Level 1 pool exists (24 questions); level 2-4 pools are not written yet and there is no level selector UI (sessions are Level 1).

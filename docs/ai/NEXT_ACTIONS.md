@@ -1,30 +1,29 @@
 # Next Actions
 
-Last updated: 2026-07-08
+Last updated: 2026-07-09
 
 ## Current Priority
 
-Ship the pending work to production.
+Build the AI Summary milestone.
 
-Supabase production setup is DONE (2026-07-08): project `sohbetlik` (`ojhncwhagydpmfnygdfy`, eu-central-1) is linked, all migrations + anonymous auth are live, `.env.local` points at it, types are regenerated, Vercel production env vars are set, and the full e2e suite passes against the production project.
+Production Supabase launch is DONE (2026-07-08): project `sohbetlik` (`ojhncwhagydpmfnygdfy`, eu-central-1) is linked, all migrations + anonymous auth are live, `.env.local` points at it, types are regenerated, Vercel production env vars are set, and `https://sohbetlik.vercel.app` is verified with a full host + guest 24-question flow.
 
-## Step 1: Deploy And Verify Production
-
-- Commit and push the pending work to `main`; Vercel Git integration deploys with the new env vars.
-- Open `https://sohbetlik.vercel.app` on two devices: host creates a room, guest joins via QR/link, both answer, results open on both.
-- Preview env vars are NOT set (CLI kept demanding a git branch); previews fall back to localStorage mode. Add via dashboard if preview sync is wanted.
-
-## Step 2: AI Summary
+## Step 1: AI Summary
 
 - Add a server-side Vercel Function for OpenAI summary generation (`OPENAI_API_KEY` stays server-side).
 - Store the generated summary in `result_summaries`.
 - Keep output language non-judgmental and conversation-focused.
 
+## Recently Completed
+
+- `/room/:roomId` viewer resolution: page now finds the viewer's own participant via `getViewerParticipant`; non-participants are redirected to `/join/:roomCode`.
+- Slider debounce: network writes are delayed 300ms; flushed on "Sonraki soru" so no answer is lost.
+- Stale room cleanup: `cleanup_stale_rooms()` Postgres function deletes rooms >7 days old (CASCADE); called from client on homepage load, throttled to once per 24h via localStorage.
+- New migration: `20260709090000_cleanup_stale_rooms.sql`.
+
 ## Nice-To-Have Follow-Ups
 
-- Resolve the viewer's own participant on `/room/:roomId` instead of assuming host.
-- Debounce slider answer writes.
-- Room cleanup/retention for stale rooms.
+- Preview env vars on Vercel (currently falls back to localStorage).
 
 ## Do Not Start Yet
 
