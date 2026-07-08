@@ -32,6 +32,8 @@ import {
 } from './domain/rooms'
 import { getDisplayOptions } from './domain/optionOrder'
 import { buildConversationInsights, getAnswerLabel } from './domain/results'
+import { calculateTendencies } from './domain/tendencyScoring'
+import type { TendencyScore, AreaSummary } from './domain/tendencyScoring'
 import { useRoom } from './hooks/useRoom'
 import {
   applyPendingAnswers,
@@ -626,6 +628,54 @@ function WaitingPage() {
   )
 }
 
+function SpectrumBar({ score, spectrum }: { score: number; spectrum: [string, string] }) {
+  // score is -2 to +2, map to 0-100 percentage
+  const percent = Math.round(((score + 2) / 4) * 100)
+  const clampedPercent = Math.max(8, Math.min(92, percent))
+
+  return (
+    <div className="spectrum-bar-wrap">
+      <div className="spectrum-labels">
+        <span className="spectrum-label-left">{spectrum[0]}</span>
+        <span className="spectrum-label-right">{spectrum[1]}</span>
+      </div>
+      <div className="spectrum-track">
+        <div className="spectrum-fill" style={{ width: `${clampedPercent}%` }} />
+        <div className="spectrum-dot" style={{ left: `${clampedPercent}%` }} />
+      </div>
+    </div>
+  )
+}
+
+function TendencyAreaCard({ area, counterpartArea }: { area: AreaSummary; counterpartArea?: AreaSummary }) {
+  const visibleTendencies = area.tendencies.filter((t) => t.confidence !== 'low')
+  if (visibleTendencies.length === 0) return null
+
+  return (
+    <article className="tendency-card">
+      <h3 className="tendency-card-title">
+        <span className="tendency-emoji">{area.emoji}</span>
+        {area.label}
+      </h3>
+      <div className="tendency-spectrums">
+        {visibleTendencies.map((t) => {
+          const counterpartT = counterpartArea?.tendencies.find((ct) => ct.trait === t.trait)
+          return (
+            <div key={t.trait} className="tendency-spectrum-item">
+              <SpectrumBar score={t.rawScore} spectrum={t.spectrum} />
+              {counterpartT && counterpartT.confidence !== 'low' && (
+                <div className="counterpart-indicator" style={{ left: `${Math.max(8, Math.min(92, Math.round(((counterpartT.rawScore + 2) / 4) * 100)))}%` }}>
+                  <span className="counterpart-dot" />
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </article>
+  )
+}
+
 function ResultsPage() {
   const { roomId, participantId } = useParams()
   const navigate = useNavigate()
@@ -648,6 +698,18 @@ function ResultsPage() {
     ? getProgressRows(room, questions.length).every((row) => row.isComplete)
     : false
   const nextLevel = allParticipantsComplete && currentLevel < 2 ? 2 : null
+
+  // Tendency scores
+  const personTendencies = useMemo(
+    () => (questions.length > 0 && participant ? calculateTendencies(questions, participant.answers) : null),
+    [questions, participant],
+  )
+  const counterpartTendencies = useMemo(
+    () => (questions.length > 0 && counterpart && Object.keys(counterpart.answers).length > 0
+      ? calculateTendencies(questions, counterpart.answers)
+      : null),
+    [questions, counterpart],
+  )
 
   useEffect(() => {
     if (!hasBothAnswers || aiAttemptedRef.current || !participant || !counterpart || questions.length === 0) {
@@ -737,6 +799,21 @@ function ResultsPage() {
         <div className="ai-badge">
           <Sparkles size={14} aria-hidden="true" />
           <span>Cevaplarınıza özel AI analizi</span>
+        </div>
+      )}
+
+      {personTendencies && personTendencies.areas.length > 0 && (
+        <div className="tendency-section">
+          <span className="soft-label">Senin Tarzın</span>
+          <div className="tendency-cards">
+            {personTendencies.areas.map((area) => (
+              <TendencyAreaCard
+                key={area.slug}
+                area={area}
+                counterpartArea={counterpartTendencies?.areas.find((a) => a.slug === area.slug)}
+              />
+            ))}
+          </div>
         </div>
       )}
 
