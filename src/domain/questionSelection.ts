@@ -19,6 +19,7 @@ export type SelectSessionInput = {
   pool: SelectableQuestion[]
   level: QuestionLevel
   count: number
+  hardExcludeSlugs?: readonly string[]
   excludeSlugs?: readonly string[]
   random?: () => number
 }
@@ -300,7 +301,10 @@ function orderForSession(selected: SelectableQuestion[], random: () => number) {
 export function selectSessionQuestions(input: SelectSessionInput): SelectableQuestion[] {
   const random = input.random ?? Math.random
   // Oda seviyesinin üzerindeki sorular hiçbir fazda oturuma giremez.
-  const allowedPool = input.pool.filter((question) => question.level <= input.level)
+  const hardExcluded = new Set(input.hardExcludeSlugs ?? [])
+  const allowedPool = input.pool.filter(
+    (question) => question.level <= input.level && !hardExcluded.has(question.slug),
+  )
   const count = Math.min(input.count, allowedPool.length)
 
   if (count <= 0) {

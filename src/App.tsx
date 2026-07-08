@@ -42,8 +42,8 @@ import { getSeenQuestionSlugs, recordSeenQuestions } from './lib/seenQuestions'
 import { maybeCleanupStaleRooms } from './lib/roomCleanup'
 import { fetchAiSummary } from './lib/summaryApi'
 import { roomRepository } from './repositories/activeRoomRepository'
-import { questionRepository, SESSION_QUESTION_COUNT } from './repositories/questionRepository'
-import type { AnswerValue, ConversationInsight } from './types/domain'
+import { questionRepository } from './repositories/questionRepository'
+import type { AnswerValue, ConversationInsight, QuestionLevel } from './types/domain'
 
 function getInviteLink(roomCode: string) {
   return `${window.location.origin}/join/${roomCode.toLowerCase()}`
@@ -51,6 +51,12 @@ function getInviteLink(roomCode: string) {
 
 function getRoomQuestions(room: ConversationRoom) {
   return questionRepository.getQuestionsByIds(room.questionIds)
+}
+
+function getRoomLevel(questions: { level: QuestionLevel }[]) {
+  return questions.reduce<QuestionLevel>((highest, question) => {
+    return question.level > highest ? question.level : highest
+  }, 1)
 }
 
 function getProgressRows(room: ConversationRoom, totalCount: number): ParticipantProgress[] {
@@ -123,7 +129,7 @@ function HomePage() {
     maybeCleanupStaleRooms()
   }, [])
 
-  async function createRoom(target: 'invite' | 'answer') {
+  async function createRoom() {
     if (isCreating) {
       return
     }
@@ -132,15 +138,13 @@ function HomePage() {
     setError(null)
 
     try {
-      const questionIds = questionRepository.getSessionQuestionIds(getSeenQuestionSlugs())
+      const questionIds = questionRepository.getSessionQuestionIds({
+        excludeSlugs: getSeenQuestionSlugs(),
+      })
       const session = await roomRepository.createRoom(questionIds)
       recordSeenQuestions(session.room.questionIds)
-      const destination =
-        target === 'answer'
-          ? `/answer/${session.room.id}/${session.participantId}`
-          : `/room/${session.room.id}`
 
-      navigate(destination)
+      navigate(`/room/${session.room.id}`)
     } catch {
       setError('Oda oluşturulamadı. Bağlantını kontrol edip tekrar dener misin?')
       setIsCreating(false)
@@ -160,18 +164,10 @@ function HomePage() {
             className="primary-action"
             type="button"
             disabled={isCreating}
-            onClick={() => void createRoom('invite')}
+            onClick={() => void createRoom()}
           >
             <span>Oda oluştur</span>
             <ArrowRight size={18} aria-hidden="true" />
-          </button>
-          <button
-            className="secondary-action"
-            type="button"
-            disabled={isCreating}
-            onClick={() => void createRoom('answer')}
-          >
-            Örnek akışı dene
           </button>
         </div>
         {error && (
@@ -184,11 +180,11 @@ function HomePage() {
       <div className="phone-preview" aria-label="Uygulama önizlemesi">
         <div className="phone-speaker" />
         <div className="preview-card">
-          <span className="soft-label">Soru 4/{SESSION_QUESTION_COUNT}</span>
-          <h2>Herkes uyurken sana bir saat hediye edildi. Günün hangi ucuna eklersin?</h2>
+          <span className="soft-label">Mini tadımlık</span>
+          <h2>Bugün sohbetin hangi tonda aksın?</h2>
           <div className="choice-stack">
-            <span>Sabaha — gün doğarken</span>
-            <span className="selected-choice">Geceye — herkes susunca</span>
+            <span>Hafif ve oyunlu</span>
+            <span className="selected-choice">Sakin ve meraklı</span>
           </div>
         </div>
         <div className="mini-result">
@@ -618,8 +614,15 @@ function ResultsPage() {
   )
   const [aiInsights, setAiInsights] = useState<ConversationInsight[] | null>(null)
   const [aiLoading, setAiLoading] = useState(false)
+  const [isCreatingNextLevel, setIsCreatingNextLevel] = useState(false)
+  const [nextLevelError, setNextLevelError] = useState<string | null>(null)
   const aiAttemptedRef = useRef(false)
   const hasBothAnswers = Boolean(participant && counterpart && Object.keys(counterpart.answers).length > 0)
+  const currentLevel = getRoomLevel(questions)
+  const allParticipantsComplete = room
+    ? getProgressRows(room, questions.length).every((row) => row.isComplete)
+    : false
+  const nextLevel = allParticipantsComplete && currentLevel < 2 ? 2 : null
 
   useEffect(() => {
     if (!hasBothAnswers || aiAttemptedRef.current || !participant || !counterpart || questions.length === 0) {
@@ -647,6 +650,32 @@ function ResultsPage() {
     }
 
     navigate('/')
+  }
+
+  async function createNextLevelRoom() {
+    if (!room || !nextLevel || isCreatingNextLevel) {
+      return
+    }
+
+    setIsCreatingNextLevel(true)
+    setNextLevelError(null)
+
+    try {
+      const questionIds = questionRepository.getSessionQuestionIds({
+        level: nextLevel,
+        excludeSlugs: getSeenQuestionSlugs(),
+        hardExcludeSlugs: room.questionIds,
+      })
+      const session = await roomRepository.createRoom(questionIds, {
+        previousRoomId: room.id,
+      })
+      recordSeenQuestions(session.room.questionIds)
+
+      navigate(`/room/${session.room.id}`)
+    } catch {
+      setNextLevelError('Yeni seviye odası açılamadı. Birazdan tekrar dener misin?')
+      setIsCreatingNextLevel(false)
+    }
   }
 
   if (isLoading) {
@@ -706,6 +735,17 @@ function ResultsPage() {
       )}
 
       <div className="action-row center">
+        {nextLevel && (
+          <button
+            className="primary-action"
+            type="button"
+            disabled={isCreatingNextLevel}
+            onClick={() => void createNextLevelRoom()}
+          >
+            <Sparkles size={17} aria-hidden="true" />
+            Seviye {nextLevel}'ye geç
+          </button>
+        )}
         <button className="secondary-action" type="button" onClick={resetRoom}>
           <RotateCcw size={17} aria-hidden="true" />
           Yeni oda
@@ -715,6 +755,11 @@ function ResultsPage() {
           Davet linki
         </button>
       </div>
+      {nextLevelError && (
+        <p className="form-error" role="alert">
+          {nextLevelError}
+        </p>
+      )}
     </section>
   )
 }

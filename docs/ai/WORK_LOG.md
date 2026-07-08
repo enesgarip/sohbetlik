@@ -1,5 +1,18 @@
 # Work Log
 
+## 2026-07-09 (Codex, home sample flow cleanup)
+
+- Removed the homepage `Örnek akışı dene` CTA so the static preview no longer creates a real 24-question room from the production pool.
+- Replaced the phone preview's pool question with a short, static, pool-independent mini prompt (`Bugün sohbetin hangi tonda aksın?`) to avoid users seeing duplicated question content later in the actual room.
+- Verified rendered homepage in the in-app browser on desktop and mobile: only `Oda oluştur` is visible, the old pool preview question is absent, the mini preview is present, no horizontal overflow on mobile, and browser console logs are clean. Clicking `Oda oluştur` still opens the room invite screen.
+- Checks: `npm run test:unit` passed (23), `npm run test:e2e -- --project=chromium` passed (3). Follow-up: fixed the unrelated `src/content/questions/level2.ts` quote syntax issue around line 107; `npm run lint` and `npm run build` now pass again.
+- Continued into the Level 2 pool: included `src/content/questions/level2.ts` in `questionContents`, expanded `questions:lint` to validate every implemented level, fixed the `normalde` banned-word hit, adjusted `tatil-butcesi` trait to keep per-level trait caps, and added a 24th L2 slider (`heyecan-paylasma`).
+- Continued into Level 2 exposure: added `20260709093000_seed_level2_questions.sql`, extended room creation with `previousRoomId`, added hard question exclusions so a next-level room cannot refill from the immediately previous room, and added the results CTA `Seviye 2'ye geç` after all participants complete Level 1.
+- Local Supabase verification: `db reset --local` applied all five migrations including the Level 2 seed; `db lint --local` passed; active DB question counts are Level 1 = 24 and Level 2 = 24.
+- Browser QA: local Supabase + two Playwright contexts completed host and guest 24/24, opened results, clicked `Seviye 2'ye geç`, and rendered the first Level 2 question (`Kültür & Eğlence · Seviye 2`). The only console error was a Vite-dev 404 from the summary API path; production/Vercel handles that API route.
+- Checks: `npm run questions:lint`, `npm run lint`, `npm run test:unit` (24), `npm run build`, and `npm run test:e2e` (6) passed.
+- Continued rollout: pushed `20260709093000_seed_level2_questions.sql` to production Supabase. Remote migration history now includes it, and authenticated production reads show active question counts L1=24 and L2=24. The app deploy and live L1 -> L2 browser verification are next.
+
 ## 2026-07-09 (Claude, nice-to-have polishes)
 
 - `/room/:roomId` viewer resolution: replaced `getHostParticipant` with `getViewerParticipant` (finds participant with label "Sen"). Non-participants are redirected to `/join/:roomCode` instead of seeing the host's view. Removed dead `getHostParticipant` export.

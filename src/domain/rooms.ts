@@ -14,6 +14,7 @@ export type ConversationRoom = {
   id: string
   code: string
   createdAt: string
+  previousRoomId?: string | null
   questionIds: string[]
   participants: RoomParticipant[]
 }
@@ -74,13 +75,18 @@ export function generateRoomCode(existingCodes?: ReadonlySet<string>) {
   return randomToken(8, ROOM_CODE_ALPHABET)
 }
 
-export function createConversationRoom(questionIds: string[], existingCodes?: ReadonlySet<string>): RoomSession {
+export function createConversationRoom(
+  questionIds: string[],
+  existingCodes?: ReadonlySet<string>,
+  previousRoomId?: string | null,
+): RoomSession {
   const participantId = makeId('host')
   const createdAt = timestamp()
   const room: ConversationRoom = {
     id: makeId('room'),
     code: generateRoomCode(existingCodes),
     createdAt,
+    previousRoomId: previousRoomId ?? null,
     questionIds,
     participants: [
       {

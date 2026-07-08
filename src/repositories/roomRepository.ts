@@ -12,8 +12,12 @@ export type RoomChangeHandler = () => void
 
 export type RoomUnsubscribe = () => void
 
+export type CreateRoomOptions = {
+  previousRoomId?: string | null
+}
+
 export type RoomRepository = {
-  createRoom: (questionIds: string[]) => Promise<RoomSession>
+  createRoom: (questionIds: string[], options?: CreateRoomOptions) => Promise<RoomSession>
   getRoomById: (roomId: string) => Promise<ConversationRoom | null>
   getRoomByCode: (roomCode: string) => Promise<ConversationRoom | null>
   joinRoomByCode: (roomCode: string) => Promise<RoomSession | null>

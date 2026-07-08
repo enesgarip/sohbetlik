@@ -1,7 +1,7 @@
 import { activeQuestionContents, toDomainQuestion } from '../content'
 import { mvpQuestions } from '../data/questions'
 import { selectSessionQuestions } from '../domain/questionSelection'
-import type { Question } from '../types/domain'
+import type { Question, QuestionLevel } from '../types/domain'
 
 export const SESSION_LEVEL = 1
 export const SESSION_QUESTION_COUNT = 24
@@ -15,17 +15,24 @@ const questionsById = new Map<string, Question>(
 )
 
 export type QuestionRepository = {
-  getSessionQuestionIds: (excludeSlugs?: readonly string[]) => string[]
+  getSessionQuestionIds: (input?: {
+    level?: QuestionLevel
+    excludeSlugs?: readonly string[]
+    hardExcludeSlugs?: readonly string[]
+  }) => string[]
   getQuestionsByIds: (questionIds: string[]) => Question[]
 }
 
 export const questionRepository: QuestionRepository = {
-  getSessionQuestionIds(excludeSlugs = []) {
+  getSessionQuestionIds(input = {}) {
+    const level = input.level ?? SESSION_LEVEL
+
     return selectSessionQuestions({
       pool: activeQuestionContents,
-      level: SESSION_LEVEL,
+      level,
       count: SESSION_QUESTION_COUNT,
-      excludeSlugs,
+      excludeSlugs: input.excludeSlugs,
+      hardExcludeSlugs: input.hardExcludeSlugs,
     }).map((question) => question.slug)
   },
   getQuestionsByIds(questionIds) {

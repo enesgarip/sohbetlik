@@ -83,10 +83,10 @@ function updateRoom(store: RoomStore, nextRoom: ConversationRoom) {
 }
 
 export const localRoomRepository: RoomRepository = {
-  async createRoom(questionIds) {
+  async createRoom(questionIds, options = {}) {
     const store = loadStore()
     const existingCodes = new Set(store.rooms.map((room) => room.code))
-    const session = createConversationRoom(questionIds, existingCodes)
+    const session = createConversationRoom(questionIds, existingCodes, options.previousRoomId)
 
     saveStore({
       rooms: [session.room, ...store.rooms].slice(0, 12),

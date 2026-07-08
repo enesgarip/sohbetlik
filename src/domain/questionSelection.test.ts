@@ -155,6 +155,26 @@ describe('selectSessionQuestions', () => {
     expect(result).toHaveLength(24)
   })
 
+  it('never refills from hard exclusions', () => {
+    const pool = makeSyntheticPool([1, 2], 24)
+    const hardExcludeSlugs = pool
+      .filter((question) => question.level === 1)
+      .map((question) => question.slug)
+    const result = selectSessionQuestions({
+      pool,
+      level: 2,
+      count: 24,
+      hardExcludeSlugs,
+      random: mulberry32(12),
+    })
+
+    const hardExcluded = new Set(hardExcludeSlugs)
+
+    expect(result).toHaveLength(24)
+    expect(result.every((question) => !hardExcluded.has(question.slug))).toBe(true)
+    expect(result.every((question) => question.level === 2)).toBe(true)
+  })
+
   it('opens light and avoids heavy questions in the first three slots', () => {
     const pool = makeSyntheticPool([1, 2])
     const result = selectSessionQuestions({

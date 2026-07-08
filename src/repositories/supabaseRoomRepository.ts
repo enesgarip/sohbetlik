@@ -132,6 +132,7 @@ async function getRoomSnapshot(
     id: roomRow.id,
     code: roomRow.invite_code,
     createdAt: roomRow.created_at,
+    previousRoomId: roomRow.previous_room_id,
     questionIds: (roomQuestionsRes.data ?? []).flatMap((row) => {
       const slug = maps.slugById.get(row.question_id)
 
@@ -144,7 +145,7 @@ async function getRoomSnapshot(
 }
 
 export const supabaseRoomRepository: RoomRepository = {
-  async createRoom(questionIds) {
+  async createRoom(questionIds, options = {}) {
     const client = requireClient()
     const userId = await ensureUserId(client)
     const maps = await getQuestionMaps(client)
@@ -164,7 +165,11 @@ export const supabaseRoomRepository: RoomRepository = {
     for (let attempt = 0; attempt < 3 && !createdRoom; attempt += 1) {
       const { data, error } = await client
         .from('rooms')
-        .insert({ invite_code: generateRoomCode(), question_count: questionIds.length })
+        .insert({
+          invite_code: generateRoomCode(),
+          question_count: questionIds.length,
+          previous_room_id: options.previousRoomId ?? null,
+        })
         .select()
         .single()
 
@@ -204,6 +209,7 @@ export const supabaseRoomRepository: RoomRepository = {
         id: roomRow.id,
         code: roomRow.invite_code,
         createdAt: roomRow.created_at,
+        previousRoomId: roomRow.previous_room_id,
         questionIds,
         participants: [mapParticipant(participantRow, {}, userId)],
       },

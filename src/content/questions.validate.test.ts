@@ -94,34 +94,38 @@ describe('question pool content rules', () => {
     }
   })
 
-  it('keeps the level 1 batch within set constraints', () => {
-    const level1 = questionContents.filter((question) => question.level === 1)
-    const byCategory = new Map<string, number>()
-    const byTrait = new Map<string, number>()
+  it('keeps implemented level batches within set constraints', () => {
+    const implementedLevels = [...new Set(questionContents.map((question) => question.level))]
 
-    for (const question of level1) {
-      byCategory.set(question.category, (byCategory.get(question.category) ?? 0) + 1)
-      byTrait.set(question.trait, (byTrait.get(question.trait) ?? 0) + 1)
+    for (const level of implementedLevels) {
+      const levelQuestions = questionContents.filter((question) => question.level === level)
+      const byCategory = new Map<string, number>()
+      const byTrait = new Map<string, number>()
+
+      for (const question of levelQuestions) {
+        byCategory.set(question.category, (byCategory.get(question.category) ?? 0) + 1)
+        byTrait.set(question.trait, (byTrait.get(question.trait) ?? 0) + 1)
+      }
+
+      for (const [category, count] of byCategory) {
+        expect(count, `seviye ${level}, kategori: ${category}`).toBeLessThanOrEqual(3)
+      }
+
+      for (const [trait, count] of byTrait) {
+        expect(count, `seviye ${level}, trait: ${trait}`).toBeLessThanOrEqual(2)
+      }
+
+      // Açılış ve kapanış slotları doldurulabilmeli.
+      const openers = levelQuestions.filter(
+        (question) =>
+          question.intensity === 1 && question.funScore >= 4 && question.type === 'either_or',
+      )
+      const closers = levelQuestions.filter(
+        (question) => question.intensity === 1 && question.funScore >= 4,
+      )
+
+      expect(openers.length, `seviye ${level} açılış`).toBeGreaterThanOrEqual(2)
+      expect(closers.length, `seviye ${level} kapanış`).toBeGreaterThanOrEqual(1)
     }
-
-    for (const [category, count] of byCategory) {
-      expect(count, `kategori: ${category}`).toBeLessThanOrEqual(3)
-    }
-
-    for (const [trait, count] of byTrait) {
-      expect(count, `trait: ${trait}`).toBeLessThanOrEqual(2)
-    }
-
-    // Açılış ve kapanış slotları doldurulabilmeli.
-    const openers = level1.filter(
-      (question) =>
-        question.intensity === 1 && question.funScore >= 4 && question.type === 'either_or',
-    )
-    const closers = level1.filter(
-      (question) => question.intensity === 1 && question.funScore >= 4,
-    )
-
-    expect(openers.length).toBeGreaterThanOrEqual(2)
-    expect(closers.length).toBeGreaterThanOrEqual(1)
   })
 })
