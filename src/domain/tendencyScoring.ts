@@ -261,3 +261,80 @@ export function buildTendencyAIInput(
 
   return result
 }
+
+// ── Pair Comparison ──
+
+export type PairInsight = {
+  kind: 'common' | 'different'
+  trait: TraitSlug
+  areaLabel: string
+  areaEmoji: string
+  spectrum: [string, string]
+  description: string
+  talkStarter: string
+}
+
+/**
+ * Compare two people's tendency snapshots and generate pair insights.
+ * Returns common ground + interesting differences, sorted by strength.
+ */
+export function compareTendencies(
+  person: BehaviorSnapshot,
+  counterpart: BehaviorSnapshot,
+): PairInsight[] {
+  const insights: PairInsight[] = []
+
+  for (const pTendency of person.tendencies) {
+    if (pTendency.confidence === 'low') continue
+
+    const cTendency = counterpart.tendencies.find((t) => t.trait === pTendency.trait)
+    if (!cTendency || cTendency.confidence === 'low') continue
+
+    const diff = Math.abs(pTendency.rawScore - cTendency.rawScore)
+    const traitDef = traits[pTendency.trait]
+    if (!traitDef) continue
+
+    // Determine position labels
+    const posLabel = (score: number, spectrum: [string, string]) => {
+      if (score <= -0.5) return `"${spectrum[0]}" tarafına yakın`
+      if (score >= 0.5) return `"${spectrum[1]}" tarafına yakın`
+      return 'ortada'
+    }
+
+    if (diff < 0.8) {
+      // Similar — common ground
+      const pos = posLabel(pTendency.rawScore, pTendency.spectrum)
+      insights.push({
+        kind: 'common',
+        trait: pTendency.trait,
+        areaLabel: pTendency.areaLabel,
+        areaEmoji: pTendency.areaEmoji,
+        spectrum: pTendency.spectrum,
+        description: `İkiniz de ${pos} görünüyorsunuz.`,
+        talkStarter: `Bu konuda benzer düşünmeniz güzel — birbirinize bunun günlük hayatta nasıl göründüğünü anlatın.`,
+      })
+    } else if (diff >= 1.2) {
+      // Clearly different — interesting contrast
+      const pPos = posLabel(pTendency.rawScore, pTendency.spectrum)
+      const cPos = posLabel(cTendency.rawScore, cTendency.spectrum)
+      insights.push({
+        kind: 'different',
+        trait: pTendency.trait,
+        areaLabel: pTendency.areaLabel,
+        areaEmoji: pTendency.areaEmoji,
+        spectrum: pTendency.spectrum,
+        description: `Sen ${pPos}, karşı taraf ${cPos}. Bu fark sohbetlerinizi zenginleştirebilir.`,
+        talkStarter: `Bu farklılığın günlük hayatta nasıl göründüğünü merak ediyor musunuz? Birbirinize bir örnek anlatın.`,
+      })
+    }
+  }
+
+  // Sort: differences first (more interesting), then commons
+  insights.sort((a, b) => {
+    if (a.kind !== b.kind) return a.kind === 'different' ? -1 : 1
+    return 0
+  })
+
+  // Limit to top 6 to keep UI clean
+  return insights.slice(0, 6)
+}

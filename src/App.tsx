@@ -32,7 +32,7 @@ import {
 } from './domain/rooms'
 import { getDisplayOptions } from './domain/optionOrder'
 import { buildConversationInsights, getAnswerLabel } from './domain/results'
-import { calculateTendencies } from './domain/tendencyScoring'
+import { calculateTendencies, compareTendencies } from './domain/tendencyScoring'
 import type { TendencyScore, AreaSummary } from './domain/tendencyScoring'
 import { useRoom } from './hooks/useRoom'
 import {
@@ -711,6 +711,13 @@ function ResultsPage() {
     [questions, counterpart],
   )
 
+  const pairInsights = useMemo(
+    () => (personTendencies && counterpartTendencies
+      ? compareTendencies(personTendencies, counterpartTendencies)
+      : []),
+    [personTendencies, counterpartTendencies],
+  )
+
   useEffect(() => {
     if (!hasBothAnswers || aiAttemptedRef.current || !participant || !counterpart || questions.length === 0) {
       return
@@ -828,6 +835,45 @@ function ResultsPage() {
           </article>
         ))}
       </div>
+
+      {pairInsights.length > 0 && (
+        <div className="pair-section">
+          {pairInsights.filter((p) => p.kind === 'common').length > 0 && (
+            <div className="pair-group">
+              <span className="soft-label">🤝 Ortak Zemin</span>
+              <div className="pair-cards">
+                {pairInsights.filter((p) => p.kind === 'common').map((p) => (
+                  <article className="pair-card common" key={p.trait}>
+                    <div className="pair-card-head">
+                      <span className="pair-card-emoji">{p.areaEmoji}</span>
+                      <span className="pair-card-area">{p.areaLabel}</span>
+                    </div>
+                    <p className="pair-card-desc">{p.description}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {pairInsights.filter((p) => p.kind === 'different').length > 0 && (
+            <div className="pair-group">
+              <span className="soft-label">✨ Güzel Farklar</span>
+              <div className="pair-cards">
+                {pairInsights.filter((p) => p.kind === 'different').map((p) => (
+                  <article className="pair-card different" key={p.trait}>
+                    <div className="pair-card-head">
+                      <span className="pair-card-emoji">{p.areaEmoji}</span>
+                      <span className="pair-card-area">{p.areaLabel}</span>
+                    </div>
+                    <p className="pair-card-desc">{p.description}</p>
+                    <p className="pair-card-talk">💬 {p.talkStarter}</p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {lastAnsweredQuestion && (
         <div className="answer-recap">

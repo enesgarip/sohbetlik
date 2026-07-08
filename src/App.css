@@ -774,3 +774,74 @@ output {
   background: rgba(34, 32, 28, 0.25);
   border: 1.5px solid var(--card);
 }
+
+/* ── Pair Insights (Ortak Zemin / Güzel Farklar) ── */
+
+.pair-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pair-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pair-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pair-card {
+  border-radius: 14px;
+  padding: 16px 18px;
+  border: 1px solid rgba(34, 32, 28, 0.06);
+}
+
+.pair-card.common {
+  background: rgba(139, 166, 120, 0.08);
+  border-color: rgba(139, 166, 120, 0.15);
+}
+
+.pair-card.different {
+  background: rgba(200, 149, 108, 0.08);
+  border-color: rgba(200, 149, 108, 0.15);
+}
+
+.pair-card-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.pair-card-emoji {
+  font-size: 1rem;
+}
+
+.pair-card-area {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.pair-card-desc {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.pair-card-talk {
+  margin: 10px 0 0 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--muted);
+  font-style: italic;
+}
