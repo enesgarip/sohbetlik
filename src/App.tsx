@@ -697,7 +697,7 @@ function ResultsPage() {
   const allParticipantsComplete = room
     ? getProgressRows(room, questions.length).every((row) => row.isComplete)
     : false
-  const nextLevel = allParticipantsComplete && currentLevel < 2 ? 2 : null
+  const nextLevel = allParticipantsComplete && currentLevel < 4 ? ((currentLevel + 1) as QuestionLevel) : null
 
   // Tendency scores
   const personTendencies = useMemo(
