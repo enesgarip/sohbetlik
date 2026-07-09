@@ -29,6 +29,10 @@ export const level3Questions: QuestionContent[] = [
     aiHint: 'İki dil de samimi; sözcük dilini daha olgun gösterme.',
     qualityNote:
       'Özür biçimi iletişim derinliğini güvenli bir şekilde açar; iki seçenek de pozitif çerçevelenmiş.',
+    answerWeights: {
+      sozcuk: { 'ifade-tarzi': -1.5 },
+      eylem: { 'ifade-tarzi': 1.5 },
+    },
     status: 'active',
   },
   {
@@ -55,6 +59,11 @@ export const level3Questions: QuestionContent[] = [
     aiHint: 'İki uç da bir iletişim biçimi; içe kapanmayı sorun olarak çerçeveleme.',
     qualityNote:
       'Duygusal ifade spektrumu L3 derinliği; iki uç da meşru kişilik olarak yazıldı.',
+    answerWeights: {
+      low: { 'ifade-tarzi': 1.5, 'alan-ihtiyaci': 0.5 },
+      mid: {},
+      high: { 'ifade-tarzi': -1.5 },
+    },
     status: 'active',
   },
   {
@@ -81,6 +90,12 @@ export const level3Questions: QuestionContent[] = [
     aiHint: 'Dört ihtiyaç da sağlıklı; "alan isteme" yi kaçınma olarak yorumlama.',
     qualityNote:
       'Destek beklentisi L3 in en kritik sorularından; dört seçenek dört meşru ihtiyaç.',
+    answerWeights: {
+      dinle: { 'alan-ihtiyaci': -0.5, 'paylasim-istahi': 0.5 },
+      cozum: { 'alan-ihtiyaci': -1 },
+      alan: { 'alan-ihtiyaci': 1.5 },
+      dikkat: { 'alan-ihtiyaci': 0.5 },
+    },
     status: 'active',
   },
   // Sosyal Dünya (L3 derinlik)
@@ -105,6 +120,10 @@ export const level3Questions: QuestionContent[] = [
       '"Yeter" sinyalinizi nasıl verirsiniz? Birbirinize ipuçlarınızı söyleyin.',
     qualityNote:
       'Alan ihtiyacını sevgi bağlamında sorar; iki cevap da pozitif.',
+    answerWeights: {
+      olur: { 'alan-ihtiyaci': 1.5, 'enerji-kaynagi': 1 },
+      nadir: { 'alan-ihtiyaci': -1, 'enerji-kaynagi': -1 },
+    },
     status: 'active',
   },
   {
@@ -131,6 +150,11 @@ export const level3Questions: QuestionContent[] = [
     aiHint: 'İki uç da sahiplenilebilir; sahipleniciyi olumsuz, rahatı kayıtsız gösterme.',
     qualityNote:
       'Kıskançlığı hafif çerçevede, spektrum olarak sorar. L3 derinliği ama güvenli.',
+    answerWeights: {
+      low: { 'temas-ritmi': 1, 'bagimsizlik-dengesi': 1 },
+      mid: {},
+      high: { 'temas-ritmi': -1 },
+    },
     status: 'active',
   },
   {
@@ -157,6 +181,12 @@ export const level3Questions: QuestionContent[] = [
     aiHint: 'Dört tepki de insani; tedirginliği güvensizlik olarak etiketleme.',
     qualityNote:
       'Mesajlaşma beklentisini senaryo ile sorar; L3 derinliğinde iletişim ritmi.',
+    answerWeights: {
+      mesgul: { 'temas-ritmi': 1, 'guven-inshasi': -0.5 },
+      merak: { 'temas-ritmi': -0.5 },
+      tedirgin: { 'temas-ritmi': -1 },
+      tekrar: { 'temas-ritmi': -1.5 },
+    },
     status: 'active',
   },
   // Ev Hâli (L3 derinlik)
@@ -181,6 +211,10 @@ export const level3Questions: QuestionContent[] = [
       'Birlikte sessizlik sizin için ne ifade ediyor? Aynı şeyi mi hissediyorsunuz?',
     qualityNote:
       'Birlikte sessizlik sorusu ilişki alışkanlıklarının en temel kontrast noktalarından; L3 güvenli derinlik.',
+    answerWeights: {
+      ideal: { 'enerji-kaynagi': 1, 'alan-ihtiyaci': 0.5 },
+      eksik: { 'enerji-kaynagi': -1.5, 'paylasim-istahi': 0.5 },
+    },
     status: 'active',
   },
   {
@@ -207,6 +241,12 @@ export const level3Questions: QuestionContent[] = [
     aiHint: 'Dört stil de olgun olabilir; uyum sağlamayı pasiflik olarak çerçeveleme.',
     qualityNote:
       'Ev çatışması L3 te güvenli bir iletişim derinliği; günlük hayat sahnesiyle somutlaştırılmış.',
+    answerWeights: {
+      hemen: { 'tartisma-tarzi': -1.5 },
+      yaz: { 'tartisma-tarzi': 0.5, 'ifade-tarzi': 1 },
+      uyum: { 'tartisma-tarzi': 1.5 },
+      espri: { 'tartisma-tarzi': 0.5, 'mizah-tarzi': 1 },
+    },
     status: 'active',
   },
   {
@@ -232,6 +272,11 @@ export const level3Questions: QuestionContent[] = [
       'Yalnız zamanınızda ne yaparsınız? Birbirinize "dokunulmaz saatinizi" anlatın.',
     qualityNote:
       'Yalnız zaman ihtiyacı L3 derinliği; spektrum iki ucu da pozitif çerçeveler.',
+    answerWeights: {
+      low: { 'enerji-kaynagi': -1.5 },
+      mid: {},
+      high: { 'enerji-kaynagi': 1.5, 'alan-ihtiyaci': 1 },
+    },
     status: 'active',
   },
   // Günlük Ritim (L3 derinlik)
@@ -258,6 +303,12 @@ export const level3Questions: QuestionContent[] = [
       'Birbirinizin stres sinyallerini öğrenin: "beni böyle görürsen, o gün zor geçiyor demektir."',
     qualityNote:
       'Stres sinyali L3 te kendini tanıma derinliği; dört sinyal de insani ve yargısız.',
+    answerWeights: {
+      sessiz: { 'konfor-alani': 1, 'alan-ihtiyaci': 1 },
+      hizli: { 'tempo': 1 },
+      gergin: { 'konfor-alani': -0.5 },
+      kontrol: { 'plan-sevgisi': 1 },
+    },
     status: 'active',
   },
   {
@@ -281,6 +332,10 @@ export const level3Questions: QuestionContent[] = [
       'En zor kararınız ne oldu? Nasıl verdiniz, pişman oldunuz mu?',
     qualityNote:
       'Karar verme hızı L3 derinliğinde tempo ve risk iştahını birlikte yoklar.',
+    answerWeights: {
+      hizli: { 'tempo': 1, 'risk-istahi': 0.5 },
+      yavas: { 'tempo': -1, 'plan-sevgisi': 0.5 },
+    },
     status: 'active',
   },
   {
@@ -306,6 +361,11 @@ export const level3Questions: QuestionContent[] = [
       'Hayatınızı en çok değiştiren beklenmedik olay ne oldu? İyi mi bitti?',
     qualityNote:
       'Değişime uyum L3 derinliğinde psikolojik esnekliği yoklar.',
+    answerWeights: {
+      low: { 'konfor-alani': 1.5 },
+      mid: {},
+      high: { 'konfor-alani': -1.5, 'risk-istahi': 0.5 },
+    },
     status: 'active',
   },
   // Para Alışkanlıkları (L3 derinlik)
@@ -331,6 +391,10 @@ export const level3Questions: QuestionContent[] = [
     aiHint: 'İki tutum da anlaşılabilir; para konuşmaktan kaçınmayı olgunluk eksikliği olarak çerçeveleme.',
     qualityNote:
       'Para iletişimi L3 derinliğinde; basit ikilem ama çok şey anlatan bir soru.',
+    answerWeights: {
+      rahat: { 'para-keyif-dengesi': -0.5, 'ifade-tarzi': -0.5 },
+      zor: { 'para-keyif-dengesi': 0.5, 'ifade-tarzi': 1 },
+    },
     status: 'active',
   },
   {
@@ -356,6 +420,12 @@ export const level3Questions: QuestionContent[] = [
       'Finansal olarak en rahat hissettiğiniz dönem hangisiydi? Neden?',
     qualityNote:
       'Güvenlik hissi L3 te değer derinliği; dört kaynak da meşru ve kişilik yansıtır.',
+    answerWeights: {
+      birikim: { 'risk-istahi': -1.5, 'plan-sevgisi': 0.5 },
+      gelir: { 'risk-istahi': -0.5 },
+      yetenek: { 'risk-istahi': 1.5 },
+      az: { 'risk-istahi': 0.5, 'konfor-alani': 0.5 },
+    },
     status: 'active',
   },
   {
@@ -381,6 +451,12 @@ export const level3Questions: QuestionContent[] = [
       'Aldığınız veya aldığınız en unutulmaz hediye ne? Birbirinize anlatın.',
     qualityNote:
       'Hediye alışkanlığı L3 te sevgi dili ve para kesişimi; dört stil de pozitif.',
+    answerWeights: {
+      ararken: { 'paylasim-istahi': 1, 'plan-sevgisi': 0.5 },
+      spontan: { 'paylasim-istahi': 1, 'spontanlik': 1 },
+      pratik: { 'paylasim-istahi': -0.5 },
+      deneyim: { 'paylasim-istahi': 0.5, 'macera-istahi': 0.5 },
+    },
     status: 'active',
   },
   // Seyahat & Keşif (L3)
@@ -405,6 +481,10 @@ export const level3Questions: QuestionContent[] = [
       'Uzun yolculuklarda en iyi anınız ne oldu? Yol hikâyesi turu.',
     qualityNote:
       'Seyahat uyumu L3 te birlikte vakit geçirme stilini yolculuk sahnesinde yoklar.',
+    answerWeights: {
+      normal: { 'alan-ihtiyaci': 0.5, 'sabah-gece-ritmi': -0.5 },
+      durt: { 'paylasim-istahi': 0.5, 'enerji-kaynagi': -0.5 },
+    },
     status: 'active',
   },
   {
@@ -430,6 +510,12 @@ export const level3Questions: QuestionContent[] = [
       'Tatilde beklenti çatışması yaşadınız mı? Nasıl çözdünüz?',
     qualityNote:
       'Tatil çatışması L3 derinliğinde ilişki içi beklenti yönetimini somut sahneyle sorar.',
+    answerWeights: {
+      uyum: { 'tartisma-tarzi': 1.5 },
+      ortayol: { 'tartisma-tarzi': 0.5 },
+      konusma: { 'tartisma-tarzi': -1.5, 'ifade-tarzi': -0.5 },
+      ayril: { 'alan-ihtiyaci': 1, 'bagimsizlik-dengesi': 1 },
+    },
     status: 'active',
   },
   // Tat & Mutfak (L3)
@@ -454,6 +540,10 @@ export const level3Questions: QuestionContent[] = [
       '"Ne yiyelim" tartışmasının en uzun sürdüğü anınız? Sonunda ne yediniz?',
     qualityNote:
       'Evrensel bir günlük mini çatışmayı espriyle yoklar; L3 iletişim derinliğinin hafif versiyonu.',
+    answerWeights: {
+      onerici: { 'tempo': 1, 'grup-rolu': -1 },
+      'fark-etmez': { 'tempo': -0.5 },
+    },
     status: 'active',
   },
   {
@@ -479,6 +569,12 @@ export const level3Questions: QuestionContent[] = [
       'Birlikte bir yemek yapın! Ne pişireceksiniz, rolleri şimdiden bölün.',
     qualityNote:
       'Birlikte pişirme sahnesi L3 te paylaşım ve kontrol dinamiğini yoklar.',
+    answerWeights: {
+      sef: { 'grup-rolu': -1.5 },
+      yardimci: { 'grup-rolu': 1 },
+      kendi: { 'alan-ihtiyaci': 0.5, 'bagimsizlik-dengesi': 0.5 },
+      sohbet: { 'grup-rolu': 1.5, 'paylasim-istahi': 0.5 },
+    },
     status: 'active',
   },
   // Kültür & Eğlence (L3)
@@ -503,6 +599,10 @@ export const level3Questions: QuestionContent[] = [
       'En büyük spoiler facianızı anlatın: kim verdi, ne oldu?',
     qualityNote:
       'Spoiler politikası evrensel ve güldüren bir alışkanlık; L3 te iletişim tarzını hafif bir kapıdan açar.',
+    answerWeights: {
+      dikkatli: { 'paylasim-istahi': -1 },
+      heyecan: { 'paylasim-istahi': 1.5 },
+    },
     status: 'active',
   },
   {
@@ -527,6 +627,11 @@ export const level3Questions: QuestionContent[] = [
       'Birlikte izleme kuralınız ne olurdu? Bir "dizi anayasası" yazın.',
     qualityNote:
       'Birlikte izleme kuralı L3 te paylaşım ve beklenti yönetimini popüler kültür üzerinden sorar.',
+    answerWeights: {
+      ihanet: { 'paylasim-istahi': 1, 'grup-rolu': -0.5 },
+      anlayis: { 'paylasim-istahi': 0.5 },
+      katilir: { 'bagimsizlik-dengesi': 1 },
+    },
     status: 'active',
   },
   // Hayaller & Olasılıklar (L3)
@@ -551,6 +656,10 @@ export const level3Questions: QuestionContent[] = [
       'Hangi anı tekrar yaşardınız veya hangi günü görmek isterdiniz? Detaylarıyla anlatın.',
     qualityNote:
       'Zaman tercihi L3 derinliğinde nostalji bağı ve gelecek merakını yoklar; kişisel hikâye tetikler.',
+    answerWeights: {
+      gecmis: { 'nostalji-bagi': 1.5 },
+      gelecek: { 'nostalji-bagi': -1.5, 'risk-istahi': 0.5 },
+    },
     status: 'active',
   },
   // Hayaller & Olasılıklar (L3) — ikinci soru
@@ -577,6 +686,11 @@ export const level3Questions: QuestionContent[] = [
       'Birbirinizin hangi düşüncesini merak ediyorsunuz? Şimdi sorun!',
     qualityNote:
       'Zihin okuma sorusu L3 te empati ve şeffaflık ihtiyacını hipotetik sahneyle yoklar.',
+    answerWeights: {
+      low: { 'alan-ihtiyaci': 1.5, 'risk-istahi': -0.5 },
+      mid: {},
+      high: { 'ifade-tarzi': -1, 'risk-istahi': 1 },
+    },
     status: 'active',
   },
   // Nostalji (L3)
@@ -604,6 +718,12 @@ export const level3Questions: QuestionContent[] = [
     aiHint: 'Dört tepki de insani ve meşru; "kapali" seçeneğini soğukluk olarak çerçeveleme.',
     qualityNote:
       'Eski arkadaşlık L3 derinliğinde bağlanma ve kaybetme tarzını güvenli çerçevede yoklar.',
+    answerWeights: {
+      huzun: { 'nostalji-bagi': 1.5, 'paylasim-istahi': 0.5 },
+      kabul: { 'nostalji-bagi': 0.5 },
+      arama: { 'nostalji-bagi': 1 },
+      kapali: { 'nostalji-bagi': -1.5 },
+    },
     status: 'active',
   },
 ]

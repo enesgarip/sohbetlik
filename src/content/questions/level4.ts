@@ -29,6 +29,10 @@ export const level4Questions: QuestionContent[] = [
       'Beş yıl sonrasını birbirinize anlat. Resimde neler var?',
     qualityNote:
       'Beş yıl vizyonu L4 ün açılış sorusu; iki seçenek de gelecek odaklı, yargısız.',
+    answerWeights: {
+      yer: { 'koklenme-gocebelik': -0.5, 'oncelik-pusulasi': 1 },
+      ne: { 'oncelik-pusulasi': -1 },
+    },
     status: 'active',
   },
   {
@@ -54,6 +58,12 @@ export const level4Questions: QuestionContent[] = [
       'Sizi en çok büyüten ilişki deneyiminiz ne oldu?',
     qualityNote:
       'Birlikte büyümek L4 derinliğinde; dört tanım da farklı ilişki değerlerini yansıtır.',
+    answerWeights: {
+      hedef: { 'plan-sevgisi': 0.5, 'temas-ritmi': -0.5 },
+      alan: { 'bagimsizlik-dengesi': 1, 'alan-ihtiyaci': 0.5 },
+      donusum: { 'paylasim-istahi': 1, 'temas-ritmi': -1 },
+      destek: { 'paylasim-istahi': 0.5 },
+    },
     status: 'active',
   },
   {
@@ -79,6 +89,11 @@ export const level4Questions: QuestionContent[] = [
       'Hayat temposunu birbirinize anlatın: ideal bir haftanız nasıl görünür?',
     qualityNote:
       'Hayat temposu L4 derinliğinde uzun vade uyumunu yoklar.',
+    answerWeights: {
+      low: { 'koklenme-gocebelik': -1.5, 'tempo': -0.5 },
+      mid: {},
+      high: { 'koklenme-gocebelik': 1.5, 'tempo': 0.5 },
+    },
     status: 'active',
   },
   // İletişim & Duygular (L4 derinlik)
@@ -106,6 +121,12 @@ export const level4Questions: QuestionContent[] = [
     aiHint: 'Dört yol da olgun başa çıkma mekanizması; mesafe koymayı kaçış olarak çerçeveleme.',
     qualityNote:
       'Tartışma sonrası L4 derinliğinde çatışma çözümünü yoklar; dört seçenek dört meşru strateji.',
+    answerWeights: {
+      mesafe: { 'tartisma-tarzi': 1.5, 'alan-ihtiyaci': 1 },
+      cozum: { 'tartisma-tarzi': -1.5 },
+      yaz: { 'tartisma-tarzi': 0.5, 'ifade-tarzi': 1 },
+      hareket: { 'alan-ihtiyaci': 0.5 },
+    },
     status: 'active',
   },
   {
@@ -131,6 +152,11 @@ export const level4Questions: QuestionContent[] = [
       'Affetmekte zorlandığınız bir anınız var mı? Nasıl başa çıktınız?',
     qualityNote:
       'Affetme eşiği L4 ün en derin iletişim sorusu; iki uç da meşru kişilik.',
+    answerWeights: {
+      low: { 'guven-inshasi': -1, 'ifade-tarzi': -0.5 },
+      mid: {},
+      high: { 'guven-inshasi': 1.5, 'ifade-tarzi': 0.5 },
+    },
     status: 'active',
   },
   {
@@ -154,6 +180,10 @@ export const level4Questions: QuestionContent[] = [
       'Zor zamanınızda yanınızda kim olmasını istersiniz? Neden?',
     qualityNote:
       'Duygusal açıklık L4 derinliğinde; iki seçenek de sağlıklı başa çıkma biçimi.',
+    answerWeights: {
+      acik: { 'ifade-tarzi': -1.5, 'paylasim-istahi': 1.5 },
+      kapali: { 'ifade-tarzi': 1.5, 'alan-ihtiyaci': 1 },
+    },
     status: 'active',
   },
   // Sosyal Dünya (L4 derinlik)
@@ -178,6 +208,10 @@ export const level4Questions: QuestionContent[] = [
       'İdeal sosyal çevrenizde kimler var? Birbirinize hayalinizi çizin.',
     qualityNote:
       'Sosyal vizyon L4 te uzun vadeli sosyal tercihi yoklar.',
+    answerWeights: {
+      dar: { 'sosyal-istah': -1, 'grup-rolu': 0.5 },
+      genis: { 'sosyal-istah': 1, 'enerji-kaynagi': -0.5 },
+    },
     status: 'active',
   },
   {
@@ -204,6 +238,12 @@ export const level4Questions: QuestionContent[] = [
     aiHint: 'Dört tepki de gerçekçi; sessiz uzaklaşmayı pasiflik olarak etiketleme.',
     qualityNote:
       'Sınır koyma L4 derinliğinde; yakın ilişkilerde güvenli çerçevede sorulan zor bir soru.',
+    answerWeights: {
+      acik: { 'ifade-tarzi': -1.5, 'alan-ihtiyaci': 1 },
+      yumusak: { 'alan-ihtiyaci': 1 },
+      katlan: { 'alan-ihtiyaci': -0.5, 'tartisma-tarzi': 1 },
+      uzak: { 'alan-ihtiyaci': 1.5, 'tartisma-tarzi': 1.5 },
+    },
     status: 'active',
   },
   {
@@ -229,6 +269,11 @@ export const level4Questions: QuestionContent[] = [
       'Komşularınızla en güzel anınız ne oldu?',
     qualityNote:
       'Mahalle ve topluluk duygusu L4 te köklenme tercihini hafif bir yerden yoklar.',
+    answerWeights: {
+      low: { 'alan-ihtiyaci': 1, 'koklenme-gocebelik': 0.5 },
+      mid: {},
+      high: { 'koklenme-gocebelik': -1, 'paylasim-istahi': 0.5 },
+    },
     status: 'active',
   },
   // Ev Hâli (L4 derinlik)
@@ -253,6 +298,10 @@ export const level4Questions: QuestionContent[] = [
       'İdeal evinizi birbirinize çizin: nerede, nasıl, neye bakıyor?',
     qualityNote:
       'Ev hayali L4 te yerleşme-göçebelik tercihini somutlaştırır.',
+    answerWeights: {
+      sabit: { 'koklenme-gocebelik': -1.5 },
+      hafif: { 'koklenme-gocebelik': 1.5 },
+    },
     status: 'active',
   },
   {
@@ -278,6 +327,12 @@ export const level4Questions: QuestionContent[] = [
       'Ev işi paylaşımında en çok neye önem verirsiniz? Birbirinize söyleyin.',
     qualityNote:
       'Sorumluluk paylaşımı L4 te birlikte yaşam vizyonunun pratik boyutunu yoklar.',
+    answerWeights: {
+      esit: { 'plan-sevgisi': 1, 'tartisma-tarzi': -0.5 },
+      guclu: { 'plan-sevgisi': 0.5 },
+      donusum: { 'plan-sevgisi': -0.5 },
+      dogal: { 'spontanlik': 1, 'plan-sevgisi': -1 },
+    },
     status: 'active',
   },
   {
@@ -304,6 +359,12 @@ export const level4Questions: QuestionContent[] = [
     aiHint: 'Dört cevap da meşru ve saygıyla karşılanmalı; hiçbir tercihi üstün gösterme.',
     qualityNote:
       'Çocuk konusu L4 ün en kritik sorularından; güvenli çerçevede, yargısız seçeneklerle sunulmuş.',
+    answerWeights: {
+      evet: { 'oncelik-pusulasi': 1 },
+      belki: {},
+      hayir: { 'oncelik-pusulasi': -0.5, 'bagimsizlik-dengesi': 0.5 },
+      dusunmedim: {},
+    },
     status: 'active',
   },
   // Para & Değer (L4 derinlik)
@@ -328,6 +389,10 @@ export const level4Questions: QuestionContent[] = [
       'Paradan bağımsız olsanız, ilk ne yapardınız?',
     qualityNote:
       'Para ve özgürlük L4 te değer derinliğini yoklar; iki çerçeve de meşru.',
+    answerWeights: {
+      guvenlik: { 'para-keyif-dengesi': 1, 'risk-istahi': -1 },
+      ozgurluk: { 'para-keyif-dengesi': -0.5, 'risk-istahi': 0.5 },
+    },
     status: 'active',
   },
   {
@@ -353,6 +418,12 @@ export const level4Questions: QuestionContent[] = [
       'Finansal şeffaflık sizin için ne anlama geliyor? Birbirinize anlatın.',
     qualityNote:
       'Finansal ortaklık L4 te birlikte yaşam vizyonunun para boyutu; dört seçenek de meşru.',
+    answerWeights: {
+      ortak: { 'paylasim-istahi': 1, 'para-keyif-dengesi': -0.5 },
+      ayri: { 'bagimsizlik-dengesi': 1, 'para-keyif-dengesi': 0.5 },
+      karma: { 'para-keyif-dengesi': 0.5 },
+      'onemli-degil': {},
+    },
     status: 'active',
   },
   // Günlük Ritim (L4)
@@ -379,6 +450,11 @@ export const level4Questions: QuestionContent[] = [
       'Kariyeriniz için bir ilişkiden vazgeçer misiniz? Ya da tam tersi?',
     qualityNote:
       'Kariyer-ilişki dengesi L4 ün temel ufuk sorularından; spektrum yargısız.',
+    answerWeights: {
+      low: { 'oncelik-pusulasi': 1.5 },
+      mid: {},
+      high: { 'oncelik-pusulasi': -1.5, 'tempo': 1 },
+    },
     status: 'active',
   },
   {
@@ -402,6 +478,10 @@ export const level4Questions: QuestionContent[] = [
       'Emeklilik yaşınızda yanınızda ne olsun istersiniz? Birbirinize anlatın.',
     qualityNote:
       'Emeklilik hayali L4 te uzun vadeli yaşam vizyonunu yumuşak bir sahneden yoklar.',
+    answerWeights: {
+      huzur: { 'risk-istahi': -1.5, 'tempo': -1 },
+      macera: { 'risk-istahi': 1.5, 'macera-istahi': 1 },
+    },
     status: 'active',
   },
   // Seyahat & Keşif (L4)
@@ -428,6 +508,12 @@ export const level4Questions: QuestionContent[] = [
       'Hayalinizdeki şehri birbirinize tarif edin. Aynı yer mi çıkıyor?',
     qualityNote:
       'Şehir seçimi L4 te yerleşme vizyonunu dört farklı değer üzerinden yoklar.',
+    answerWeights: {
+      aile: { 'koklenme-gocebelik': -1, 'oncelik-pusulasi': 1 },
+      kariyer: { 'oncelik-pusulasi': -1 },
+      yasam: { 'tempo': -0.5 },
+      kultur: { 'enerji-kaynagi': -0.5, 'macera-istahi': 0.5 },
+    },
     status: 'active',
   },
   {
@@ -453,6 +539,11 @@ export const level4Questions: QuestionContent[] = [
       'Yurt dışında yaşasanız nereyi seçerdiniz? Neden?',
     qualityNote:
       'Yurt dışı yaşam L4 te göçebelik-köklenme tercihini somutlaştırır.',
+    answerWeights: {
+      low: { 'koklenme-gocebelik': -1.5, 'risk-istahi': -0.5 },
+      mid: {},
+      high: { 'koklenme-gocebelik': 1.5, 'risk-istahi': 1 },
+    },
     status: 'active',
   },
   // Tat & Mutfak (L4)
@@ -477,6 +568,10 @@ export const level4Questions: QuestionContent[] = [
       'En güzel kutlamanız nasıl oldu? Birbirinize en iyi sofra anınızı anlatın.',
     qualityNote:
       'Kutlama tercihi L4 te paylaşım stilini özel gün sahnesinden yoklar.',
+    answerWeights: {
+      ozel: { 'paylasim-istahi': -0.5, 'alan-ihtiyaci': 0.5 },
+      kalabalik: { 'paylasim-istahi': 1.5, 'enerji-kaynagi': -0.5 },
+    },
     status: 'active',
   },
   {
@@ -502,6 +597,12 @@ export const level4Questions: QuestionContent[] = [
       'Birbirinize bir aile yemeği tarif edin. Tadını ve hikâyesini anlatın.',
     qualityNote:
       'Yemek mirası L4 te nostalji bağını gelenek üzerinden yoklar; dört seçenek de pozitif.',
+    answerWeights: {
+      devam: { 'nostalji-bagi': 1.5, 'ritual-bagliligi': 1 },
+      ozlem: { 'nostalji-bagi': 1 },
+      yok: { 'nostalji-bagi': -0.5 },
+      'onemli-degil': { 'nostalji-bagi': -1 },
+    },
     status: 'active',
   },
   // Kültür & Eğlence (L4)
@@ -528,6 +629,12 @@ export const level4Questions: QuestionContent[] = [
       'Sizi derinden etkileyen bir eser birbirinize anlatın. Neden bu kadar dokundu?',
     qualityNote:
       'Sanat etkisi L4 derinliğinde; estetik deneyimi farklı kişilik tepkileriyle yoklar.',
+    answerWeights: {
+      paylas: { 'paylasim-istahi': 1.5 },
+      icsel: { 'paylasim-istahi': -1.5, 'alan-ihtiyaci': 0.5 },
+      tekrar: { 'nostalji-bagi': 0.5, 'ritual-bagliligi': 0.5 },
+      ilham: { 'paylasim-istahi': 0.5 },
+    },
     status: 'active',
   },
   // Kültür & Eğlence (L4) — ikinci soru
@@ -554,6 +661,11 @@ export const level4Questions: QuestionContent[] = [
       'Son zamanlarda sizi "vay" dedirten bir güzellik anı var mı? Birbirinize anlatın.',
     qualityNote:
       'Estetik hassasiyet L4 te kişilik derinliğini sanat/doğa üzerinden yoklar.',
+    answerWeights: {
+      low: {},
+      mid: {},
+      high: { 'merak-tarzi': 0.5 },
+    },
     status: 'active',
   },
   // Hayaller & Olasılıklar (L4)
@@ -578,6 +690,10 @@ export const level4Questions: QuestionContent[] = [
       'Bu dersi hangi deneyim öğretti? Hikâyenizi birbirinize anlatın.',
     qualityNote:
       'Hayat dersi L4 ün kapanışı; derinlik ve kişisel hikâye tetikler. İyi bir closer adayı.',
+    answerWeights: {
+      sabir: { 'tempo': -1, 'nostalji-bagi': 0.5 },
+      cesaret: { 'risk-istahi': 1, 'nostalji-bagi': -0.5 },
+    },
     status: 'active',
   },
   {
@@ -604,6 +720,12 @@ export const level4Questions: QuestionContent[] = [
     aiHint: 'Dört seçenek de meşru hayat felsefesi; iz bırakmak istememeyi eksiklik olarak gösterme.',
     qualityNote:
       'Miras sorusu L4 ün en derin sorularından; dört seçenek dört farklı anlam katmanı. Closer adayı.',
+    answerWeights: {
+      insan: { 'oncelik-pusulasi': 1.5, 'paylasim-istahi': 0.5 },
+      eser: { 'oncelik-pusulasi': -1 },
+      deger: { 'oncelik-pusulasi': -0.5 },
+      an: { 'nostalji-bagi': 0.5 },
+    },
     status: 'active',
   },
 ]
