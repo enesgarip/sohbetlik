@@ -628,20 +628,24 @@ function WaitingPage() {
   )
 }
 
-function SpectrumBar({ score, spectrum }: { score: number; spectrum: [string, string] }) {
-  // score is -2 to +2, map to 0-100 percentage
-  const percent = Math.round(((score + 2) / 4) * 100)
-  const clampedPercent = Math.max(8, Math.min(92, percent))
+function SpectrumBar({ score, spectrum, counterpartScore }: { score: number; spectrum: [string, string]; counterpartScore?: number }) {
+  const percent = Math.max(6, Math.min(94, Math.round(((score + 2) / 4) * 100)))
+  const cPercent = counterpartScore !== undefined
+    ? Math.max(6, Math.min(94, Math.round(((counterpartScore + 2) / 4) * 100)))
+    : null
 
   return (
-    <div className="spectrum-bar-wrap">
-      <div className="spectrum-labels">
-        <span className="spectrum-label-left">{spectrum[0]}</span>
-        <span className="spectrum-label-right">{spectrum[1]}</span>
+    <div className="r-spectrum">
+      <div className="r-spectrum-track">
+        <div className="r-spectrum-fill" style={{ width: `${percent}%` }} />
+        <div className="r-spectrum-thumb" style={{ left: `${percent}%` }} title="Sen" />
+        {cPercent !== null && (
+          <div className="r-spectrum-thumb counterpart" style={{ left: `${cPercent}%` }} title="Karşı taraf" />
+        )}
       </div>
-      <div className="spectrum-track">
-        <div className="spectrum-fill" style={{ width: `${clampedPercent}%` }} />
-        <div className="spectrum-dot" style={{ left: `${clampedPercent}%` }} />
+      <div className="r-spectrum-labels">
+        <span>{spectrum[0]}</span>
+        <span>{spectrum[1]}</span>
       </div>
     </div>
   )
@@ -652,26 +656,22 @@ function TendencyAreaCard({ area, counterpartArea }: { area: AreaSummary; counte
   if (visibleTendencies.length === 0) return null
 
   return (
-    <article className="tendency-card">
-      <h3 className="tendency-card-title">
-        <span className="tendency-emoji">{area.emoji}</span>
-        {area.label}
-      </h3>
-      <div className="tendency-spectrums">
-        {visibleTendencies.map((t) => {
-          const counterpartT = counterpartArea?.tendencies.find((ct) => ct.trait === t.trait)
-          return (
-            <div key={t.trait} className="tendency-spectrum-item">
-              <SpectrumBar score={t.rawScore} spectrum={t.spectrum} />
-              {counterpartT && counterpartT.confidence !== 'low' && (
-                <div className="counterpart-indicator" style={{ left: `${Math.max(8, Math.min(92, Math.round(((counterpartT.rawScore + 2) / 4) * 100)))}%` }}>
-                  <span className="counterpart-dot" />
-                </div>
-              )}
-            </div>
-          )
-        })}
+    <article className="r-area-card">
+      <div className="r-area-header">
+        <span className="r-area-emoji">{area.emoji}</span>
+        <span className="r-area-label">{area.label}</span>
       </div>
+      {visibleTendencies.map((t) => {
+        const ct = counterpartArea?.tendencies.find((x) => x.trait === t.trait)
+        return (
+          <SpectrumBar
+            key={t.trait}
+            score={t.rawScore}
+            spectrum={t.spectrum}
+            counterpartScore={ct && ct.confidence !== 'low' ? ct.rawScore : undefined}
+          />
+        )
+      })}
     </article>
   )
 }
@@ -788,31 +788,37 @@ function ResultsPage() {
   }
 
   return (
-    <section className="results-layout" aria-labelledby="results-title">
-      <div className="results-head">
-        <span className="soft-label">Ortak özet</span>
-        <h1 id="results-title">Konuşmanın güzel yerleri burada.</h1>
-        <p>Bu ekran bir karar vermek için değil, sohbeti daha rahat devam ettirmek için.</p>
+    <section className="r-layout" aria-labelledby="results-title">
+      {/* Hero */}
+      <div className="r-hero">
+        <div className="r-hero-icon">
+          <HeartHandshake size={28} aria-hidden="true" />
+        </div>
+        <h1 id="results-title" className="r-title">Bu oturumdaki<br />cevaplarınıza göre</h1>
+        <p className="r-subtitle">Buradaki her şey sohbetinize ilham olması için. Bir karar aracı değil, bir keşif alanı.</p>
       </div>
 
+      {/* AI Loading */}
       {aiLoading && (
-        <div className="ai-loading" aria-busy="true">
-          <Sparkles size={18} aria-hidden="true" />
-          <span>AI özet hazırlanıyor…</span>
+        <div className="r-ai-loading">
+          <div className="r-pulse" />
+          <span>AI yorumları hazırlanıyor…</span>
         </div>
       )}
 
-      {aiInsights && (
-        <div className="ai-badge">
-          <Sparkles size={14} aria-hidden="true" />
-          <span>Cevaplarınıza özel AI analizi</span>
-        </div>
-      )}
-
+      {/* Senin Tarzın */}
       {personTendencies && personTendencies.areas.length > 0 && (
-        <div className="tendency-section">
-          <span className="soft-label">Senin Tarzın</span>
-          <div className="tendency-cards">
+        <div className="r-block">
+          <div className="r-block-header">
+            <span className="r-block-label">Senin Tarzın</span>
+            {counterpartTendencies && (
+              <div className="r-legend">
+                <span className="r-legend-item"><span className="r-legend-dot you" /> Sen</span>
+                <span className="r-legend-item"><span className="r-legend-dot them" /> Karşı taraf</span>
+              </div>
+            )}
+          </div>
+          <div className="r-area-grid">
             {personTendencies.areas.map((area) => (
               <TendencyAreaCard
                 key={area.slug}
@@ -824,84 +830,101 @@ function ResultsPage() {
         </div>
       )}
 
-      <div className="insight-list">
-        {insights.map((insight) => (
-          <article className={`insight-item ${insight.tone}`} key={`${insight.tone}-${insight.title}`}>
-            <Sparkles size={18} aria-hidden="true" />
-            <div>
-              <h2>{insight.title}</h2>
-              <p>{insight.body}</p>
-            </div>
-          </article>
-        ))}
-      </div>
-
+      {/* Ortak Zemin + Güzel Farklar */}
       {pairInsights.length > 0 && (
-        <div className="pair-section">
+        <div className="r-block">
           {pairInsights.filter((p) => p.kind === 'common').length > 0 && (
-            <div className="pair-group">
-              <span className="soft-label">🤝 Ortak Zemin</span>
-              <div className="pair-cards">
+            <>
+              <div className="r-block-header">
+                <span className="r-block-label">Ortak Zemin</span>
+              </div>
+              <div className="r-pair-grid">
                 {pairInsights.filter((p) => p.kind === 'common').map((p) => (
-                  <article className="pair-card common" key={p.trait}>
-                    <div className="pair-card-head">
-                      <span className="pair-card-emoji">{p.areaEmoji}</span>
-                      <span className="pair-card-area">{p.areaLabel}</span>
+                  <article className="r-pair-card common" key={p.trait}>
+                    <span className="r-pair-icon">{p.areaEmoji}</span>
+                    <div>
+                      <p className="r-pair-area">{p.areaLabel}</p>
+                      <p className="r-pair-desc">{p.description}</p>
                     </div>
-                    <p className="pair-card-desc">{p.description}</p>
                   </article>
                 ))}
               </div>
-            </div>
+            </>
           )}
 
           {pairInsights.filter((p) => p.kind === 'different').length > 0 && (
-            <div className="pair-group">
-              <span className="soft-label">✨ Güzel Farklar</span>
-              <div className="pair-cards">
+            <>
+              <div className="r-block-header" style={{ marginTop: 12 }}>
+                <span className="r-block-label">Güzel Farklar</span>
+              </div>
+              <div className="r-pair-grid">
                 {pairInsights.filter((p) => p.kind === 'different').map((p) => (
-                  <article className="pair-card different" key={p.trait}>
-                    <div className="pair-card-head">
-                      <span className="pair-card-emoji">{p.areaEmoji}</span>
-                      <span className="pair-card-area">{p.areaLabel}</span>
+                  <article className="r-pair-card different" key={p.trait}>
+                    <span className="r-pair-icon">{p.areaEmoji}</span>
+                    <div>
+                      <p className="r-pair-area">{p.areaLabel}</p>
+                      <p className="r-pair-desc">{p.description}</p>
+                      <p className="r-pair-talk">{p.talkStarter}</p>
                     </div>
-                    <p className="pair-card-desc">{p.description}</p>
-                    <p className="pair-card-talk">💬 {p.talkStarter}</p>
                   </article>
                 ))}
               </div>
-            </div>
+            </>
           )}
         </div>
       )}
 
-      {lastAnsweredQuestion && (
-        <div className="answer-recap">
-          <span className="soft-label">Senin son cevabın</span>
-          <strong>{getAnswerLabel(lastAnsweredQuestion, participant.answers[lastAnsweredQuestion.id])}</strong>
+      {/* AI Insights */}
+      {insights.length > 0 && (
+        <div className="r-block">
+          <div className="r-block-header">
+            <span className="r-block-label">
+              {aiInsights ? 'AI Yorumları' : 'Sohbet Notları'}
+            </span>
+            {aiInsights && (
+              <span className="r-ai-tag">
+                <Sparkles size={12} aria-hidden="true" />
+                AI
+              </span>
+            )}
+          </div>
+          <div className="r-insight-list">
+            {insights.map((insight) => (
+              <article className={`r-insight ${insight.tone}`} key={`${insight.tone}-${insight.title}`}>
+                <div className="r-insight-tone">{insight.tone === 'common' ? '🟢' : insight.tone === 'different' ? '🟠' : '💬'}</div>
+                <div>
+                  <p className="r-insight-title">{insight.title}</p>
+                  <p className="r-insight-body">{insight.body}</p>
+                </div>
+              </article>
+            ))}
+          </div>
         </div>
       )}
 
-      <div className="action-row center">
+      {/* Actions */}
+      <div className="r-actions">
         {nextLevel && (
           <button
-            className="primary-action"
+            className="r-btn primary"
             type="button"
             disabled={isCreatingNextLevel}
             onClick={() => void createNextLevelRoom()}
           >
-            <Sparkles size={17} aria-hidden="true" />
             Seviye {nextLevel}'ye geç
+            <ArrowRight size={16} aria-hidden="true" />
           </button>
         )}
-        <button className="secondary-action" type="button" onClick={resetRoom}>
-          <RotateCcw size={17} aria-hidden="true" />
-          Yeni oda
-        </button>
-        <button className="primary-action" type="button" onClick={() => navigate(`/room/${room.id}`)}>
-          <LinkIcon size={17} aria-hidden="true" />
-          Davet linki
-        </button>
+        <div className="r-btn-row">
+          <button className="r-btn ghost" type="button" onClick={() => navigate(`/room/${room.id}`)}>
+            <LinkIcon size={15} aria-hidden="true" />
+            Davet linki
+          </button>
+          <button className="r-btn ghost" type="button" onClick={resetRoom}>
+            <RotateCcw size={15} aria-hidden="true" />
+            Yeni oda
+          </button>
+        </div>
       </div>
       {nextLevelError && (
         <p className="form-error" role="alert">
