@@ -96,44 +96,67 @@ tone değerleri:
 ${pairLines}${tendencySection}`
 }
 
+const PRIMARY_MODEL = 'qwen/qwen3.6-27b'
+const FALLBACK_MODEL = 'openai/gpt-oss-120b'
+
 async function callLlm(prompt: string, apiKey: string): Promise<Insight[]> {
-  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.7,
-      max_tokens: 1500,
-      response_format: { type: 'json_object' },
-    }),
-  })
+  const models = [PRIMARY_MODEL, FALLBACK_MODEL]
+  let lastError = ''
 
-  if (!response.ok) {
-    const text = await response.text()
-    throw new Error(`Groq API error ${response.status}: ${text}`)
+  for (const model of models) {
+    try {
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            {
+              role: 'system',
+              content: 'Sen Türkçe konuşan bir yapay zeka asistanısın. Tüm yanıtlarını doğal, akıcı ve hatasız Türkçe ile yazmalısın. Uydurma kelime üretme, her kelime gerçek Türkçe olmalı.',
+            },
+            { role: 'user', content: prompt },
+          ],
+          temperature: 0.6,
+          max_tokens: 1500,
+          response_format: { type: 'json_object' },
+        }),
+      })
+
+      if (!response.ok) {
+        const text = await response.text()
+        lastError = `${model}: ${response.status} ${text}`
+        continue
+      }
+
+      const data = await response.json()
+      const text: string = data?.choices?.[0]?.message?.content ?? '[]'
+
+      const parsed = JSON.parse(text)
+      const items: unknown[] = Array.isArray(parsed) ? parsed : parsed?.insights ?? parsed?.data ?? []
+
+      if (!Array.isArray(items) || items.length === 0) {
+        lastError = `${model}: empty or non-array response`
+        continue
+      }
+
+      return items.map((item: Record<string, unknown>) => ({
+        tone: (['common', 'different', 'prompt'].includes(item.tone as string)
+          ? item.tone
+          : 'prompt') as Insight['tone'],
+        title: String(item.title ?? ''),
+        body: String(item.body ?? ''),
+      }))
+    } catch (err) {
+      lastError = `${model}: ${err instanceof Error ? err.message : 'unknown error'}`
+      continue
+    }
   }
 
-  const data = await response.json()
-  const text: string = data?.choices?.[0]?.message?.content ?? '[]'
-
-  const parsed = JSON.parse(text)
-  const items: unknown[] = Array.isArray(parsed) ? parsed : parsed?.insights ?? parsed?.data ?? []
-
-  if (!Array.isArray(items)) {
-    throw new Error('LLM returned non-array response')
-  }
-
-  return items.map((item: Record<string, unknown>) => ({
-    tone: (['common', 'different', 'prompt'].includes(item.tone as string)
-      ? item.tone
-      : 'prompt') as Insight['tone'],
-    title: String(item.title ?? ''),
-    body: String(item.body ?? ''),
-  }))
+  throw new Error(`All models failed. Last error: ${lastError}`)
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
