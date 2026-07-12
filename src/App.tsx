@@ -41,6 +41,7 @@ import {
   trackPendingAnswer,
 } from './lib/pendingAnswers'
 import { getSeenQuestionSlugs, recordSeenQuestions } from './lib/seenQuestions'
+import { saveSession, updateSessionNextRoom, getResumableSession, type SessionRecord } from './lib/sessionHistory'
 import { maybeCleanupStaleRooms } from './lib/roomCleanup'
 import { fetchAiSummary } from './lib/summaryApi'
 import { roomRepository } from './repositories/activeRoomRepository'
@@ -126,6 +127,7 @@ function HomePage() {
   const navigate = useNavigate()
   const [isCreating, setIsCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const resumable = getResumableSession()
 
   useEffect(() => {
     maybeCleanupStaleRooms()
@@ -145,6 +147,19 @@ function HomePage() {
       })
       const session = await roomRepository.createRoom(questionIds)
       recordSeenQuestions(session.room.questionIds)
+      saveSession({
+        roomId: session.room.id,
+        participantId: session.participantId,
+        roomCode: session.room.code,
+        level: 1,
+        questionCount: questionIds.length,
+        answeredCount: 0,
+        isComplete: false,
+        previousRoomId: null,
+        nextRoomId: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
 
       navigate(`/room/${session.room.id}`)
     } catch {
@@ -172,6 +187,16 @@ function HomePage() {
             <ArrowRight size={18} aria-hidden="true" />
           </button>
         </div>
+        {resumable && (
+          <button
+            className="ghost-action resume-btn"
+            type="button"
+            onClick={() => navigate(`/results/${resumable.roomId}/${resumable.participantId}`)}
+          >
+            <RotateCcw size={15} aria-hidden="true" />
+            <span>Son oturumun sonuçlarına dön (Seviye {resumable.level})</span>
+          </button>
+        )}
         {error && (
           <p className="form-error" role="alert">
             {error}
@@ -614,7 +639,22 @@ function WaitingPage() {
           className="primary-action"
           type="button"
           disabled={!allComplete}
-          onClick={() => navigate(`/results/${room.id}/${participantId}`)}
+          onClick={() => {
+            saveSession({
+              roomId: room.id,
+              participantId: participantId!,
+              roomCode: room.code,
+              level: getRoomLevel(questions),
+              questionCount: questions.length,
+              answeredCount: questions.length,
+              isComplete: true,
+              previousRoomId: room.previousRoomId,
+              nextRoomId: null,
+              createdAt: room.createdAt,
+              updatedAt: new Date().toISOString(),
+            })
+            navigate(`/results/${room.id}/${participantId}`)
+          }}
         >
           <span>{allComplete ? 'Sonuçları aç' : 'Bekleniyor…'}</span>
           <ArrowRight size={18} aria-hidden="true" />
@@ -764,6 +804,20 @@ function ResultsPage() {
         previousRoomId: room.id,
       })
       recordSeenQuestions(session.room.questionIds)
+      updateSessionNextRoom(room.id, session.room.id)
+      saveSession({
+        roomId: session.room.id,
+        participantId: session.participantId,
+        roomCode: session.room.code,
+        level: nextLevel,
+        questionCount: questionIds.length,
+        answeredCount: 0,
+        isComplete: false,
+        previousRoomId: room.id,
+        nextRoomId: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
 
       navigate(`/room/${session.room.id}`)
     } catch {
