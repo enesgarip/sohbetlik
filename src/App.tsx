@@ -41,7 +41,7 @@ import {
   trackPendingAnswer,
 } from './lib/pendingAnswers'
 import { getSeenQuestionSlugs, recordSeenQuestions } from './lib/seenQuestions'
-import { saveSession, updateSessionNextRoom, getResumableSession, type SessionRecord } from './lib/sessionHistory'
+import { saveSession, updateSessionNextRoom } from './lib/sessionHistory'
 import { maybeCleanupStaleRooms } from './lib/roomCleanup'
 import { fetchAiSummary } from './lib/summaryApi'
 import { roomRepository } from './repositories/activeRoomRepository'
@@ -130,7 +130,6 @@ function HomePage() {
   const [roomCode, setRoomCode] = useState('')
   const [codeError, setCodeError] = useState<string | null>(null)
   const [isLookingUp, setIsLookingUp] = useState(false)
-  const resumable = getResumableSession()
 
   useEffect(() => {
     maybeCleanupStaleRooms()
@@ -211,16 +210,6 @@ function HomePage() {
             <ArrowRight size={18} aria-hidden="true" />
           </button>
         </div>
-        {resumable && (
-          <button
-            className="ghost-action resume-btn"
-            type="button"
-            onClick={() => navigate(`/results/${resumable.roomId}/${resumable.participantId}`)}
-          >
-            <RotateCcw size={15} aria-hidden="true" />
-            <span>Son oturumun sonuçlarına dön (Seviye {resumable.level})</span>
-          </button>
-        )}
         <div className="room-code-entry">
           <span className="soft-label">Oda kodun var mı?</span>
           <div className="code-input-row">
