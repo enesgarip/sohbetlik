@@ -127,11 +127,35 @@ function HomePage() {
   const navigate = useNavigate()
   const [isCreating, setIsCreating] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [roomCode, setRoomCode] = useState('')
+  const [codeError, setCodeError] = useState<string | null>(null)
+  const [isLookingUp, setIsLookingUp] = useState(false)
   const resumable = getResumableSession()
 
   useEffect(() => {
     maybeCleanupStaleRooms()
   }, [])
+
+  async function lookupRoom() {
+    const trimmed = roomCode.trim().toUpperCase()
+    if (!trimmed || isLookingUp) return
+
+    setIsLookingUp(true)
+    setCodeError(null)
+
+    try {
+      const found = await roomRepository.getRoomByCode(trimmed)
+      if (found) {
+        navigate(`/room/${found.id}`)
+      } else {
+        setCodeError('Bu kodla oda bulunamadı.')
+      }
+    } catch {
+      setCodeError('Oda aranırken bir sorun oldu.')
+    }
+
+    setIsLookingUp(false)
+  }
 
   async function createRoom() {
     if (isCreating) {
@@ -197,6 +221,29 @@ function HomePage() {
             <span>Son oturumun sonuçlarına dön (Seviye {resumable.level})</span>
           </button>
         )}
+        <div className="room-code-entry">
+          <span className="soft-label">Oda kodun var mı?</span>
+          <div className="code-input-row">
+            <input
+              className="code-input"
+              type="text"
+              placeholder="Oda kodu"
+              maxLength={8}
+              value={roomCode}
+              onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+              onKeyDown={(e) => { if (e.key === 'Enter') void lookupRoom() }}
+            />
+            <button
+              className="ghost-action"
+              type="button"
+              disabled={!roomCode.trim() || isLookingUp}
+              onClick={() => void lookupRoom()}
+            >
+              Katıl
+            </button>
+          </div>
+          {codeError && <p className="form-error" role="alert">{codeError}</p>}
+        </div>
         {error && (
           <p className="form-error" role="alert">
             {error}

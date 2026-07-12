@@ -1043,3 +1043,43 @@ output {
 .resume-btn:hover {
   color: var(--ink);
 }
+
+/* Room code entry on homepage */
+.room-code-entry {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.code-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.code-input {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(34, 32, 28, 0.12);
+  background: var(--card);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+  outline: none;
+  max-width: 160px;
+}
+
+.code-input::placeholder {
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--muted);
+}
+
+.code-input:focus {
+  border-color: rgba(34, 32, 28, 0.3);
+}
