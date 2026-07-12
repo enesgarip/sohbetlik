@@ -216,15 +216,15 @@ describe('selectSessionQuestions', () => {
     }
   })
 
-  it('selects the full real level 1 pool for a default room', () => {
+  it('selects from the real level 1 pool for a default room', () => {
     const result = selectSessionQuestions({
       pool: activeQuestionContents,
       level: 1,
-      count: 24,
+      count: 16,
       random: mulberry32(8),
     })
 
-    expect(result).toHaveLength(24)
+    expect(result).toHaveLength(16)
     // Açılış hafif ve eğlenceli, kapanış gülümseten olmalı.
     expect(result[0].intensity).toBe(1)
     expect(result[0].funScore).toBeGreaterThanOrEqual(4)

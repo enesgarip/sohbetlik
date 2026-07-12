@@ -4,7 +4,7 @@ import { selectSessionQuestions } from '../domain/questionSelection'
 import type { Question, QuestionLevel } from '../types/domain'
 
 export const SESSION_LEVEL = 1
-export const SESSION_QUESTION_COUNT = 24
+export const SESSION_QUESTION_COUNT = 16
 
 const activeQuestions = activeQuestionContents.map(toDomainQuestion)
 

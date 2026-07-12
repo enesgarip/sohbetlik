@@ -108,12 +108,14 @@ describe('question pool content rules', () => {
         byTrait.set(question.trait, (byTrait.get(question.trait) ?? 0) + 1)
       }
 
+      // Havuz geniş, oturum kısıtlamaları selectSessionQuestions'da uygulanır.
+      // Havuz başına makul üst sınırlar:
       for (const [category, count] of byCategory) {
-        expect(count, `seviye ${level}, kategori: ${category}`).toBeLessThanOrEqual(3)
+        expect(count, `seviye ${level}, kategori: ${category}`).toBeLessThanOrEqual(8)
       }
 
       for (const [trait, count] of byTrait) {
-        expect(count, `seviye ${level}, trait: ${trait}`).toBeLessThanOrEqual(2)
+        expect(count, `seviye ${level}, trait: ${trait}`).toBeLessThanOrEqual(5)
       }
 
       // Açılış ve kapanış slotları doldurulabilmeli.
