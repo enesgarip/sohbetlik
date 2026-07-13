@@ -1,5 +1,15 @@
 # Work Log
 
+## 2026-07-13 (Claude, batch 2 — share card, notifications, norms fix, A/B test, cross-level summary)
+
+- **ShareCard redesign**: Gradient circles, position labels (e.g. "Dengede", "X tarafına yakın"), level badge, "Sen de dene!" CTA footer with sohbetlik.vercel.app button. Inline styles for html-to-image compatibility (1080×1920 Instagram Story format).
+- **Push notifications**: New `src/lib/notifications.ts` — `canAskNotificationPermission()`, `requestNotificationPermission()`, `sendLocalNotification()`. WaitingPage requests permission on mount and fires a local notification when partner completes.
+- **Norms API fix**: `api/norms.ts` was querying `answers.question_id` with client-sent slugs, but DB stores UUIDs. Fixed by resolving slugs → UUIDs via `questions` table before querying answers, then mapping results back to slugs. Community norms section enriched: shows question prompt text and expanded from 4 to 6 items.
+- **Landing page A/B testing**: New `src/lib/abTest.ts` — `getVariant()` (sticky localStorage, 50/50 split), `trackEvent()` (localStorage event log, last 100). `HomePage` renders variant copy for subtitle, CTA, and bottom CTA. `trackEvent('room_created', variant)` fires on room creation.
+- **Cross-level AI summary**: New `api/cross-level-summary.ts` endpoint — accepts tendency data from multiple levels, generates "big picture" insights with tones: growth (cross-level change), pattern (consistent traits), prompt (conversation starters). Client walks `previousRoomId` chain to load prior rooms, calculates tendencies per level, and sends to the endpoint. Appears as "Büyük Resim" section on results page for L2+ rooms with loading state. New types/functions in `src/lib/summaryApi.ts`: `CrossLevelInsight`, `LevelTendencyData`, `buildLevelTendencyData()`, `fetchCrossLevelSummary()`.
+- Checks: `tsc --noEmit` ✅, `vite build` ✅. ESLint has a pre-existing broken `ajv` dependency (not related to our changes).
+- Committed `7a55bb7` and pushed to main.
+
 ## 2026-07-13 (Claude, sonuç sayfası + analytics dashboard)
 
 - Confirmed answerWeights for L3-L4 were already implemented — all 48 questions have full answerWeights and `tendencyScoring.ts` processes them. Marked as done.
