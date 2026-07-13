@@ -1,5 +1,16 @@
 # Work Log
 
+## 2026-07-13 (Claude, batch 3 — reactions, bookmarks, time stats, PDF, invite page)
+
+- **Emoji reactions**: `ReactionBar` bileşeni — insight'lar ve cevap karşılaştırmalarına 😂🤔💯❤️😮 tepki toggle. localStorage'da persist. `src/lib/reactions.ts` modülü.
+- **Question bookmarks**: Cevap karşılaştırma kartlarında ⭐ Konuşalım → ✅ Konuştuk → temizle döngüsü. `src/lib/questionBookmarks.ts` modülü. `cycleBookmark()` ile 3-state toggle.
+- **Time stats**: Supabase `answered_at` timestamp'leri artık client'a geliyor (`supabaseRoomRepository` güncellendi, `AnswerTimestamps` type eklendi). `src/lib/answerStats.ts` — `calculateTimeStats()` toplam süre, ortalama, en hızlı/en yavaş cevap hesaplar. Sonuç sayfasında "Zamanlama" bölümü olarak gösterilir.
+- **PDF rapor**: `src/lib/pdfReport.ts` — `generateReport()` browser print dialog'unu açan HTML sayfa oluşturur. Yorumlar, eğilimler ve cevap tablosu içerir. "Rapor indir" butonu actions bölümüne eklendi.
+- **Invite page iyileştirme**: "Seni bekliyorlar!" başlığı, odadaki kişi sayısı, tahmini süre, host'un başlayıp başlamadığına göre contextual açıklama. `join-info-row` ve `join-info-card` bileşenleri.
+- CSS: `.r-reaction-*`, `.r-bookmark-*`, `.r-time-*`, `.join-info-*` class'ları eklendi.
+- Checks: `tsc --noEmit` ✅, `vite build` ✅, browser console hatasız.
+- Committed `d687b32` and pushed to main.
+
 ## 2026-07-13 (Claude, batch 2 — share card, notifications, norms fix, A/B test, cross-level summary)
 
 - **ShareCard redesign**: Gradient circles, position labels (e.g. "Dengede", "X tarafına yakın"), level badge, "Sen de dene!" CTA footer with sohbetlik.vercel.app button. Inline styles for html-to-image compatibility (1080×1920 Instagram Story format).
