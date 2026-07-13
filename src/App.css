@@ -1083,3 +1083,23 @@ output {
 .code-input:focus {
   border-color: rgba(34, 32, 28, 0.3);
 }
+
+/* Community norms */
+.r-norms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.r-norm-item {
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(139, 166, 120, 0.06);
+  border: 1px solid rgba(139, 166, 120, 0.1);
+}
+
+.r-norm-badge {
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.4;
+}

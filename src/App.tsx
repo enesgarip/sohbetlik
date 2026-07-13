@@ -35,6 +35,7 @@ import { buildConversationInsights, getAnswerLabel } from './domain/results'
 import { calculateTendencies, compareTendencies } from './domain/tendencyScoring'
 import type { AreaSummary } from './domain/tendencyScoring'
 import { ShareCard } from './components/ShareCard'
+import { useCommunityNorms, getNormLabel } from './lib/communityNorms'
 import { useRoom } from './hooks/useRoom'
 import {
   applyPendingAnswers,
@@ -795,6 +796,9 @@ function ResultsPage() {
     [personTendencies, counterpartTendencies],
   )
 
+  const questionIds = useMemo(() => questions.map((q) => q.id), [questions])
+  const { norms } = useCommunityNorms(questionIds)
+
   useEffect(() => {
     if (!hasBothAnswers || aiAttemptedRef.current || !participant || !counterpart || questions.length === 0) {
       return
@@ -989,6 +993,28 @@ function ResultsPage() {
                 </div>
               </article>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Community Norms */}
+      {participant && Object.keys(norms).length > 0 && (
+        <div className="r-block">
+          <div className="r-block-header">
+            <span className="r-block-label">Topluluk</span>
+          </div>
+          <div className="r-norms-list">
+            {questions.map((q) => {
+              const answer = participant.answers[q.id]
+              if (answer === undefined) return null
+              const label = getNormLabel(answer, norms[q.id])
+              if (!label) return null
+              return (
+                <div className="r-norm-item" key={q.id}>
+                  <span className="r-norm-badge">{label}</span>
+                </div>
+              )
+            }).filter(Boolean).slice(0, 4)}
           </div>
         </div>
       )}
