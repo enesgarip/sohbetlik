@@ -1,5 +1,15 @@
 # Work Log
 
+## 2026-07-13 (Claude, sonuç sayfası + analytics dashboard)
+
+- Confirmed answerWeights for L3-L4 were already implemented — all 48 questions have full answerWeights and `tendencyScoring.ts` processes them. Marked as done.
+- Confirmed ShareCard component already exists with html-to-image, native share + download fallback. Marked as done.
+- **Sonuç sayfası zenginleştirme**: Added `AnswerComparison` component to the results page — shows soru-soru karşılaştırma (question-by-question comparison) between two participants. Features: same/different cevap vurgusu, aynı/farklı sayıları, highlight reel (top 2 farklı + top 2 aynı), expand/collapse for full list. Positioned between AI Insights and Community Norms sections.
+- **Analytics dashboard genişletme**: Extended `api/admin/analytics.ts` API with new metrics: dönüşüm hunisi (funnel: created → paired → first answer → one completed → both completed), terk noktaları (drop-off buckets by answer count for incomplete rooms), saatlik dağılım (hourly room creation pattern, UTC), ortalama ve medyan tamamlama süresi (minutes from room creation to last answer). Added `question_id` and `answer_value` to answer query for future soru bazlı istatistik.
+- Updated `AdminDashboard.tsx` with new sections: completion time stat cards, funnel visualization with percentage bars, drop-off analysis bar chart, hourly pattern bar chart, and dedicated CSS for all new components.
+- CSS additions: `.r-compare-*` classes for answer comparison cards with same/diff styling, `.admin-funnel-*` classes for funnel visualization, `.admin-hourly-*` classes for hourly pattern chart, `.admin-bar-fill.dropoff` variant.
+- Checks: `npm run build` ✅, `npm run lint` ✅ (existing warnings only), `npm run test:unit` ✅ (24 passed).
+
 ## 2026-07-13 (Codex, Vercel build fix)
 
 - Investigated repeated Vercel production build failures after `cf7fc49`; local checkout was 14 commits behind, so the previously passing local build was not using the same source as Vercel.

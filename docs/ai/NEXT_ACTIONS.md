@@ -24,9 +24,15 @@ Monitor the Level 3-4 rollout, then pick the next product milestone.
 - Level 3-4 expansion: `src/content/questions/level3.ts` and `src/content/questions/level4.ts` each contain 24 active questions, `questionContents` includes both pools, next-level UI is generalized through Level 4, and `20260710090000_seed_level3_level4_questions.sql` seeds both pools idempotently. Local and production Supabase verification both show active question counts L1=24, L2=24, L3=24, L4=24.
 - Production app: runtime flow from commit `dd3f1e5` is live-verified on `sohbetlik.vercel.app`. Live two-device browser QA completed Levels 1-4, verified L2/L3/L4 next-level CTAs, verified no Level 5 CTA after Level 4, and Vercel runtime error/fatal logs were clean for the deployment. Follow-up docs-only deploys were also READY.
 
+## Recently Completed (2026-07-13)
+
+- Confirmed `answerWeights` for Level 3-4 are already implemented — all L3/L4 questions have full answerWeights.
+- Confirmed ShareCard component exists with html-to-image + native share.
+- Results page: answer comparison section (soru-soru karşılaştırma with highlight reel + expand/collapse).
+- Admin dashboard: funnel, drop-off analysis, hourly pattern, completion time metrics.
+
 ## Nice-To-Have Follow-Ups
 
-- Add `answerWeights` for Level 3-4 questions so the new behavioral tendency cards can use deeper-level answers.
 - Create a separate preview Supabase project if two-device preview deployment testing becomes necessary.
 
 ## Do Not Start Yet

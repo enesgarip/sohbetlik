@@ -11,13 +11,27 @@ type Overview = {
   pairRate: number
   totalAnswers: number
   avgAnswersPerRoom: number
+  avgCompletionMinutes: number | null
+  medianCompletionMinutes: number | null
 }
 
+type Funnel = {
+  created: number
+  paired: number
+  atLeastOneAnswer: number
+  oneCompleted: number
+  bothCompleted: number
+}
+
+type HourlyEntry = { hour: number; count: number }
 type DailyRoom = { date: string; count: number }
 
 type AnalyticsData = {
   overview: Overview
+  funnel: Funnel
+  dropoff: Record<string, number>
   levelDistribution: Record<string, number>
+  hourlyPattern: HourlyEntry[]
   dailyRooms: DailyRoom[]
 }
 
@@ -53,7 +67,6 @@ export function AdminDashboard() {
     setLoading(false)
   }
 
-  // Auto-refresh every 60s
   useEffect(() => {
     if (!authenticated || !key) return
     const interval = setInterval(() => void fetchData(), 60000)
@@ -90,12 +103,13 @@ export function AdminDashboard() {
 
   if (!data) return null
 
-  const { overview: o } = data
+  const { overview: o, funnel: f } = data
 
   return (
     <section className="admin-layout">
       <h1>📊 Sohbetlik Analytics</h1>
 
+      {/* Overview */}
       <div className="admin-grid">
         <StatCard label="Toplam Oda" value={o.totalRooms} />
         <StatCard label="Tamamlanan" value={o.completedRooms} sub={`%${o.completionRate}`} />
@@ -107,6 +121,56 @@ export function AdminDashboard() {
         <StatCard label="Ort. Cevap/Oda" value={o.avgAnswersPerRoom} />
       </div>
 
+      {/* Completion time */}
+      {(o.avgCompletionMinutes !== null || o.medianCompletionMinutes !== null) && (
+        <div className="admin-grid">
+          {o.avgCompletionMinutes !== null && (
+            <StatCard label="Ort. Tamamlama" value={o.avgCompletionMinutes} sub="dakika" />
+          )}
+          {o.medianCompletionMinutes !== null && (
+            <StatCard label="Medyan Tamamlama" value={o.medianCompletionMinutes} sub="dakika" />
+          )}
+        </div>
+      )}
+
+      {/* Funnel */}
+      {f && (
+        <div className="admin-section">
+          <h2>Dönüşüm Hunisi</h2>
+          <div className="admin-funnel">
+            <FunnelStep label="Oda Oluşturuldu" value={f.created} max={f.created} />
+            <FunnelStep label="Eşleşti (2 kişi)" value={f.paired} max={f.created} />
+            <FunnelStep label="İlk Cevap Verildi" value={f.atLeastOneAnswer} max={f.created} />
+            <FunnelStep label="1 Kişi Tamamladı" value={f.oneCompleted} max={f.created} />
+            <FunnelStep label="İkisi de Tamamladı" value={f.bothCompleted} max={f.created} />
+          </div>
+        </div>
+      )}
+
+      {/* Drop-off */}
+      {data.dropoff && (
+        <div className="admin-section">
+          <h2>Terk Noktaları (tamamlanmayan odalar)</h2>
+          <div className="admin-level-bars">
+            {Object.entries(data.dropoff).map(([bucket, count]) => (
+              <div className="admin-level-row" key={bucket}>
+                <span className="admin-level-label" style={{ width: 80 }}>
+                  {bucket === '0' ? 'Hiç cevap yok' : bucket === '24' ? '24 (tam)' : `${bucket} cevap`}
+                </span>
+                <div className="admin-bar-track">
+                  <div
+                    className="admin-bar-fill dropoff"
+                    style={{ width: `${Math.max(4, (count / Math.max(1, o.totalParticipants)) * 100)}%` }}
+                  />
+                </div>
+                <span className="admin-level-count">{count}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Level distribution */}
       <div className="admin-section">
         <h2>Seviye Dağılımı</h2>
         <div className="admin-level-bars">
@@ -125,6 +189,28 @@ export function AdminDashboard() {
         </div>
       </div>
 
+      {/* Hourly pattern */}
+      {data.hourlyPattern && data.hourlyPattern.some((h) => h.count > 0) && (
+        <div className="admin-section">
+          <h2>Saatlik Dağılım (UTC)</h2>
+          <div className="admin-hourly">
+            {data.hourlyPattern.map((h) => {
+              const maxCount = Math.max(...data.hourlyPattern.map((x) => x.count), 1)
+              return (
+                <div className="admin-hourly-bar" key={h.hour}>
+                  <div
+                    className="admin-hourly-fill"
+                    style={{ height: `${Math.max(2, (h.count / maxCount) * 60)}px` }}
+                  />
+                  <span className="admin-hourly-label">{h.hour}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Daily rooms */}
       {data.dailyRooms.length > 0 && (
         <div className="admin-section">
           <h2>Son 30 Gün</h2>
@@ -155,6 +241,21 @@ function StatCard({ label, value, sub }: { label: string; value: number; sub?: s
       <span className="admin-stat-value">{value.toLocaleString('tr-TR')}</span>
       <span className="admin-stat-label">{label}</span>
       {sub && <span className="admin-stat-sub">{sub}</span>}
+    </div>
+  )
+}
+
+function FunnelStep({ label, value, max }: { label: string; value: number; max: number }) {
+  const pct = max > 0 ? Math.round((value / max) * 100) : 0
+  return (
+    <div className="admin-funnel-step">
+      <div className="admin-funnel-bar-track">
+        <div className="admin-funnel-bar-fill" style={{ width: `${Math.max(4, pct)}%` }} />
+      </div>
+      <div className="admin-funnel-info">
+        <span className="admin-funnel-label">{label}</span>
+        <span className="admin-funnel-value">{value} <span className="admin-funnel-pct">(%{pct})</span></span>
+      </div>
     </div>
   )
 }

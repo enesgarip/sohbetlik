@@ -95,6 +95,6 @@ Core slogan:
 - Result AI generation uses Groq (Llama 3.3 70B) via Vercel Function (`api/summary.ts`); falls back to local logic if API unavailable. Results page shows a green "Cevaplarınıza özel AI analizi" badge when AI insights are present. `GROQ_API_KEY` env var needed on Vercel production.
 - Simulate-guest UI button removed; `api/simulate-guest.ts` endpoint kept for programmatic testing only.
 - Initial sessions still start at Level 1. After both participants complete the room, the results page can offer the next level through Level 4.
-- Behavioral tendency `answerWeights` are currently populated for Levels 1-2; Levels 3-4 can be weighted later so the new tendency cards reflect deeper-level answers too.
+- Behavioral tendency `answerWeights` are populated for all Levels 1-4; tendency cards reflect all levels.
 - `rooms.previous_room_id` is now written for next-level rooms; the current hard non-repeat guarantee covers the immediately previous room's question slugs.
 - Guest device history cannot be excluded at initial room creation (guest joins later); the room-chain layer handles the next-level hard guarantee.

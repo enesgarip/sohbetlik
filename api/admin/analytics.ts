@@ -21,6 +21,8 @@ type AnswerRow = {
   id: string
   room_id: string
   participant_id: string
+  question_id: string
+  answer_value: unknown
   answered_at: string
 }
 
@@ -110,7 +112,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const [rooms, participants, answers, roomQuestions, questions] = await Promise.all([
       fetchAllRows<RoomRow>(supabase, 'rooms', 'id, status, selected_level, question_count, created_at'),
       fetchAllRows<ParticipantRow>(supabase, 'participants', 'id, room_id, joined_at'),
-      fetchAllRows<AnswerRow>(supabase, 'answers', 'id, room_id, participant_id, answered_at'),
+      fetchAllRows<AnswerRow>(supabase, 'answers', 'id, room_id, participant_id, question_id, answer_value, answered_at'),
       fetchAllRows<RoomQuestionRow>(supabase, 'room_questions', 'room_id, question_id'),
       fetchAllRows<QuestionRow>(supabase, 'questions', 'id, level'),
     ])
@@ -195,6 +197,82 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       ? Math.round(totalAnswers / totalRooms)
       : 0
 
+    // ── Funnel ──
+    const funnel = {
+      created: totalRooms,
+      paired: pairedRooms,
+      atLeastOneAnswer: roomStats.filter((s) => s.answerCount > 0).length,
+      oneCompleted: roomStats.filter((s) => s.completedParticipantCount >= 1).length,
+      bothCompleted: completedRooms,
+    }
+
+    // ── Drop-off analysis ──
+    const dropoffBuckets: Record<string, number> = { '0': 0, '1-5': 0, '6-11': 0, '12-17': 0, '18-23': 0, '24': 0 }
+    for (const stats of roomStats) {
+      if (stats.isCompleted) continue
+      for (const p of (participantsByRoom[stats.room.id] ?? [])) {
+        const key = `${stats.room.id}:${p.id}`
+        const count = answerCountByParticipant[key] ?? 0
+        if (count === 0) dropoffBuckets['0']++
+        else if (count >= 24) dropoffBuckets['24']++
+        else if (count <= 5) dropoffBuckets['1-5']++
+        else if (count <= 11) dropoffBuckets['6-11']++
+        else if (count <= 17) dropoffBuckets['12-17']++
+        else dropoffBuckets['18-23']++
+      }
+    }
+
+    // ── Question popularity ──
+    const questionAnswerCounts: Record<string, { total: number; distribution: Record<string, number> }> = {}
+    for (const ans of answers) {
+      if (!ans.question_id) continue
+      questionAnswerCounts[ans.question_id] ??= { total: 0, distribution: {} }
+      questionAnswerCounts[ans.question_id].total++
+      const val = ans.answer_value
+      if (val !== null && val !== undefined) {
+        const key = typeof val === 'object' ? JSON.stringify(val) : String(val)
+        questionAnswerCounts[ans.question_id].distribution[key] = (questionAnswerCounts[ans.question_id].distribution[key] ?? 0) + 1
+      }
+    }
+    const topQuestions = Object.entries(questionAnswerCounts)
+      .sort(([, a], [, b]) => b.total - a.total)
+      .slice(0, 20)
+      .map(([qId, data]) => ({ questionId: qId, ...data }))
+
+    // ── Hourly pattern ──
+    const hourlyPattern: Record<number, number> = {}
+    for (const { room } of roomStats) {
+      if (!room.created_at) continue
+      const hour = new Date(room.created_at).getUTCHours()
+      hourlyPattern[hour] = (hourlyPattern[hour] ?? 0) + 1
+    }
+    const hourlyData = Array.from({ length: 24 }, (_, h) => ({
+      hour: h,
+      count: hourlyPattern[h] ?? 0,
+    }))
+
+    // ── Avg completion time (minutes) ──
+    const completionTimes: number[] = []
+    for (const stats of roomStats) {
+      if (!stats.isCompleted) continue
+      const roomAnswers = answers.filter((a) => a.room_id === stats.room.id)
+      if (roomAnswers.length === 0) continue
+      const lastAnswerTime = roomAnswers.reduce((latest, a) => {
+        const t = new Date(a.answered_at).getTime()
+        return t > latest ? t : latest
+      }, 0)
+      const roomCreated = new Date(stats.room.created_at).getTime()
+      if (lastAnswerTime > roomCreated) {
+        completionTimes.push((lastAnswerTime - roomCreated) / 60000)
+      }
+    }
+    const avgCompletionMinutes = completionTimes.length > 0
+      ? Math.round(completionTimes.reduce((s, v) => s + v, 0) / completionTimes.length)
+      : null
+    const medianCompletionMinutes = completionTimes.length > 0
+      ? Math.round(completionTimes.sort((a, b) => a - b)[Math.floor(completionTimes.length / 2)])
+      : null
+
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=120')
     return res.status(200).json({
       overview: {
@@ -208,8 +286,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         pairRate,
         totalAnswers,
         avgAnswersPerRoom,
+        avgCompletionMinutes,
+        medianCompletionMinutes,
       },
+      funnel,
+      dropoff: dropoffBuckets,
       levelDistribution: levelDist,
+      hourlyPattern: hourlyData,
+      topQuestions,
       dailyRooms: Object.entries(dailyRooms)
         .sort(([a], [b]) => a.localeCompare(b))
         .map(([date, count]) => ({ date, count })),

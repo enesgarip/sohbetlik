@@ -1303,6 +1303,91 @@ output {
   border-color: rgba(34, 32, 28, 0.3);
 }
 
+/* Answer comparison */
+.r-compare-summary {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.r-compare-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.r-compare-item {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--card);
+  border: 1px solid rgba(34, 32, 28, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.r-compare-item.same {
+  border-color: rgba(139, 166, 120, 0.15);
+}
+
+.r-compare-item.diff {
+  border-color: rgba(200, 149, 108, 0.15);
+}
+
+.r-compare-prompt {
+  font-size: 0.82rem;
+  font-weight: 620;
+  color: var(--ink);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.r-compare-answers {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.r-compare-answer {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.r-compare-who {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+  width: 24px;
+}
+
+.r-compare-answer.you .r-compare-who {
+  color: #c8956c;
+}
+
+.r-compare-answer.them .r-compare-who {
+  color: var(--muted);
+}
+
+.r-compare-val {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+.r-compare-match-badge {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 0.68rem;
+  font-weight: 650;
+  color: rgba(90, 130, 70, 0.85);
+  background: rgba(139, 166, 120, 0.1);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
 /* Community norms */
 .r-norms-list {
   display: flex;
@@ -1481,6 +1566,90 @@ output {
   font-size: 0.55rem;
   color: var(--muted);
   white-space: nowrap;
+}
+
+/* Funnel */
+.admin-funnel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-funnel-step {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-funnel-bar-track {
+  height: 8px;
+  background: rgba(34, 32, 28, 0.06);
+  border-radius: 4px;
+}
+
+.admin-funnel-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #c8956c, #ddb892);
+  transition: width 0.4s ease;
+}
+
+.admin-funnel-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.admin-funnel-label {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.admin-funnel-value {
+  font-size: 0.78rem;
+  font-weight: 650;
+  color: var(--ink);
+}
+
+.admin-funnel-pct {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* Drop-off bar variant */
+.admin-bar-fill.dropoff {
+  background: linear-gradient(90deg, #d4836b, #e0a38a);
+}
+
+/* Hourly pattern */
+.admin-hourly {
+  display: flex;
+  gap: 2px;
+  align-items: flex-end;
+  height: 80px;
+  padding-top: 8px;
+}
+
+.admin-hourly-bar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+}
+
+.admin-hourly-fill {
+  width: 100%;
+  min-height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: rgba(139, 166, 120, 0.6);
+}
+
+.admin-hourly-label {
+  font-size: 0.5rem;
+  color: var(--muted);
 }
 
 .admin-footer {

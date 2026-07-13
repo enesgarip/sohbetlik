@@ -1047,6 +1047,11 @@ function ResultsPage() {
         </div>
       )}
 
+      {/* Answer Comparison */}
+      {hasBothAnswers && participant && counterpart && (
+        <AnswerComparison questions={questions} personAnswers={participant.answers} counterpartAnswers={counterpart.answers} />
+      )}
+
       {/* Community Norms */}
       {participant && Object.keys(norms).length > 0 && (
         <div className="r-block">
@@ -1102,6 +1107,77 @@ function ResultsPage() {
         </p>
       )}
     </section>
+  )
+}
+
+function AnswerComparison({ questions, personAnswers, counterpartAnswers }: {
+  questions: import('./types/domain').Question[]
+  personAnswers: import('./types/domain').AnswerMap
+  counterpartAnswers: import('./types/domain').AnswerMap
+}) {
+  const [expanded, setExpanded] = useState(false)
+
+  const comparisons = useMemo(() => {
+    const items: Array<{
+      question: import('./types/domain').Question
+      personLabel: string
+      counterpartLabel: string
+      isSame: boolean
+    }> = []
+    for (const q of questions) {
+      const pVal = personAnswers[q.id]
+      const cVal = counterpartAnswers[q.id]
+      if (pVal === undefined || cVal === undefined) continue
+      const pLabel = getAnswerLabel(q, pVal)
+      const cLabel = getAnswerLabel(q, cVal)
+      items.push({ question: q, personLabel: pLabel, counterpartLabel: cLabel, isSame: String(pVal) === String(cVal) })
+    }
+    return items
+  }, [questions, personAnswers, counterpartAnswers])
+
+  const sameCount = comparisons.filter((c) => c.isSame).length
+  const diffCount = comparisons.length - sameCount
+
+  const highlights = useMemo(() => {
+    const same = comparisons.filter((c) => c.isSame).slice(0, 2)
+    const diff = comparisons.filter((c) => !c.isSame).slice(0, 2)
+    return [...diff, ...same]
+  }, [comparisons])
+
+  if (comparisons.length === 0) return null
+
+  const visibleItems = expanded ? comparisons : highlights
+
+  return (
+    <div className="r-block">
+      <div className="r-block-header">
+        <span className="r-block-label">Cevap Karşılaştırma</span>
+        <span className="r-compare-summary">{sameCount} aynı · {diffCount} farklı</span>
+      </div>
+      <div className="r-compare-list">
+        {visibleItems.map((c) => (
+          <div className={`r-compare-item ${c.isSame ? 'same' : 'diff'}`} key={c.question.id}>
+            <p className="r-compare-prompt">{c.question.prompt}</p>
+            <div className="r-compare-answers">
+              <div className="r-compare-answer you">
+                <span className="r-compare-who">Sen</span>
+                <span className="r-compare-val">{c.personLabel}</span>
+              </div>
+              <div className="r-compare-answer them">
+                <span className="r-compare-who">O</span>
+                <span className="r-compare-val">{c.counterpartLabel}</span>
+              </div>
+            </div>
+            {c.isSame && <span className="r-compare-match-badge">Aynı cevap</span>}
+          </div>
+        ))}
+      </div>
+      {comparisons.length > highlights.length && (
+        <button className="r-btn ghost" type="button" onClick={() => setExpanded(!expanded)} style={{ fontSize: '0.8rem' }}>
+          {expanded ? 'Daha az göster' : `Tümünü göster (${comparisons.length})`}
+        </button>
+      )}
+    </div>
   )
 }
 
