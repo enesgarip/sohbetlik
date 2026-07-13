@@ -26,7 +26,6 @@ import {
   Routes,
   useNavigate,
   useParams,
-  useSearchParams,
 } from 'react-router-dom'
 import './App.css'
 import {
@@ -376,8 +375,6 @@ function RoomPage() {
     return <Navigate to={`/join/${room.code}`} replace />
   }
 
-  const [liveMode, setLiveMode] = useState(false)
-
   return (
     <section className="room-layout" aria-labelledby="room-title">
       <div className="room-copy">
@@ -409,19 +406,9 @@ function RoomPage() {
       <ProgressList rows={progressRows} />
 
       <button
-        className={`live-mode-toggle ${liveMode ? 'active' : ''}`}
-        type="button"
-        onClick={() => setLiveMode(!liveMode)}
-      >
-        <Users size={16} aria-hidden="true" />
-        <span>Canlı mod</span>
-        <span className="live-mode-hint">{liveMode ? 'Açık — birlikte cevaplayın' : 'Kapalı — ayrı ayrı cevaplayın'}</span>
-      </button>
-
-      <button
         className="primary-action wide"
         type="button"
-        onClick={() => navigate(`/answer/${room.id}/${viewerParticipant.id}${liveMode ? '?live=1' : ''}`)}
+        onClick={() => navigate(`/answer/${room.id}/${viewerParticipant.id}`)}
       >
         <span>Soru setine başla</span>
         <ArrowRight size={18} aria-hidden="true" />
@@ -552,16 +539,11 @@ function JoinPage() {
 function AnswerPage() {
   const { roomId, participantId } = useParams()
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const isLiveMode = searchParams.get('live') === '1'
   const { room, setRoom, isLoading } = useRoom(roomId)
   const questions = useMemo(() => (room ? getRoomQuestions(room) : []), [room])
   const participant = room && participantId ? getParticipant(room, participantId) : null
-  const counterpart = room?.participants.find((p) => p.id !== participantId) ?? null
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
-  const [showReveal, setShowReveal] = useState(false)
   const sliderTimerRef = useRef<number | null>(null)
-  const revealTimerRef = useRef<number | null>(null)
 
   useEffect(() => {
     if (activeIndex === null && room && participant) {
@@ -574,9 +556,6 @@ function AnswerPage() {
       if (sliderTimerRef.current !== null) {
         window.clearTimeout(sliderTimerRef.current)
       }
-      if (revealTimerRef.current !== null) {
-        window.clearTimeout(revealTimerRef.current)
-      }
     }
   }, [])
 
@@ -585,17 +564,9 @@ function AnswerPage() {
   const answerCount = participant ? Object.keys(participant.answers).length : 0
   const progress = questions.length > 0 ? Math.round((answerCount / questions.length) * 100) : 0
   const selectedAnswer = activeQuestion && participant ? participant.answers[activeQuestion.id] : undefined
-  const counterpartAnswer = activeQuestion && counterpart ? counterpart.answers[activeQuestion.id] : undefined
-  const bothAnswered = selectedAnswer !== undefined && counterpartAnswer !== undefined
   // Slider always has a visual value (defaults to 3), so allow continuing even without explicit interaction
   const canContinue = selectedAnswer !== undefined || activeQuestion?.type === 'slider'
   const progressRows = room ? getProgressRows(room, questions.length) : []
-
-  // Live mode: auto-show reveal when both have answered
-  useEffect(() => {
-    if (!isLiveMode || !bothAnswered || showReveal) return
-    setShowReveal(true)
-  }, [isLiveMode, bothAnswered, showReveal])
   const displayOptions = useMemo(
     () => (room && activeQuestion ? getDisplayOptions(room.id, activeQuestion) : []),
     [room, activeQuestion],
@@ -676,7 +647,6 @@ function AnswerPage() {
     }
 
     flushSliderDebounce()
-    setShowReveal(false)
 
     if (safeActiveIndex === questions.length - 1) {
       navigate(`/waiting/${room.id}/${participantId}`)
@@ -748,56 +718,12 @@ function AnswerPage() {
           </div>
         )}
 
-        {isLiveMode && canContinue && !bothAnswered && (
-          <div className="live-waiting">
-            <div className="live-waiting-pulse" />
-            <span>Karşı tarafın cevabı bekleniyor…</span>
-          </div>
-        )}
-
-        {isLiveMode && showReveal && activeQuestion && counterpartAnswer !== undefined && selectedAnswer !== undefined && (
-          <div className="live-reveal">
-            <div className="live-reveal-header">
-              {String(selectedAnswer) === String(counterpartAnswer) ? '🎯' : '✨'}
-              <span>{String(selectedAnswer) === String(counterpartAnswer) ? 'Aynı cevap!' : 'Farklı bakış açıları'}</span>
-            </div>
-            <div className="live-reveal-answers">
-              <div className="live-reveal-answer you">
-                <span className="live-reveal-who">Sen</span>
-                <span className="live-reveal-val">{getAnswerLabel(activeQuestion, selectedAnswer)}</span>
-              </div>
-              <div className="live-reveal-answer them">
-                <span className="live-reveal-who">O</span>
-                <span className="live-reveal-val">{getAnswerLabel(activeQuestion, counterpartAnswer)}</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {isLiveMode ? (
-          <button
-            className="primary-action wide"
-            type="button"
-            disabled={!bothAnswered}
-            onClick={nextQuestion}
-          >
-            <span>{safeActiveIndex === questions.length - 1 ? 'Sonuçlara git' : 'Sonraki soru'}</span>
-            <ArrowRight size={18} aria-hidden="true" />
-          </button>
-        ) : (
-          <button className="primary-action wide" type="button" disabled={!canContinue} onClick={nextQuestion}>
-            <span>{safeActiveIndex === questions.length - 1 ? 'Cevapları tamamla' : 'Sonraki soru'}</span>
-            <ArrowRight size={18} aria-hidden="true" />
-          </button>
-        )}
+        <button className="primary-action wide" type="button" disabled={!canContinue} onClick={nextQuestion}>
+          <span>{safeActiveIndex === questions.length - 1 ? 'Cevapları tamamla' : 'Sonraki soru'}</span>
+          <ArrowRight size={18} aria-hidden="true" />
+        </button>
       </article>
 
-      {isLiveMode && (
-        <div className="live-mode-badge">
-          <Users size={14} aria-hidden="true" />
-          Canlı mod
-        </div>
-      )}
       <ProgressList rows={progressRows} />
     </section>
   )
