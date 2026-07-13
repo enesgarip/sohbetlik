@@ -12,6 +12,7 @@ export type SliderScale = {
   min: number
   max: number
   lowLabel: string
+  midLabel?: string
   highLabel: string
 }
 

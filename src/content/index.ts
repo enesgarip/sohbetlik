@@ -28,6 +28,7 @@ export function toDomainQuestion(content: QuestionContent): Question {
     prompt: content.prompt,
     options: (content.options ?? []).map(({ id, label }) => ({ id, label })),
     lowLabel: content.slider?.lowLabel,
+    midLabel: content.slider?.midLabel,
     highLabel: content.slider?.highLabel,
     shuffleOptions: content.shuffleOptions,
   }

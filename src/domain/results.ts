@@ -15,10 +15,11 @@ export function getAnswerLabel(question: Question, value: AnswerValue | undefine
     // Slider cevabı asla sayı olarak gösterilmez; konum uç etiketleriyle anlatılır.
     const numeric = typeof value === 'number' ? value : Number(value)
     const low = question.lowLabel
+    const mid = question.midLabel
     const high = question.highLabel
 
     if (!Number.isFinite(numeric) || !low || !high) {
-      return 'İkisinin ortasında'
+      return mid ?? 'İkisinin ortasında'
     }
 
     if (numeric <= 1) {
@@ -37,7 +38,7 @@ export function getAnswerLabel(question: Question, value: AnswerValue | undefine
       return `Tam "${high}"`
     }
 
-    return 'İkisinin ortasında'
+    return mid ?? 'İkisinin ortasında'
   }
 
   return question.options.find((option) => option.id === value)?.label ?? String(value)

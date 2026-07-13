@@ -798,6 +798,8 @@ export const level3Questions: QuestionContent[] = [
     funScore: 3,
     prompt: 'Hayatında öncelik sıralaması nereye yakın?',
     slider: {
+      min: 1,
+      max: 5,
       lowLabel: 'Kariyer ve kişisel gelişim',
       highLabel: 'İlişkiler ve deneyimler',
       midLabel: 'Dengede tutmaya çalışırım',
@@ -879,6 +881,8 @@ export const level3Questions: QuestionContent[] = [
     funScore: 3,
     prompt: 'Aynı evde yaşarken sessizlik anları sence ne ifade eder?',
     slider: {
+      min: 1,
+      max: 5,
       lowLabel: 'Huzurun ta kendisi — en güzel anlar',
       highLabel: 'Tedirgin eder — bir şeyler mi var acaba?',
       midLabel: 'Duruma bağlı',
@@ -1014,6 +1018,8 @@ export const level3Questions: QuestionContent[] = [
     funScore: 4,
     prompt: 'Sosyal medyada ne kadar paylaşırsın?',
     slider: {
+      min: 1,
+      max: 5,
       lowLabel: 'Her şeyi paylaşırım — hayatım açık kitap',
       highLabel: 'Neredeyse hiç paylaşmam — hayalet hesap',
       midLabel: 'Ara sıra, seçerek',

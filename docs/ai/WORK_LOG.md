@@ -1,5 +1,13 @@
 # Work Log
 
+## 2026-07-13 (Codex, Vercel build fix)
+
+- Investigated repeated Vercel production build failures after `cf7fc49`; local checkout was 14 commits behind, so the previously passing local build was not using the same source as Vercel.
+- Reproduced the Vercel `npm run build` failure locally after fast-forwarding to `origin/main`.
+- Fixed TypeScript build blockers: removed unused result/share-card symbols, added `midLabel` to slider content/domain types and mapping, and added missing `min: 1` / `max: 5` to the newly added slider questions.
+- Installed the new `html-to-image` dependency already present in `package.json`/`package-lock.json`.
+- Checks: `npm run build` passed, `npm run lint` passed with existing warnings, and `npm run test:unit` passed (24).
+
 ## 2026-07-08 (Codex, Level 3-4 continuation)
 
 - Picked up after `908f5df` (`Add Level 3 and Level 4 question pools with full 4-level progression`): code was committed locally and `main` was ahead of `origin/main` by one commit; the Level 3-4 seed migration was present but untracked.

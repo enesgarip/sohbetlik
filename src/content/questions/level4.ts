@@ -742,6 +742,8 @@ export const level4Questions: QuestionContent[] = [
     funScore: 3,
     prompt: 'Güveni kırılan birini affetmek senin için ne kadar kolay?',
     slider: {
+      min: 1,
+      max: 5,
       lowLabel: 'Affederim ama unutmam — güven yeniden inşa edilir',
       highLabel: 'Çok zor — güven bir kere kırılırsa tamir olmaz',
       midLabel: 'Duruma göre değişir',
@@ -827,6 +829,8 @@ export const level4Questions: QuestionContent[] = [
     funScore: 3,
     prompt: 'Ailenle ilişkinde gelecekte nasıl bir denge istiyorsun?',
     slider: {
+      min: 1,
+      max: 5,
       lowLabel: 'Çok yakın — sık görüşme, iç içe',
       highLabel: 'Mesafeli ama sevgi dolu — kendi hayatım önce',
       midLabel: 'Dengede tutmaya çalışırım',
@@ -937,6 +941,8 @@ export const level4Questions: QuestionContent[] = [
     funScore: 3,
     prompt: 'Ev tamamen boş — sadece sen varsın. Nasıl hissedersin?',
     slider: {
+      min: 1,
+      max: 5,
       lowLabel: 'Harika! En verimli anlarım bunlar',
       highLabel: 'Huzursuz olurum — biri olsa daha iyi',
       midLabel: 'Keyifli ama uzun süre istemem',

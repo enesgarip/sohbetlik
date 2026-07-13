@@ -1,16 +1,10 @@
 import { useRef, useState, useCallback } from 'react'
 import { toPng } from 'html-to-image'
-import type { BehaviorSnapshot, TendencyScore, AreaSummary } from '../domain/tendencyScoring'
+import type { BehaviorSnapshot, TendencyScore } from '../domain/tendencyScoring'
 
 type ShareCardProps = {
   snapshot: BehaviorSnapshot
   roomCode: string
-}
-
-function getPositionLabel(score: number, spectrum: [string, string]): string {
-  if (score <= -1) return spectrum[0]
-  if (score >= 1) return spectrum[1]
-  return 'Dengede'
 }
 
 function getTopTendencies(snapshot: BehaviorSnapshot): TendencyScore[] {

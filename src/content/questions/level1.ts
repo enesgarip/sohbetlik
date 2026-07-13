@@ -881,6 +881,8 @@ export const level1Questions: QuestionContent[] = [
     funScore: 4,
     prompt: 'Hafta ortası "Bu akşam buluşalım mı?" mesajı geldi. İçinden ne geçer?',
     slider: {
+      min: 1,
+      max: 5,
       lowLabel: '"Harika, hemen hazırlanayım!"',
       highLabel: '"Bu akşam mı? Ama benim dizim var..."',
       midLabel: 'Kime göre değişir',
@@ -937,6 +939,8 @@ export const level1Questions: QuestionContent[] = [
     funScore: 3,
     prompt: 'Yeni tanıştığın biriyle ne kadar çabuk açılırsın?',
     slider: {
+      min: 1,
+      max: 5,
       lowLabel: 'Hemen samimi olurum, hayatımı anlatırım',
       highLabel: 'Yavaş yavaş, güven zamanla olur',
       midLabel: 'Konuya göre değişir',

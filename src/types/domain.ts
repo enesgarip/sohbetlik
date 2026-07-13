@@ -15,6 +15,7 @@ export type Question = {
   prompt: string
   options: QuestionOption[]
   lowLabel?: string
+  midLabel?: string
   highLabel?: string
   // true ise seçenek sırası cevap ekranında (oda bazlı sabit seed'le) karıştırılır.
   shuffleOptions?: boolean

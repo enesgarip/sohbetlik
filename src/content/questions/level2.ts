@@ -879,6 +879,8 @@ export const level2Questions: QuestionContent[] = [
     funScore: 3,
     prompt: 'Kalabalık bir yerde uzun süre kaldıktan sonra kendine gelme süren?',
     slider: {
+      min: 1,
+      max: 5,
       lowLabel: 'Hemen toplarım, sorun değil',
       highLabel: 'Yarın gün bana lazım, kimseyle konuşmam',
       midLabel: 'Birkaç saat yeter',

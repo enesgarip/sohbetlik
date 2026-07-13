@@ -868,8 +868,6 @@ function ResultsPage() {
   }, [hasBothAnswers, participant, counterpart, questions])
 
   const insights = aiInsights ?? localInsights
-  const lastAnsweredQuestion =
-    participant && [...questions].reverse().find((question) => participant.answers[question.id] !== undefined)
 
   function resetRoom() {
     if (room) {
