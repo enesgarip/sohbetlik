@@ -34,6 +34,7 @@ import { getDisplayOptions } from './domain/optionOrder'
 import { buildConversationInsights, getAnswerLabel } from './domain/results'
 import { calculateTendencies, compareTendencies } from './domain/tendencyScoring'
 import type { AreaSummary } from './domain/tendencyScoring'
+import { ShareCard } from './components/ShareCard'
 import { useRoom } from './hooks/useRoom'
 import {
   applyPendingAnswers,
@@ -1004,6 +1005,9 @@ function ResultsPage() {
             Seviye {nextLevel}'ye geç
             <ArrowRight size={16} aria-hidden="true" />
           </button>
+        )}
+        {personTendencies && (
+          <ShareCard snapshot={personTendencies} roomCode={room.code} />
         )}
         <div className="r-btn-row">
           <button className="r-btn ghost" type="button" onClick={() => navigate(`/room/${room.id}`)}>
