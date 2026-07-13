@@ -7,6 +7,9 @@
 - Fixed TypeScript build blockers: removed unused result/share-card symbols, added `midLabel` to slider content/domain types and mapping, and added missing `min: 1` / `max: 5` to the newly added slider questions.
 - Installed the new `html-to-image` dependency already present in `package.json`/`package-lock.json`.
 - Checks: `npm run build` passed, `npm run lint` passed with existing warnings, and `npm run test:unit` passed (24).
+- Investigated the admin analytics dashboard: production has 85 test rooms from 2026-07-07 through 2026-07-09, all with DB `rooms.status = waiting` because the MVP intentionally never updates room status.
+- Fixed `api/admin/analytics.ts` to infer completed/active/waiting rooms from participants and answers, page through Supabase rows past the 1000-row API response cap, and infer level distribution from the room's actual questions.
+- Checks: `npm run build` passed, `npm run lint` passed with existing warnings, and `npm run test:unit` passed (24).
 
 ## 2026-07-08 (Codex, Level 3-4 continuation)
 
