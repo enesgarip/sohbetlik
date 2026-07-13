@@ -1,5 +1,10 @@
 # Work Log
 
+## 2026-07-13 (Claude, live mode + batch 3)
+
+- **Canlı mod**: RoomPage'de "Canlı mod" toggle'ı → `?live=1` URL parametresiyle AnswerPage'e geçiş. Canlı modda: kullanıcı cevapladıktan sonra partner'ın cevabını bekler (pulsing dot animasyonu), ikisi de cevapladığında mini reveal kartı çıkar (aynı/farklı badge, slide-in animasyon), "Sonraki soru" butonu ancak ikisi de cevaplayınca aktif olur. Son soruda "Sonuçlara git" olarak değişir. `.live-mode-toggle`, `.live-waiting`, `.live-reveal`, `.live-mode-badge` CSS class'ları.
+- Committed `d80e88c` and pushed to main.
+
 ## 2026-07-13 (Claude, batch 3 — reactions, bookmarks, time stats, PDF, invite page)
 
 - **Emoji reactions**: `ReactionBar` bileşeni — insight'lar ve cevap karşılaştırmalarına 😂🤔💯❤️😮 tepki toggle. localStorage'da persist. `src/lib/reactions.ts` modülü.
