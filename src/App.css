@@ -1429,6 +1429,158 @@ output {
   line-height: 1.4;
 }
 
+/* ── Reaction Bar ── */
+
+.r-reaction-bar {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.r-reaction-btn {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  opacity: 0.45;
+  transition: all 0.15s;
+}
+
+.r-reaction-btn:hover {
+  opacity: 0.75;
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.r-reaction-btn.active {
+  opacity: 1;
+  border-color: var(--accent, #c8956c);
+  background: rgba(200, 149, 108, 0.1);
+}
+
+/* ── Bookmark Button ── */
+
+.r-compare-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.r-bookmark-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 2px;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.r-bookmark-btn.favorite {
+  color: #e6a52e;
+}
+
+.r-bookmark-btn.discussed {
+  color: #5a8a42;
+}
+
+/* ── Time Stats ── */
+
+.r-time-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.r-time-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(200, 149, 108, 0.06);
+}
+
+.r-time-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.r-time-label {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.r-time-highlight {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.02);
+  margin-bottom: 8px;
+}
+
+.r-time-highlight > span {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.r-time-hl-label {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 0;
+}
+
+.r-time-hl-prompt {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 2px 0 0;
+  line-height: 1.35;
+}
+
+.r-block-icon {
+  color: var(--muted);
+}
+
+/* ── Join Page Enhanced ── */
+
+.join-desc {
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: var(--ink);
+  max-width: 340px;
+  text-align: center;
+}
+
+.join-info-row {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.join-info-card {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: rgba(200, 149, 108, 0.08);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.join-info-card svg {
+  color: var(--muted);
+}
+
 /* ── Admin Dashboard ── */
 
 .admin-login {

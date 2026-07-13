@@ -71,6 +71,7 @@ function mapParticipant(
   row: ParticipantRow,
   answers: AnswerMap,
   currentUserId: string | null,
+  answerTimestamps?: Record<string, string>,
 ): RoomParticipant {
   const isSelf = currentUserId !== null && row.user_id === currentUserId
 
@@ -80,6 +81,7 @@ function mapParticipant(
     role: row.is_host ? 'host' : 'guest',
     joinedAt: row.joined_at,
     answers,
+    answerTimestamps,
   }
 }
 
@@ -96,7 +98,7 @@ async function getRoomSnapshot(
       .select('question_id, position')
       .eq('room_id', roomId)
       .order('position', { ascending: true }),
-    client.from('answers').select('participant_id, question_id, answer_value').eq('room_id', roomId),
+    client.from('answers').select('participant_id, question_id, answer_value, answered_at').eq('room_id', roomId),
     getQuestionMaps(client),
   ])
 
@@ -111,6 +113,7 @@ async function getRoomSnapshot(
   }
 
   const answersByParticipant = new Map<string, AnswerMap>()
+  const timestampsByParticipant = new Map<string, Record<string, string>>()
 
   for (const answer of answersRes.data ?? []) {
     const slug = maps.slugById.get(answer.question_id)
@@ -126,6 +129,12 @@ async function getRoomSnapshot(
     const target = answersByParticipant.get(answer.participant_id) ?? {}
     target[slug] = answer.answer_value
     answersByParticipant.set(answer.participant_id, target)
+
+    if (answer.answered_at) {
+      const ts = timestampsByParticipant.get(answer.participant_id) ?? {}
+      ts[slug] = answer.answered_at as string
+      timestampsByParticipant.set(answer.participant_id, ts)
+    }
   }
 
   return {
@@ -139,7 +148,7 @@ async function getRoomSnapshot(
       return slug ? [slug] : []
     }),
     participants: (participantsRes.data ?? []).map((row) =>
-      mapParticipant(row, answersByParticipant.get(row.id) ?? {}, currentUserId),
+      mapParticipant(row, answersByParticipant.get(row.id) ?? {}, currentUserId, timestampsByParticipant.get(row.id)),
     ),
   }
 }

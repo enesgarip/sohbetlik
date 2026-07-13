@@ -2,12 +2,15 @@ import type { AnswerMap, AnswerValue, Question } from '../types/domain'
 
 export type ParticipantRole = 'host' | 'guest'
 
+export type AnswerTimestamps = Record<string, string>
+
 export type RoomParticipant = {
   id: string
   label: string
   role: ParticipantRole
   joinedAt: string
   answers: AnswerMap
+  answerTimestamps?: AnswerTimestamps
 }
 
 export type ConversationRoom = {

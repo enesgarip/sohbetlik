@@ -1,12 +1,15 @@
 import {
   ArrowRight,
   CheckCircle2,
+  Clock,
   Copy,
+  Download,
   HeartHandshake,
   Link as LinkIcon,
   MessageCircle,
   RotateCcw,
   Sparkles,
+  Star,
   Users,
 } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
@@ -37,6 +40,10 @@ import type { AreaSummary } from './domain/tendencyScoring'
 import { ShareCard } from './components/ShareCard'
 import { AdminDashboard } from './components/AdminDashboard'
 import { useCommunityNorms, getNormLabel } from './lib/communityNorms'
+import { REACTION_OPTIONS, getReactions, toggleReaction, type ReactionType } from './lib/reactions'
+import { cycleBookmark, getBookmark, type BookmarkStatus } from './lib/questionBookmarks'
+import { calculateTimeStats, formatDuration } from './lib/answerStats'
+import { generateReport } from './lib/pdfReport'
 import { useRoom } from './hooks/useRoom'
 import {
   applyPendingAnswers,
@@ -486,14 +493,32 @@ function JoinPage() {
     )
   }
 
+  const hostParticipant = room.participants.find((p) => p.role === 'host')
+  const questionCount = room.questionIds.length
+
   return (
     <section className="join-layout" aria-labelledby="join-title">
       <div className="pulse-orbit">
         <HeartHandshake size={34} aria-hidden="true" />
       </div>
       <span className="soft-label">Oda {room.code}</span>
-      <h1 id="join-title">Davete katıl.</h1>
-      <p>Aynı soru setini kendi sıranla cevaplayacaksın; sonuçta konuşmayı açacak başlıklar birlikte görünecek.</p>
+      <h1 id="join-title">Seni bekliyorlar!</h1>
+      <p className="join-desc">
+        {hostParticipant && Object.keys(hostParticipant.answers).length > 0
+          ? `Karşı taraf çoktan başladı! ${questionCount} soruyu kendi sıranla cevapla, sonra birlikte keşfedin.`
+          : `${questionCount} soruyu ayrı ayrı cevaplayacaksınız, sonra ortak noktalarınızı birlikte keşfedeceksiniz.`
+        }
+      </p>
+      <div className="join-info-row">
+        <div className="join-info-card">
+          <Users size={16} aria-hidden="true" />
+          <span>{room.participants.length} kişi odada</span>
+        </div>
+        <div className="join-info-card">
+          <Clock size={16} aria-hidden="true" />
+          <span>~{Math.round(questionCount * 0.35)} dk</span>
+        </div>
+      </div>
       <button className="primary-action" type="button" disabled={isJoining} onClick={() => void joinRoom()}>
         <span>Sorulara geç</span>
         <ArrowRight size={18} aria-hidden="true" />
@@ -948,6 +973,24 @@ function ResultsPage() {
 
   const insights = aiInsights ?? localInsights
 
+  const timeStats = useMemo(
+    () => (participant ? calculateTimeStats(questions, participant.answerTimestamps) : null),
+    [questions, participant],
+  )
+
+  function handleDownloadReport() {
+    if (!room || !participant) return
+    generateReport({
+      roomCode: room.code,
+      level: currentLevel,
+      questions,
+      personAnswers: participant.answers,
+      counterpartAnswers: counterpart?.answers,
+      insights,
+      tendencies: personTendencies,
+    })
+  }
+
   function resetRoom() {
     if (room) {
       void roomRepository.deleteRoom(room.id)
@@ -1119,6 +1162,7 @@ function ResultsPage() {
                 <div>
                   <p className="r-insight-title">{insight.title}</p>
                   <p className="r-insight-body">{insight.body}</p>
+                  <ReactionBar itemKey={`insight-${insight.tone}-${insight.title}`} />
                 </div>
               </article>
             ))}
@@ -1161,7 +1205,7 @@ function ResultsPage() {
 
       {/* Answer Comparison */}
       {hasBothAnswers && participant && counterpart && (
-        <AnswerComparison questions={questions} personAnswers={participant.answers} counterpartAnswers={counterpart.answers} />
+        <AnswerComparison roomId={room.id} questions={questions} personAnswers={participant.answers} counterpartAnswers={counterpart.answers} />
       )}
 
       {/* Community Norms */}
@@ -1187,6 +1231,44 @@ function ResultsPage() {
         </div>
       )}
 
+      {/* Time Stats */}
+      {timeStats && (
+        <div className="r-block">
+          <div className="r-block-header">
+            <span className="r-block-label">Zamanlama</span>
+            <Clock size={14} className="r-block-icon" aria-hidden="true" />
+          </div>
+          <div className="r-time-stats">
+            <div className="r-time-card">
+              <span className="r-time-value">{formatDuration(timeStats.totalSeconds)}</span>
+              <span className="r-time-label">Toplam süre</span>
+            </div>
+            <div className="r-time-card">
+              <span className="r-time-value">{formatDuration(timeStats.avgSeconds)}</span>
+              <span className="r-time-label">Soru başına ort.</span>
+            </div>
+          </div>
+          {timeStats.fastest && (
+            <div className="r-time-highlight">
+              <span>⚡</span>
+              <div>
+                <p className="r-time-hl-label">En hızlı cevap ({Math.round(timeStats.fastest.durationMs / 1000)} sn)</p>
+                <p className="r-time-hl-prompt">{timeStats.fastest.prompt}</p>
+              </div>
+            </div>
+          )}
+          {timeStats.slowest && (
+            <div className="r-time-highlight">
+              <span>🤔</span>
+              <div>
+                <p className="r-time-hl-label">En çok düşündüğün ({Math.round(timeStats.slowest.durationMs / 1000)} sn)</p>
+                <p className="r-time-hl-prompt">{timeStats.slowest.prompt}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Actions */}
       <div className="r-actions">
         {nextLevel && (
@@ -1203,6 +1285,10 @@ function ResultsPage() {
         {personTendencies && (
           <ShareCard snapshot={personTendencies} roomCode={room.code} level={currentLevel} />
         )}
+        <button className="r-btn ghost" type="button" onClick={handleDownloadReport}>
+          <Download size={15} aria-hidden="true" />
+          Rapor indir
+        </button>
         <div className="r-btn-row">
           <button className="r-btn ghost" type="button" onClick={() => navigate(`/room/${room.id}`)}>
             <LinkIcon size={15} aria-hidden="true" />
@@ -1223,12 +1309,14 @@ function ResultsPage() {
   )
 }
 
-function AnswerComparison({ questions, personAnswers, counterpartAnswers }: {
+function AnswerComparison({ roomId, questions, personAnswers, counterpartAnswers }: {
+  roomId: string
   questions: import('./types/domain').Question[]
   personAnswers: import('./types/domain').AnswerMap
   counterpartAnswers: import('./types/domain').AnswerMap
 }) {
   const [expanded, setExpanded] = useState(false)
+  const [bookmarks, setBookmarks] = useState<Record<string, BookmarkStatus>>({})
 
   const comparisons = useMemo(() => {
     const items: Array<{
@@ -1268,28 +1356,68 @@ function AnswerComparison({ questions, personAnswers, counterpartAnswers }: {
         <span className="r-compare-summary">{sameCount} aynı · {diffCount} farklı</span>
       </div>
       <div className="r-compare-list">
-        {visibleItems.map((c) => (
-          <div className={`r-compare-item ${c.isSame ? 'same' : 'diff'}`} key={c.question.id}>
-            <p className="r-compare-prompt">{c.question.prompt}</p>
-            <div className="r-compare-answers">
-              <div className="r-compare-answer you">
-                <span className="r-compare-who">Sen</span>
-                <span className="r-compare-val">{c.personLabel}</span>
+        {visibleItems.map((c) => {
+          const bm = bookmarks[c.question.id] ?? getBookmark(roomId, c.question.id)
+          return (
+            <div className={`r-compare-item ${c.isSame ? 'same' : 'diff'}`} key={c.question.id}>
+              <div className="r-compare-top">
+                <p className="r-compare-prompt">{c.question.prompt}</p>
+                <button
+                  className={`r-bookmark-btn ${bm ?? ''}`}
+                  type="button"
+                  title={bm === 'favorite' ? 'Konuşalım' : bm === 'discussed' ? 'Konuştuk' : 'İşaretle'}
+                  onClick={() => {
+                    const next = cycleBookmark(roomId, c.question.id)
+                    setBookmarks((prev) => ({ ...prev, [c.question.id]: next }))
+                  }}
+                >
+                  {bm === 'discussed' ? '✅' : <Star size={14} fill={bm === 'favorite' ? 'currentColor' : 'none'} />}
+                </button>
               </div>
-              <div className="r-compare-answer them">
-                <span className="r-compare-who">O</span>
-                <span className="r-compare-val">{c.counterpartLabel}</span>
+              <div className="r-compare-answers">
+                <div className="r-compare-answer you">
+                  <span className="r-compare-who">Sen</span>
+                  <span className="r-compare-val">{c.personLabel}</span>
+                </div>
+                <div className="r-compare-answer them">
+                  <span className="r-compare-who">O</span>
+                  <span className="r-compare-val">{c.counterpartLabel}</span>
+                </div>
               </div>
+              {c.isSame && <span className="r-compare-match-badge">Aynı cevap</span>}
+              <ReactionBar itemKey={`compare-${c.question.id}`} />
             </div>
-            {c.isSame && <span className="r-compare-match-badge">Aynı cevap</span>}
-          </div>
-        ))}
+          )
+        })}
       </div>
       {comparisons.length > highlights.length && (
         <button className="r-btn ghost" type="button" onClick={() => setExpanded(!expanded)} style={{ fontSize: '0.8rem' }}>
           {expanded ? 'Daha az göster' : `Tümünü göster (${comparisons.length})`}
         </button>
       )}
+    </div>
+  )
+}
+
+function ReactionBar({ itemKey }: { itemKey: string }) {
+  const [reactions, setReactions] = useState<ReactionType[]>(() => getReactions(itemKey))
+
+  function handleToggle(emoji: ReactionType) {
+    setReactions(toggleReaction(itemKey, emoji))
+  }
+
+  return (
+    <div className="r-reaction-bar">
+      {REACTION_OPTIONS.map((emoji) => (
+        <button
+          key={emoji}
+          type="button"
+          className={`r-reaction-btn ${reactions.includes(emoji) ? 'active' : ''}`}
+          onClick={() => handleToggle(emoji)}
+        >
+          {emoji}
+        </button>
+      ))}
     </div>
   )
 }
