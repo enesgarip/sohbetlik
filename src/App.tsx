@@ -35,6 +35,7 @@ import { buildConversationInsights, getAnswerLabel } from './domain/results'
 import { calculateTendencies, compareTendencies } from './domain/tendencyScoring'
 import type { AreaSummary } from './domain/tendencyScoring'
 import { ShareCard } from './components/ShareCard'
+import { AdminDashboard } from './components/AdminDashboard'
 import { useCommunityNorms, getNormLabel } from './lib/communityNorms'
 import { useRoom } from './hooks/useRoom'
 import {
@@ -117,6 +118,7 @@ function App() {
             <Route path="/answer/:roomId/:participantId" element={<AnswerPage />} />
             <Route path="/waiting/:roomId/:participantId" element={<WaitingPage />} />
             <Route path="/results/:roomId/:participantId" element={<ResultsPage />} />
+            <Route path="/admin" element={<AdminDashboard />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </section>
@@ -194,16 +196,18 @@ function HomePage() {
   }
 
   return (
-    <section className="intro-layout" aria-labelledby="intro-title">
-      <div className="intro-copy">
-        <h1 id="intro-title">Doğru cevaplar değil, güzel sohbetler.</h1>
-        <p>
-          Date sırasında aynı soru setini ayrı ayrı cevaplayın; sonra ortak yönleri
-          ve konuşmaya değer başlıkları birlikte görün.
+    <section className="landing" aria-labelledby="intro-title">
+      {/* Hero */}
+      <div className="l-hero">
+        <div className="l-badge">✨ İki kişilik sohbet deneyimi</div>
+        <h1 id="intro-title">Doğru cevaplar değil,<br />güzel sohbetler.</h1>
+        <p className="l-subtitle">
+          Aynı soruları ayrı ayrı cevaplayın, sonra ortak noktalarınızı ve
+          ilginç farklarınızı birlikte keşfedin.
         </p>
-        <div className="action-row">
+        <div className="l-cta-row">
           <button
-            className="primary-action"
+            className="l-btn primary"
             type="button"
             disabled={isCreating}
             onClick={() => void createRoom()}
@@ -212,50 +216,98 @@ function HomePage() {
             <ArrowRight size={18} aria-hidden="true" />
           </button>
         </div>
-        <div className="room-code-entry">
-          <span className="soft-label">Oda kodun var mı?</span>
-          <div className="code-input-row">
-            <input
-              className="code-input"
-              type="text"
-              placeholder="Oda kodu"
-              maxLength={8}
-              value={roomCode}
-              onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-              onKeyDown={(e) => { if (e.key === 'Enter') void lookupRoom() }}
-            />
-            <button
-              className="ghost-action"
-              type="button"
-              disabled={!roomCode.trim() || isLookingUp}
-              onClick={() => void lookupRoom()}
-            >
-              Katıl
-            </button>
-          </div>
-          {codeError && <p className="form-error" role="alert">{codeError}</p>}
+        <div className="l-code-entry">
+          <input
+            className="l-code-input"
+            type="text"
+            placeholder="Oda kodu gir"
+            maxLength={8}
+            value={roomCode}
+            onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+            onKeyDown={(e) => { if (e.key === 'Enter') void lookupRoom() }}
+          />
+          <button
+            className="l-btn ghost small"
+            type="button"
+            disabled={!roomCode.trim() || isLookingUp}
+            onClick={() => void lookupRoom()}
+          >
+            Katıl
+          </button>
         </div>
-        {error && (
-          <p className="form-error" role="alert">
-            {error}
-          </p>
-        )}
+        {codeError && <p className="form-error" role="alert">{codeError}</p>}
+        {error && <p className="form-error" role="alert">{error}</p>}
       </div>
 
-      <div className="phone-preview" aria-label="Uygulama önizlemesi">
-        <div className="phone-speaker" />
-        <div className="preview-card">
-          <span className="soft-label">Mini tadımlık</span>
-          <h2>Bugün sohbetin hangi tonda aksın?</h2>
-          <div className="choice-stack">
-            <span>Hafif ve oyunlu</span>
-            <span className="selected-choice">Sakin ve meraklı</span>
+      {/* How it works */}
+      <div className="l-steps">
+        <div className="l-step">
+          <span className="l-step-num">1</span>
+          <div>
+            <strong>Oda oluştur</strong>
+            <p>Linki veya kodu karşı tarafa gönder</p>
           </div>
         </div>
-        <div className="mini-result">
-          <Sparkles size={18} aria-hidden="true" />
-          <span>Konuşmaya değer konular hazır</span>
+        <div className="l-step">
+          <span className="l-step-num">2</span>
+          <div>
+            <strong>Ayrı ayrı cevaplayın</strong>
+            <p>16 soru, 7-8 dakika — kişilik testi değil</p>
+          </div>
         </div>
+        <div className="l-step">
+          <span className="l-step-num">3</span>
+          <div>
+            <strong>Birlikte keşfedin</strong>
+            <p>Ortak noktalar, güzel farklar ve sohbet önerileri</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Value props */}
+      <div className="l-features">
+        <div className="l-feature">
+          <span className="l-feature-icon">🎯</span>
+          <strong>Eğilimlerini gör</strong>
+          <p>30 farklı eğilim, 6 alanda — plan sevgisinden macera iştahına</p>
+        </div>
+        <div className="l-feature">
+          <span className="l-feature-icon">🤝</span>
+          <strong>Farkları kutla</strong>
+          <p>Farklılıklar sorun değil, sohbet konusu. Yargısız, merak dolu.</p>
+        </div>
+        <div className="l-feature">
+          <span className="l-feature-icon">🔄</span>
+          <strong>Her seferinde farklı</strong>
+          <p>144 soruluk havuz — tekrar oynayın, yeni sorular gelsin</p>
+        </div>
+        <div className="l-feature">
+          <span className="l-feature-icon">🔒</span>
+          <strong>Gizlilik</strong>
+          <p>Hesap yok, kayıt yok. Sadece oda kodu ve sohbet.</p>
+        </div>
+      </div>
+
+      {/* Social proof / teaser */}
+      <div className="l-teaser">
+        <div className="l-teaser-card">
+          <span className="l-teaser-emoji">💬</span>
+          <p>"Verdiğin cevaplara göre plan yapmayı seviyorsun ama beklenmedik değişikliklere de rahat uyum sağlıyorsun."</p>
+          <span className="l-teaser-label">— Örnek AI yorumu</span>
+        </div>
+      </div>
+
+      {/* Bottom CTA */}
+      <div className="l-bottom-cta">
+        <button
+          className="l-btn primary"
+          type="button"
+          disabled={isCreating}
+          onClick={() => void createRoom()}
+        >
+          <span>Hemen başla</span>
+          <ArrowRight size={18} aria-hidden="true" />
+        </button>
       </div>
     </section>
   )
