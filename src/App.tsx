@@ -46,7 +46,10 @@ import {
 import { getSeenQuestionSlugs, recordSeenQuestions } from './lib/seenQuestions'
 import { saveSession, updateSessionNextRoom } from './lib/sessionHistory'
 import { maybeCleanupStaleRooms } from './lib/roomCleanup'
-import { fetchAiSummary } from './lib/summaryApi'
+import { fetchAiSummary, fetchCrossLevelSummary, buildLevelTendencyData } from './lib/summaryApi'
+import type { CrossLevelInsight, LevelTendencyData } from './lib/summaryApi'
+import { canAskNotificationPermission, requestNotificationPermission, sendLocalNotification } from './lib/notifications'
+import { getVariant, trackEvent } from './lib/abTest'
 import { roomRepository } from './repositories/activeRoomRepository'
 import { questionRepository } from './repositories/questionRepository'
 import type { AnswerValue, ConversationInsight, QuestionLevel } from './types/domain'
@@ -127,6 +130,19 @@ function App() {
   )
 }
 
+const AB_COPY = {
+  A: {
+    subtitle: 'Aynı soruları ayrı ayrı cevaplayın, sonra ortak noktalarınızı ve ilginç farklarınızı birlikte keşfedin.',
+    cta: 'Oda oluştur',
+    bottomCta: 'Hemen başla',
+  },
+  B: {
+    subtitle: 'Birbirinizi ne kadar iyi tanıyorsunuz? 24 soru, 7 dakika — sürprizlere hazır olun.',
+    cta: 'Sohbete başla',
+    bottomCta: 'Ücretsiz dene',
+  },
+} as const
+
 function HomePage() {
   const navigate = useNavigate()
   const [isCreating, setIsCreating] = useState(false)
@@ -134,6 +150,8 @@ function HomePage() {
   const [roomCode, setRoomCode] = useState('')
   const [codeError, setCodeError] = useState<string | null>(null)
   const [isLookingUp, setIsLookingUp] = useState(false)
+  const variant = useMemo(() => getVariant(), [])
+  const copy = AB_COPY[variant]
 
   useEffect(() => {
     maybeCleanupStaleRooms()
@@ -188,6 +206,7 @@ function HomePage() {
         updatedAt: new Date().toISOString(),
       })
 
+      trackEvent('room_created', variant)
       navigate(`/room/${session.room.id}`)
     } catch {
       setError('Oda oluşturulamadı. Bağlantını kontrol edip tekrar dener misin?')
@@ -201,10 +220,7 @@ function HomePage() {
       <div className="l-hero">
         <div className="l-badge">✨ İki kişilik sohbet deneyimi</div>
         <h1 id="intro-title">Doğru cevaplar değil,<br />güzel sohbetler.</h1>
-        <p className="l-subtitle">
-          Aynı soruları ayrı ayrı cevaplayın, sonra ortak noktalarınızı ve
-          ilginç farklarınızı birlikte keşfedin.
-        </p>
+        <p className="l-subtitle">{copy.subtitle}</p>
         <div className="l-cta-row">
           <button
             className="l-btn primary"
@@ -212,7 +228,7 @@ function HomePage() {
             disabled={isCreating}
             onClick={() => void createRoom()}
           >
-            <span>Oda oluştur</span>
+            <span>{copy.cta}</span>
             <ArrowRight size={18} aria-hidden="true" />
           </button>
         </div>
@@ -305,7 +321,7 @@ function HomePage() {
           disabled={isCreating}
           onClick={() => void createRoom()}
         >
-          <span>Hemen başla</span>
+          <span>{copy.bottomCta}</span>
           <ArrowRight size={18} aria-hidden="true" />
         </button>
       </div>
@@ -691,6 +707,22 @@ function WaitingPage() {
   const questions = useMemo(() => (room ? getRoomQuestions(room) : []), [room])
   const progressRows = room ? getProgressRows(room, questions.length) : []
   const allComplete = progressRows.length > 0 && progressRows.every((row) => row.isComplete)
+  const notifiedRef = useRef(false)
+
+  // Ask for notification permission once on this page
+  useEffect(() => {
+    if (canAskNotificationPermission()) {
+      void requestNotificationPermission()
+    }
+  }, [])
+
+  // Notify when partner completes
+  useEffect(() => {
+    if (allComplete && !notifiedRef.current) {
+      notifiedRef.current = true
+      sendLocalNotification('Sohbetlik', 'Karşı taraf da tamamladı! Sonuçlar hazır 🎉')
+    }
+  }, [allComplete])
 
   if (isLoading) {
     return <LoadingState />
@@ -851,6 +883,10 @@ function ResultsPage() {
   const questionIds = useMemo(() => questions.map((q) => q.id), [questions])
   const { norms } = useCommunityNorms(questionIds)
 
+  const [crossLevelInsights, setCrossLevelInsights] = useState<CrossLevelInsight[] | null>(null)
+  const [crossLevelLoading, setCrossLevelLoading] = useState(false)
+  const crossLevelAttemptedRef = useRef(false)
+
   useEffect(() => {
     if (!hasBothAnswers || aiAttemptedRef.current || !participant || !counterpart || questions.length === 0) {
       return
@@ -866,6 +902,49 @@ function ResultsPage() {
       })
       .finally(() => setAiLoading(false))
   }, [hasBothAnswers, participant, counterpart, questions])
+
+  useEffect(() => {
+    if (!hasBothAnswers || crossLevelAttemptedRef.current || !room?.previousRoomId || !participant || !counterpart || currentLevel < 2) {
+      return
+    }
+
+    crossLevelAttemptedRef.current = true
+    setCrossLevelLoading(true)
+
+    const currentLevelData = buildLevelTendencyData(currentLevel, questions, participant.answers, counterpart.answers)
+
+    async function loadPreviousLevels() {
+      const levels: LevelTendencyData[] = [currentLevelData]
+      let prevId = room!.previousRoomId
+
+      while (prevId) {
+        const prevRoom = await roomRepository.getRoomById(prevId)
+        if (!prevRoom) break
+
+        const prevQuestions = getRoomQuestions(prevRoom)
+        const prevLevel = getRoomLevel(prevQuestions)
+        const prevParticipant = prevRoom.participants.find((p) => p.role === participant!.role)
+        const prevCounterpart = prevRoom.participants.find((p) => p.role !== participant!.role)
+
+        if (prevParticipant && prevCounterpart && Object.keys(prevCounterpart.answers).length > 0) {
+          levels.push(buildLevelTendencyData(prevLevel, prevQuestions, prevParticipant.answers, prevCounterpart.answers))
+        }
+
+        prevId = prevRoom.previousRoomId
+      }
+
+      if (levels.length >= 2) {
+        const result = await fetchCrossLevelSummary(levels)
+        if (result && result.length > 0) {
+          setCrossLevelInsights(result)
+        }
+      }
+
+      setCrossLevelLoading(false)
+    }
+
+    void loadPreviousLevels()
+  }, [hasBothAnswers, room, participant, counterpart, currentLevel, questions])
 
   const insights = aiInsights ?? localInsights
 
@@ -1047,6 +1126,39 @@ function ResultsPage() {
         </div>
       )}
 
+      {/* Cross-Level Summary */}
+      {crossLevelInsights && crossLevelInsights.length > 0 && (
+        <div className="r-block">
+          <div className="r-block-header">
+            <span className="r-block-label">Büyük Resim</span>
+            <span className="r-ai-tag">
+              <Sparkles size={12} aria-hidden="true" />
+              AI
+            </span>
+          </div>
+          <p className="r-cross-level-subtitle">Tüm seviyelerin birleşik analizi</p>
+          <div className="r-insight-list">
+            {crossLevelInsights.map((insight) => (
+              <article className={`r-insight ${insight.tone}`} key={`cl-${insight.tone}-${insight.title}`}>
+                <div className="r-insight-tone">{insight.tone === 'growth' ? '🌱' : insight.tone === 'pattern' ? '🔄' : '💬'}</div>
+                <div>
+                  <p className="r-insight-title">{insight.title}</p>
+                  <p className="r-insight-body">{insight.body}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      )}
+      {crossLevelLoading && (
+        <div className="r-block">
+          <div className="r-block-header">
+            <span className="r-block-label">Büyük Resim</span>
+          </div>
+          <p className="r-loading-text">Seviyeler arası analiz hazırlanıyor…</p>
+        </div>
+      )}
+
       {/* Answer Comparison */}
       {hasBothAnswers && participant && counterpart && (
         <AnswerComparison questions={questions} personAnswers={participant.answers} counterpartAnswers={counterpart.answers} />
@@ -1066,10 +1178,11 @@ function ResultsPage() {
               if (!label) return null
               return (
                 <div className="r-norm-item" key={q.id}>
+                  <p className="r-norm-question">{q.prompt}</p>
                   <span className="r-norm-badge">{label}</span>
                 </div>
               )
-            }).filter(Boolean).slice(0, 4)}
+            }).filter(Boolean).slice(0, 6)}
           </div>
         </div>
       )}
@@ -1088,7 +1201,7 @@ function ResultsPage() {
           </button>
         )}
         {personTendencies && (
-          <ShareCard snapshot={personTendencies} roomCode={room.code} />
+          <ShareCard snapshot={personTendencies} roomCode={room.code} level={currentLevel} />
         )}
         <div className="r-btn-row">
           <button className="r-btn ghost" type="button" onClick={() => navigate(`/room/${room.id}`)}>

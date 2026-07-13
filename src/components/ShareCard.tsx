@@ -5,6 +5,7 @@ import type { BehaviorSnapshot, TendencyScore } from '../domain/tendencyScoring'
 type ShareCardProps = {
   snapshot: BehaviorSnapshot
   roomCode: string
+  level?: number
 }
 
 function getTopTendencies(snapshot: BehaviorSnapshot): TendencyScore[] {
@@ -14,7 +15,15 @@ function getTopTendencies(snapshot: BehaviorSnapshot): TendencyScore[] {
     .slice(0, 5)
 }
 
-export function ShareCard({ snapshot, roomCode }: ShareCardProps) {
+function getPositionLabel(score: number, spectrum: [string, string]): string {
+  if (score <= -1.2) return spectrum[0]
+  if (score >= 1.2) return spectrum[1]
+  if (score <= -0.4) return `${spectrum[0]} tarafına yakın`
+  if (score >= 0.4) return `${spectrum[1]} tarafına yakın`
+  return 'Dengede'
+}
+
+export function ShareCard({ snapshot, roomCode, level }: ShareCardProps) {
   const cardRef = useRef<HTMLDivElement>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const [showCard, setShowCard] = useState(false)
@@ -33,7 +42,6 @@ export function ShareCard({ snapshot, roomCode }: ShareCardProps) {
         backgroundColor: '#F7F4EF',
       })
 
-      // Try native share first, fallback to download
       if (navigator.share && navigator.canShare) {
         const blob = await (await fetch(dataUrl)).blob()
         const file = new File([blob], `sohbetlik-${roomCode}.png`, { type: 'image/png' })
@@ -44,7 +52,6 @@ export function ShareCard({ snapshot, roomCode }: ShareCardProps) {
         }
       }
 
-      // Fallback: download
       const link = document.createElement('a')
       link.download = `sohbetlik-${roomCode}.png`
       link.href = dataUrl
@@ -72,7 +79,6 @@ export function ShareCard({ snapshot, roomCode }: ShareCardProps) {
         {isGenerating ? 'Hazırlanıyor…' : 'Sonuç kartını paylaş'}
       </button>
 
-      {/* Off-screen render target */}
       {showCard && (
         <div style={{ position: 'fixed', left: '-9999px', top: 0 }}>
           <div
@@ -80,30 +86,51 @@ export function ShareCard({ snapshot, roomCode }: ShareCardProps) {
             style={{
               width: 1080,
               height: 1920,
-              background: 'linear-gradient(180deg, #F7F4EF 0%, #EDE8DF 100%)',
+              background: 'linear-gradient(165deg, #F7F4EF 0%, #EDE8DF 40%, #E8E0D5 100%)',
               display: 'flex',
               flexDirection: 'column',
-              padding: '120px 80px 80px',
+              padding: '100px 80px 80px',
               fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
               boxSizing: 'border-box',
+              position: 'relative',
             }}
           >
+            {/* Decorative circles */}
+            <div style={{
+              position: 'absolute',
+              top: -120,
+              right: -80,
+              width: 400,
+              height: 400,
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(200,149,108,0.12) 0%, transparent 70%)',
+            }} />
+            <div style={{
+              position: 'absolute',
+              bottom: 200,
+              left: -100,
+              width: 300,
+              height: 300,
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(139,166,120,0.1) 0%, transparent 70%)',
+            }} />
+
             {/* Header */}
-            <div style={{ textAlign: 'center', marginBottom: 80 }}>
+            <div style={{ textAlign: 'center', marginBottom: 60, position: 'relative' }}>
               <div style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: 80,
-                height: 80,
-                borderRadius: 24,
+                width: 88,
+                height: 88,
+                borderRadius: 28,
                 background: 'linear-gradient(135deg, rgba(200,149,108,0.2), rgba(139,166,120,0.15))',
-                marginBottom: 32,
+                marginBottom: 28,
               }}>
-                <span style={{ fontSize: 36 }}>💬</span>
+                <span style={{ fontSize: 40 }}>💬</span>
               </div>
               <h2 style={{
-                fontSize: 56,
+                fontSize: 52,
                 fontWeight: 780,
                 color: '#22201C',
                 letterSpacing: '-0.02em',
@@ -112,30 +139,30 @@ export function ShareCard({ snapshot, roomCode }: ShareCardProps) {
               }}>
                 Senin Tarzın
               </h2>
-              <p style={{
-                fontSize: 28,
-                color: '#8C8680',
-                marginTop: 16,
-                margin: '16px 0 0',
-              }}>
-                Bu oturumdaki cevaplarına göre
-              </p>
+              {level && (
+                <p style={{
+                  fontSize: 24,
+                  color: '#b8885e',
+                  fontWeight: 650,
+                  marginTop: 12,
+                  margin: '12px 0 0',
+                }}>
+                  Seviye {level}
+                </p>
+              )}
             </div>
 
             {/* Tendency items */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 40, flex: 1 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 36, flex: 1 }}>
               {topTendencies.map((t) => {
                 const percent = Math.max(8, Math.min(92, Math.round(((t.rawScore + 2) / 4) * 100)))
+                const posLabel = getPositionLabel(t.rawScore, t.spectrum)
                 return (
-                  <div key={t.trait} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 12,
-                    }}>
+                  <div key={t.trait} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                       <span style={{ fontSize: 28 }}>{t.areaEmoji}</span>
                       <span style={{
-                        fontSize: 22,
+                        fontSize: 21,
                         fontWeight: 700,
                         color: '#8C8680',
                         textTransform: 'uppercase' as const,
@@ -144,6 +171,16 @@ export function ShareCard({ snapshot, roomCode }: ShareCardProps) {
                         {t.areaLabel}
                       </span>
                     </div>
+                    {/* Position label */}
+                    <p style={{
+                      fontSize: 28,
+                      fontWeight: 650,
+                      color: '#22201C',
+                      margin: 0,
+                      lineHeight: 1.3,
+                    }}>
+                      {posLabel}
+                    </p>
                     {/* Track */}
                     <div style={{
                       position: 'relative' as const,
@@ -174,16 +211,11 @@ export function ShareCard({ snapshot, roomCode }: ShareCardProps) {
                         boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
                       }} />
                     </div>
-                    {/* Labels */}
-                    <div style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      gap: 24,
-                    }}>
-                      <span style={{ fontSize: 20, color: '#8C8680', maxWidth: '44%', lineHeight: 1.3 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 24 }}>
+                      <span style={{ fontSize: 18, color: '#8C8680', maxWidth: '44%', lineHeight: 1.3 }}>
                         {t.spectrum[0]}
                       </span>
-                      <span style={{ fontSize: 20, color: '#8C8680', maxWidth: '44%', textAlign: 'right' as const, lineHeight: 1.3 }}>
+                      <span style={{ fontSize: 18, color: '#8C8680', maxWidth: '44%', textAlign: 'right' as const, lineHeight: 1.3 }}>
                         {t.spectrum[1]}
                       </span>
                     </div>
@@ -192,29 +224,41 @@ export function ShareCard({ snapshot, roomCode }: ShareCardProps) {
               })}
             </div>
 
-            {/* Footer */}
+            {/* CTA Footer */}
             <div style={{
               textAlign: 'center',
-              paddingTop: 60,
+              paddingTop: 48,
               borderTop: '1px solid rgba(34,32,28,0.08)',
-              marginTop: 40,
+              marginTop: 32,
             }}>
+              <p style={{
+                fontSize: 28,
+                fontWeight: 700,
+                color: '#22201C',
+                margin: '0 0 8px',
+                letterSpacing: '-0.01em',
+              }}>
+                Sen de dene!
+              </p>
               <p style={{
                 fontSize: 24,
                 color: '#8C8680',
-                margin: '0 0 8px',
+                margin: '0 0 16px',
               }}>
                 Oda: {roomCode}
               </p>
-              <p style={{
-                fontSize: 32,
-                fontWeight: 700,
-                color: '#22201C',
-                letterSpacing: '-0.01em',
-                margin: 0,
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 10,
+                padding: '14px 32px',
+                borderRadius: 14,
+                background: '#22201C',
               }}>
-                sohbetlik.vercel.app
-              </p>
+                <span style={{ fontSize: 24, fontWeight: 700, color: '#fff', letterSpacing: '-0.01em' }}>
+                  sohbetlik.vercel.app
+                </span>
+              </div>
             </div>
           </div>
         </div>

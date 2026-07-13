@@ -68,6 +68,18 @@ function snapshotToSummaries(snapshot: BehaviorSnapshot): TendencySummary[] {
     }))
 }
 
+export type CrossLevelInsight = {
+  tone: 'growth' | 'pattern' | 'prompt'
+  title: string
+  body: string
+}
+
+export type LevelTendencyData = {
+  level: number
+  personTendencies: TendencySummary[]
+  counterpartTendencies: TendencySummary[]
+}
+
 export type AiSummaryResult = {
   insights: ConversationInsight[]
   personTendencies: TendencySummary[]
@@ -115,6 +127,44 @@ export async function fetchAiSummary(
       personTendencies: snapshotToSummaries(personSnapshot),
       counterpartTendencies: snapshotToSummaries(counterpartSnapshot),
     }
+  } catch {
+    return null
+  }
+}
+
+export function buildLevelTendencyData(
+  level: number,
+  questions: Question[],
+  personAnswers: AnswerMap,
+  counterpartAnswers: AnswerMap,
+): LevelTendencyData {
+  const personSnapshot = calculateTendencies(questions, personAnswers)
+  const counterpartSnapshot = calculateTendencies(questions, counterpartAnswers)
+  return {
+    level,
+    personTendencies: snapshotToSummaries(personSnapshot),
+    counterpartTendencies: snapshotToSummaries(counterpartSnapshot),
+  }
+}
+
+export async function fetchCrossLevelSummary(
+  levels: LevelTendencyData[],
+): Promise<CrossLevelInsight[] | null> {
+  if (levels.length < 2) return null
+
+  try {
+    const response = await fetch('/api/cross-level-summary', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ levels }),
+    })
+
+    if (!response.ok) return null
+
+    const data = await response.json()
+    if (!Array.isArray(data?.insights)) return null
+
+    return data.insights as CrossLevelInsight[]
   } catch {
     return null
   }

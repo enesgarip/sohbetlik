@@ -1,14 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { createClient } from '@supabase/supabase-js'
 
-type DistributionRow = {
-  question_id: string
-  answer_value: string | number
-  count: number
-  total: number
-  percentage: number
-}
-
 type QuestionDistribution = {
   questionId: string
   total: number
@@ -32,21 +24,32 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const body = req.body as { questionIds?: string[] } | undefined
-  const questionIds = body?.questionIds
+  const slugs = body?.questionIds
 
-  if (!Array.isArray(questionIds) || questionIds.length === 0) {
+  if (!Array.isArray(slugs) || slugs.length === 0) {
     return res.status(400).json({ error: 'Missing questionIds array' })
   }
 
   try {
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Query answer distribution for the requested questions
-    // Group by question_id and answer_value, count occurrences
+    // Resolve slugs to UUIDs
+    const { data: questionRows, error: qErr } = await supabase
+      .from('questions')
+      .select('id, slug')
+      .in('slug', slugs)
+
+    if (qErr || !questionRows || questionRows.length === 0) {
+      return res.status(200).json({ distributions: [] })
+    }
+
+    const slugByUuid = new Map(questionRows.map((q) => [q.id, q.slug]))
+    const uuids = questionRows.map((q) => q.id)
+
     const { data, error } = await supabase
       .from('answers')
       .select('question_id, answer_value')
-      .in('question_id', questionIds)
+      .in('question_id', uuids)
 
     if (error) {
       return res.status(500).json({ error: error.message })
@@ -56,19 +59,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ distributions: [] })
     }
 
-    // Aggregate in JS since Supabase REST doesn't support GROUP BY
     const counts: Record<string, Record<string, number>> = {}
     const totals: Record<string, number> = {}
 
     for (const row of data) {
-      const qId = row.question_id
+      const slug = slugByUuid.get(row.question_id)
+      if (!slug) continue
+
       const val = typeof row.answer_value === 'object'
         ? JSON.stringify(row.answer_value).replace(/"/g, '')
         : String(row.answer_value)
 
-      if (!counts[qId]) counts[qId] = {}
-      counts[qId][val] = (counts[qId][val] || 0) + 1
-      totals[qId] = (totals[qId] || 0) + 1
+      if (!counts[slug]) counts[slug] = {}
+      counts[slug][val] = (counts[slug][val] || 0) + 1
+      totals[slug] = (totals[slug] || 0) + 1
     }
 
     const distributions: QuestionDistribution[] = Object.entries(counts).map(
@@ -86,7 +90,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
     )
 
-    // Cache for 5 minutes
     res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600')
     return res.status(200).json({ distributions })
   } catch (err) {
