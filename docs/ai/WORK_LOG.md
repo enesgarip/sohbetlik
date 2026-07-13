@@ -1,5 +1,14 @@
 # Work Log
 
+## 2026-07-14 (Claude, "Birlikte keşfet" reveal mode)
+
+- **RevealMode bileşeni**: Tam ekran overlay — sonuç sayfasından "Birlikte keşfet" butonuyla açılır. Çiftler yanyana otururken bir telefondan cevapları tek tek keşfederler.
+- Akış: Soru gösterilir → "Cevapları göster" tap → 🎯 Aynı cevap! veya ✨ Farklı bakış açıları badge'i + yan yana cevap kartları → Sonraki soruya geç.
+- Animasyonlar: `reveal-fade-in` overlay girişi, `reveal-slide-up` soru geçişi, `reveal-card-in` (scale bounce) cevap kartları, `reveal-bounce` tap icon.
+- Progress bar ve counter (1/24), prev/next navigasyon, close butonu.
+- Canlı mod (AnswerPage'deki `?live=1`) yerinde kaldı ama asıl önerilen deneyim bu — cevaplama sırasında baskı oluşturmuyor.
+- Committed `9898b5a` and pushed to main.
+
 ## 2026-07-13 (Claude, live mode + batch 3)
 
 - **Canlı mod**: RoomPage'de "Canlı mod" toggle'ı → `?live=1` URL parametresiyle AnswerPage'e geçiş. Canlı modda: kullanıcı cevapladıktan sonra partner'ın cevabını bekler (pulsing dot animasyonu), ikisi de cevapladığında mini reveal kartı çıkar (aynı/farklı badge, slide-in animasyon), "Sonraki soru" butonu ancak ikisi de cevaplayınca aktif olur. Son soruda "Sonuçlara git" olarak değişir. `.live-mode-toggle`, `.live-waiting`, `.live-reveal`, `.live-mode-badge` CSS class'ları.
