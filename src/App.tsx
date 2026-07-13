@@ -1,16 +1,20 @@
 import {
   ArrowRight,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   Clock,
   Copy,
   Download,
   HeartHandshake,
   Link as LinkIcon,
   MessageCircle,
+  Play,
   RotateCcw,
   Sparkles,
   Star,
   Users,
+  X,
 } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -1047,6 +1051,8 @@ function ResultsPage() {
 
   const insights = aiInsights ?? localInsights
 
+  const [showRevealMode, setShowRevealMode] = useState(false)
+
   const timeStats = useMemo(
     () => (participant ? calculateTimeStats(questions, participant.answerTimestamps) : null),
     [questions, participant],
@@ -1343,8 +1349,28 @@ function ResultsPage() {
         </div>
       )}
 
+      {/* Reveal Mode Overlay */}
+      {showRevealMode && hasBothAnswers && participant && counterpart && (
+        <RevealMode
+          questions={questions}
+          personAnswers={participant.answers}
+          counterpartAnswers={counterpart.answers}
+          onClose={() => setShowRevealMode(false)}
+        />
+      )}
+
       {/* Actions */}
       <div className="r-actions">
+        {hasBothAnswers && (
+          <button
+            className="r-btn primary reveal-btn"
+            type="button"
+            onClick={() => setShowRevealMode(true)}
+          >
+            <Play size={16} aria-hidden="true" />
+            Birlikte keşfet
+          </button>
+        )}
         {nextLevel && (
           <button
             className="r-btn primary"
@@ -1469,6 +1495,117 @@ function AnswerComparison({ roomId, questions, personAnswers, counterpartAnswers
           {expanded ? 'Daha az göster' : `Tümünü göster (${comparisons.length})`}
         </button>
       )}
+    </div>
+  )
+}
+
+function RevealMode({ questions, personAnswers, counterpartAnswers, onClose }: {
+  questions: import('./types/domain').Question[]
+  personAnswers: import('./types/domain').AnswerMap
+  counterpartAnswers: import('./types/domain').AnswerMap
+  onClose: () => void
+}) {
+  const [currentIdx, setCurrentIdx] = useState(0)
+  const [phase, setPhase] = useState<'question' | 'reveal'>('question')
+  const [animKey, setAnimKey] = useState(0)
+
+  const pairs = useMemo(() => {
+    return questions.filter((q) => personAnswers[q.id] !== undefined && counterpartAnswers[q.id] !== undefined)
+  }, [questions, personAnswers, counterpartAnswers])
+
+  const current = pairs[currentIdx]
+
+  if (!current) {
+    onClose()
+    return null
+  }
+
+  const personLabel = getAnswerLabel(current, personAnswers[current.id])
+  const counterpartLabel = getAnswerLabel(current, counterpartAnswers[current.id])
+  const isSame = String(personAnswers[current.id]) === String(counterpartAnswers[current.id])
+
+  function handleReveal() {
+    setPhase('reveal')
+  }
+
+  function handleNext() {
+    if (currentIdx >= pairs.length - 1) {
+      onClose()
+      return
+    }
+    setAnimKey((k) => k + 1)
+    setCurrentIdx((i) => i + 1)
+    setPhase('question')
+  }
+
+  function handlePrev() {
+    if (currentIdx <= 0) return
+    setAnimKey((k) => k + 1)
+    setCurrentIdx((i) => i - 1)
+    setPhase('question')
+  }
+
+  return (
+    <div className="reveal-overlay">
+      <div className="reveal-chrome">
+        <button className="reveal-close" type="button" onClick={onClose} aria-label="Kapat">
+          <X size={20} />
+        </button>
+        <span className="reveal-counter">{currentIdx + 1} / {pairs.length}</span>
+        <div className="reveal-progress-track">
+          <span style={{ width: `${((currentIdx + 1) / pairs.length) * 100}%` }} />
+        </div>
+      </div>
+
+      <div className="reveal-content" key={animKey}>
+        <div className="reveal-category">
+          <MessageCircle size={16} aria-hidden="true" />
+          <span>{current.category}</span>
+        </div>
+        <h2 className="reveal-question">{current.prompt}</h2>
+
+        {phase === 'question' ? (
+          <button className="reveal-tap-btn" type="button" onClick={handleReveal}>
+            <span className="reveal-tap-icon">👆</span>
+            <span>Cevapları göster</span>
+          </button>
+        ) : (
+          <div className="reveal-answers-area">
+            <div className={`reveal-match-badge ${isSame ? 'same' : 'diff'}`}>
+              {isSame ? '🎯 Aynı cevap!' : '✨ Farklı bakış açıları'}
+            </div>
+            <div className="reveal-answer-cards">
+              <div className="reveal-answer-card you">
+                <span className="reveal-who">Sen</span>
+                <span className="reveal-val">{personLabel}</span>
+              </div>
+              <div className="reveal-answer-card them">
+                <span className="reveal-who">O</span>
+                <span className="reveal-val">{counterpartLabel}</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="reveal-nav">
+        <button
+          className="reveal-nav-btn"
+          type="button"
+          onClick={handlePrev}
+          disabled={currentIdx === 0}
+        >
+          <ChevronLeft size={20} />
+        </button>
+        <button
+          className="reveal-nav-btn primary"
+          type="button"
+          onClick={phase === 'question' ? handleReveal : handleNext}
+        >
+          {phase === 'question' ? 'Göster' : currentIdx >= pairs.length - 1 ? 'Bitir' : 'Sonraki'}
+          {phase === 'reveal' && currentIdx < pairs.length - 1 && <ChevronRight size={18} />}
+        </button>
+      </div>
     </div>
   )
 }
