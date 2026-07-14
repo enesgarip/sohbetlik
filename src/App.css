@@ -965,6 +965,10 @@ output {
   font-size: 0.88rem;
   line-height: 1.5;
   color: var(--muted);
+}
+
+.r-hero-reveal {
+  margin-top: 18px;
   max-width: 380px;
   margin-left: auto;
   margin-right: auto;

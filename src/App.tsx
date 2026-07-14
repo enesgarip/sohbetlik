@@ -1069,6 +1069,16 @@ function ResultsPage() {
         </div>
         <h1 id="results-title" className="r-title">Bu oturumdaki<br />cevaplarınıza göre</h1>
         <p className="r-subtitle">Buradaki her şey sohbetinize ilham olması için. Bir karar aracı değil, bir keşif alanı.</p>
+        {hasBothAnswers && (
+          <button
+            className="r-btn primary reveal-btn r-hero-reveal"
+            type="button"
+            onClick={() => setShowRevealMode(true)}
+          >
+            <Play size={16} aria-hidden="true" />
+            Birlikte keşfet
+          </button>
+        )}
       </div>
 
       {/* AI Loading */}
@@ -1209,34 +1219,6 @@ function ResultsPage() {
         </div>
       )}
 
-      {/* Answer Comparison */}
-      {hasBothAnswers && participant && counterpart && (
-        <AnswerComparison roomId={room.id} questions={questions} personAnswers={participant.answers} counterpartAnswers={counterpart.answers} />
-      )}
-
-      {/* Community Norms */}
-      {participant && Object.keys(norms).length > 0 && (
-        <div className="r-block">
-          <div className="r-block-header">
-            <span className="r-block-label">Topluluk</span>
-          </div>
-          <div className="r-norms-list">
-            {questions.map((q) => {
-              const answer = participant.answers[q.id]
-              if (answer === undefined) return null
-              const label = getNormLabel(answer, norms[q.id])
-              if (!label) return null
-              return (
-                <div className="r-norm-item" key={q.id}>
-                  <p className="r-norm-question">{q.prompt}</p>
-                  <span className="r-norm-badge">{label}</span>
-                </div>
-              )
-            }).filter(Boolean).slice(0, 6)}
-          </div>
-        </div>
-      )}
-
       {/* Time Stats */}
       {timeStats && (
         <div className="r-block">
@@ -1275,6 +1257,34 @@ function ResultsPage() {
         </div>
       )}
 
+      {/* Answer Comparison */}
+      {hasBothAnswers && participant && counterpart && (
+        <AnswerComparison roomId={room.id} questions={questions} personAnswers={participant.answers} counterpartAnswers={counterpart.answers} />
+      )}
+
+      {/* Community Norms */}
+      {participant && Object.keys(norms).length > 0 && (
+        <div className="r-block">
+          <div className="r-block-header">
+            <span className="r-block-label">Topluluk</span>
+          </div>
+          <div className="r-norms-list">
+            {questions.map((q) => {
+              const answer = participant.answers[q.id]
+              if (answer === undefined) return null
+              const label = getNormLabel(answer, norms[q.id])
+              if (!label) return null
+              return (
+                <div className="r-norm-item" key={q.id}>
+                  <p className="r-norm-question">{q.prompt}</p>
+                  <span className="r-norm-badge">{label}</span>
+                </div>
+              )
+            }).filter(Boolean).slice(0, 6)}
+          </div>
+        </div>
+      )}
+
       {/* Reveal Mode Overlay */}
       {showRevealMode && hasBothAnswers && participant && counterpart && (
         <RevealMode
@@ -1287,16 +1297,6 @@ function ResultsPage() {
 
       {/* Actions */}
       <div className="r-actions">
-        {hasBothAnswers && (
-          <button
-            className="r-btn primary reveal-btn"
-            type="button"
-            onClick={() => setShowRevealMode(true)}
-          >
-            <Play size={16} aria-hidden="true" />
-            Birlikte keşfet
-          </button>
-        )}
         {nextLevel && (
           <button
             className="r-btn primary"
