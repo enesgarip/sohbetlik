@@ -5,6 +5,7 @@
 - Production L1 -> L4 smoke test found Level 4 sessions could contain 17 questions (`Soru 17/17`) because opener reservation could exceed the Level 1 quota in the Level 4 mix.
 - Capped reserved opening questions by the available minimum-level quota and added a real-pool regression test that every room level returns exactly 16 questions across multiple seeds.
 - Added short anonymous sign-in retry/backoff in the Supabase room repository after e2e exposed transient anonymous auth failures under parallel browser load.
+- Updated the invite loading state so transient auth/rate-limit failures show a retryable loading error instead of incorrectly saying the invite is inactive.
 
 ## 2026-07-14 (Codex, admin demo room reliability)
 

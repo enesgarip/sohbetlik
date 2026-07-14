@@ -423,6 +423,8 @@ function JoinPage() {
   const navigate = useNavigate()
   const [room, setRoom] = useState<ConversationRoom | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
+  const [loadAttempt, setLoadAttempt] = useState(0)
   const [isJoining, setIsJoining] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isFirstVisit] = useState(() => !localStorage.getItem('sohbetlik_visited'))
@@ -436,6 +438,7 @@ function JoinPage() {
 
     let active = true
     setIsLoading(true)
+    setLoadError(false)
 
     roomRepository
       .getRoomByCode(roomCode)
@@ -447,6 +450,7 @@ function JoinPage() {
       .catch(() => {
         if (active) {
           setRoom(null)
+          setLoadError(true)
         }
       })
       .finally(() => {
@@ -458,7 +462,7 @@ function JoinPage() {
     return () => {
       active = false
     }
-  }, [roomCode])
+  }, [roomCode, loadAttempt])
 
   useEffect(() => {
     if (isFirstVisit) {
@@ -497,10 +501,14 @@ function JoinPage() {
   if (!room) {
     return (
       <EmptyState
-        title="Bu davet aktif değil."
-        body="Link süresi dolmuş olabilir. Yeni bir oda açıp daveti tekrar paylaşabilirsin."
-        actionLabel="Ana sayfa"
-        onAction={() => navigate('/')}
+        title={loadError ? 'Davet şu an yüklenemedi.' : 'Bu davet aktif değil.'}
+        body={
+          loadError
+            ? 'Bağlantı tarafında geçici bir yoğunluk olabilir. Birazdan tekrar deneyebilirsin.'
+            : 'Link süresi dolmuş olabilir. Yeni bir oda açıp daveti tekrar paylaşabilirsin.'
+        }
+        actionLabel={loadError ? 'Tekrar dene' : 'Ana sayfa'}
+        onAction={() => loadError ? setLoadAttempt((attempt) => attempt + 1) : navigate('/')}
       />
     )
   }
