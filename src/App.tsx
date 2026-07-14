@@ -9,15 +9,17 @@ import {
   HeartHandshake,
   Link as LinkIcon,
   MessageCircle,
+  Moon,
   Play,
   RotateCcw,
   Sparkles,
   Star,
+  Sun,
   Users,
   X,
 } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import {
   BrowserRouter,
   Link as RouterLink,
@@ -65,6 +67,35 @@ import { roomRepository } from './repositories/activeRoomRepository'
 import { questionRepository } from './repositories/questionRepository'
 import type { AnswerValue, ConversationInsight, QuestionLevel } from './types/domain'
 
+type ThemeMode = 'light' | 'dark'
+
+const THEME_STORAGE_KEY = 'sohbetlik_theme'
+
+function getSystemTheme(): ThemeMode {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
+
+function getStoredTheme(): ThemeMode | null {
+  const stored = localStorage.getItem(THEME_STORAGE_KEY)
+
+  return stored === 'light' || stored === 'dark' ? stored : null
+}
+
+function applyTheme(theme: ThemeMode) {
+  document.documentElement.dataset.theme = theme
+  document.documentElement.style.colorScheme = theme
+}
+
+function getAppliedTheme(): ThemeMode {
+  const documentTheme = document.documentElement.dataset.theme
+
+  if (documentTheme === 'light' || documentTheme === 'dark') {
+    return documentTheme
+  }
+
+  return getStoredTheme() ?? getSystemTheme()
+}
+
 function getInviteLink(roomCode: string) {
   return `${window.location.origin}/join/${roomCode.toLowerCase()}`
 }
@@ -108,6 +139,21 @@ async function writeClipboard(value: string) {
 }
 
 function App() {
+  const [theme, setTheme] = useState<ThemeMode>(() => getStoredTheme() ?? getSystemTheme())
+
+  useLayoutEffect(() => {
+    applyTheme(theme)
+  }, [theme])
+
+  function toggleTheme() {
+    setTheme((current) => {
+      const nextTheme = current === 'dark' ? 'light' : 'dark'
+      localStorage.setItem(THEME_STORAGE_KEY, nextTheme)
+
+      return nextTheme
+    })
+  }
+
   return (
     <BrowserRouter>
       <main className="app-shell">
@@ -119,9 +165,20 @@ function App() {
               </span>
               <span>Sohbetlik</span>
             </RouterLink>
-            <div className="room-status">
-              <Users size={17} aria-hidden="true" />
-              <span>2 kişilik oda</span>
+            <div className="topbar-actions">
+              <button
+                className="theme-toggle"
+                type="button"
+                aria-label={theme === 'dark' ? 'Açık temaya geç' : 'Koyu temaya geç'}
+                title={theme === 'dark' ? 'Açık tema' : 'Koyu tema'}
+                onClick={toggleTheme}
+              >
+                {theme === 'dark' ? <Sun size={17} aria-hidden="true" /> : <Moon size={17} aria-hidden="true" />}
+              </button>
+              <div className="room-status">
+                <Users size={17} aria-hidden="true" />
+                <span>2 kişilik oda</span>
+              </div>
             </div>
           </header>
 
@@ -389,7 +446,7 @@ function RoomPage() {
             value={inviteLink}
             size={148}
             bgColor="transparent"
-            fgColor={window.matchMedia('(prefers-color-scheme: dark)').matches ? '#e8e2d8' : '#22201c'}
+            fgColor={getAppliedTheme() === 'dark' ? '#e8e2d8' : '#22201c'}
             level="M"
             includeMargin={false}
           />

@@ -1,5 +1,10 @@
 # Work Log
 
+## 2026-07-14 (Codex, manual theme toggle)
+
+- Added a header theme toggle so users can switch between light and dark mode manually instead of relying only on `prefers-color-scheme`.
+- Persisted the selected theme in localStorage, kept system preference as the default when no explicit choice exists, and tied QR code contrast to the applied theme.
+
 ## 2026-07-14 (Codex, all-level flow verification)
 
 - Production L1 -> L4 smoke test found Level 4 sessions could contain 17 questions (`Soru 17/17`) because opener reservation could exceed the Level 1 quota in the Level 4 mix.
