@@ -1,5 +1,12 @@
 # Work Log
 
+## 2026-07-14 (Codex, admin demo room reliability)
+
+- Fixed AdminDashboard "Demo oda oluştur" failing with `participants_room_id_user_id_key`: the old client-side flow tried to create host and guest participants with the same anonymous Supabase user in one browser session.
+- Added `api/admin/demo-room.ts`, an admin-authenticated server-side demo room creator using the service role and separate synthetic participant user ids.
+- Updated `DemoRoomButton` to call the server endpoint and show a friendly generic error instead of raw database constraint messages.
+- Admin analytics fetch now also avoids echoing backend error strings directly into the UI.
+
 ## 2026-07-14 (Codex, expanded L2-L4 seed migration)
 
 - Added `supabase/migrations/20260714133000_seed_expanded_level2_level4_questions.sql`, generated from active source questions missing from existing migrations: L2 +16, L3 +14, L4 +14.

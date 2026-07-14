@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { questionRepository } from '../repositories/questionRepository'
-import { roomRepository } from '../repositories/activeRoomRepository'
-import { supabase } from '../lib/supabase'
-import type { AnswerValue } from '../types/domain'
 
 type Overview = {
   totalRooms: number
@@ -40,6 +37,15 @@ type AnalyticsData = {
   dailyRooms: DailyRoom[]
 }
 
+type DemoRoomResponse = {
+  roomId?: string
+  participantId?: string
+  error?: string
+}
+
+const GENERIC_ADMIN_ERROR = 'Bir sorun oldu. Birazdan tekrar dener misin?'
+const GENERIC_DEMO_ERROR = 'Demo oda oluşturulamadı. Birazdan tekrar deneyelim.'
+
 function getDropoffLabel(bucket: string) {
   const labels: Record<string, string> = {
     '0': 'Hiç cevap yok',
@@ -74,7 +80,7 @@ export function AdminDashboard() {
       }
       const json = await res.json()
       if (json.error) {
-        setError(json.error)
+        setError(GENERIC_ADMIN_ERROR)
       } else {
         setData(json)
         setAuthenticated(true)
@@ -248,7 +254,7 @@ export function AdminDashboard() {
         </div>
       )}
 
-      <DemoRoomButton />
+      <DemoRoomButton adminKey={key} />
 
       <p className="admin-footer">Her 60 saniyede otomatik güncellenir</p>
     </section>
@@ -265,7 +271,7 @@ function StatCard({ label, value, sub }: { label: string; value: number; sub?: s
   )
 }
 
-function DemoRoomButton() {
+function DemoRoomButton({ adminKey }: { adminKey: string }) {
   const navigate = useNavigate()
   const [status, setStatus] = useState<'idle' | 'loading' | 'done'>('idle')
   const [error, setError] = useState<string | null>(null)
@@ -277,48 +283,21 @@ function DemoRoomButton() {
 
     try {
       const questionIds = questionRepository.getSessionQuestionIds()
-      const questions = questionRepository.getQuestionsByIds(questionIds)
+      const response = await fetch('/api/admin/demo-room', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: adminKey, questionIds }),
+      })
+      const result = (await response.json().catch(() => ({}))) as DemoRoomResponse
 
-      function randomAnswer(q: typeof questions[number]): AnswerValue {
-        if (q.type === 'slider') return Math.floor(Math.random() * 5) + 1
-        return q.options[Math.floor(Math.random() * q.options.length)].id
+      if (!response.ok || !result.roomId || !result.participantId) {
+        throw new Error(result.error ?? GENERIC_DEMO_ERROR)
       }
-
-      if (!supabase) throw new Error('Supabase yapılandırılmamış')
-
-      const hostSession = await roomRepository.createRoom(questionIds)
-      const roomId = hostSession.room.id
-
-      const { data: guestRow, error: guestErr } = await supabase
-        .from('participants')
-        .insert({ room_id: roomId, display_name: 'Demo Partner', seat: 2, is_host: false })
-        .select('id')
-        .single()
-      if (guestErr || !guestRow) throw new Error(guestErr?.message ?? 'Guest oluşturulamadı')
-
-      const { data: qMaps } = await supabase.from('questions').select('id, slug')
-      if (!qMaps) throw new Error('Sorular yüklenemedi')
-      const slugToUuid = new Map(qMaps.map((r) => [r.slug, r.id]))
-
-      const hostAnswers: { room_id: string; participant_id: string; question_id: string; answer_value: AnswerValue }[] = []
-      const guestAnswers: typeof hostAnswers = []
-
-      for (const q of questions) {
-        const uuid = slugToUuid.get(q.id)
-        if (!uuid) continue
-        const hostVal = randomAnswer(q)
-        const guestVal = Math.random() > 0.35 ? hostVal : randomAnswer(q)
-        hostAnswers.push({ room_id: roomId, participant_id: hostSession.participantId, question_id: uuid, answer_value: hostVal })
-        guestAnswers.push({ room_id: roomId, participant_id: guestRow.id, question_id: uuid, answer_value: guestVal })
-      }
-
-      const { error: aErr } = await supabase.from('answers').insert([...hostAnswers, ...guestAnswers])
-      if (aErr) throw new Error(aErr.message)
 
       setStatus('done')
-      navigate(`/results/${roomId}/${hostSession.participantId}`)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Bir hata oluştu')
+      navigate(`/results/${result.roomId}/${result.participantId}`)
+    } catch {
+      setError(GENERIC_DEMO_ERROR)
       setStatus('idle')
     }
   }
@@ -334,7 +313,11 @@ function DemoRoomButton() {
       >
         {status === 'loading' ? 'Oluşturuluyor…' : '🧪 Demo oda oluştur'}
       </button>
-      {error && <p className="form-error" style={{ marginTop: 8 }}>{error}</p>}
+      {error && (
+        <p className="form-error" role="alert" style={{ marginTop: 8 }}>
+          {error}
+        </p>
+      )}
     </div>
   )
 }
