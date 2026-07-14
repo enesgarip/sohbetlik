@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { questionRepository } from '../repositories/questionRepository'
 import { roomRepository } from '../repositories/activeRoomRepository'
+import { supabase } from '../lib/supabase'
 import type { AnswerValue } from '../types/domain'
 
 type Overview = {
@@ -254,10 +255,12 @@ function StatCard({ label, value, sub }: { label: string; value: number; sub?: s
 function DemoRoomButton() {
   const navigate = useNavigate()
   const [status, setStatus] = useState<'idle' | 'loading' | 'done'>('idle')
+  const [error, setError] = useState<string | null>(null)
 
   async function createDemo() {
     if (status === 'loading') return
     setStatus('loading')
+    setError(null)
 
     try {
       const questionIds = questionRepository.getSessionQuestionIds()
@@ -268,26 +271,41 @@ function DemoRoomButton() {
         return q.options[Math.floor(Math.random() * q.options.length)].id
       }
 
-      const hostSession = await roomRepository.createRoom(questionIds)
-      const guestSession = await roomRepository.joinRoomByCode(hostSession.room.code)
-      if (!guestSession) throw new Error('join failed')
+      if (!supabase) throw new Error('Supabase yapılandırılmamış')
 
-      const answerPairs = questions.map((q) => {
+      const hostSession = await roomRepository.createRoom(questionIds)
+      const roomId = hostSession.room.id
+
+      const { data: guestRow, error: guestErr } = await supabase
+        .from('participants')
+        .insert({ room_id: roomId, display_name: 'Demo Partner', seat: 2, is_host: false })
+        .select('id')
+        .single()
+      if (guestErr || !guestRow) throw new Error(guestErr?.message ?? 'Guest oluşturulamadı')
+
+      const { data: qMaps } = await supabase.from('questions').select('id, slug')
+      if (!qMaps) throw new Error('Sorular yüklenemedi')
+      const slugToUuid = new Map(qMaps.map((r) => [r.slug, r.id]))
+
+      const hostAnswers: { room_id: string; participant_id: string; question_id: string; answer_value: AnswerValue }[] = []
+      const guestAnswers: typeof hostAnswers = []
+
+      for (const q of questions) {
+        const uuid = slugToUuid.get(q.id)
+        if (!uuid) continue
         const hostVal = randomAnswer(q)
         const guestVal = Math.random() > 0.35 ? hostVal : randomAnswer(q)
-        return { questionId: q.id, hostVal, guestVal }
-      })
+        hostAnswers.push({ room_id: roomId, participant_id: hostSession.participantId, question_id: uuid, answer_value: hostVal })
+        guestAnswers.push({ room_id: roomId, participant_id: guestRow.id, question_id: uuid, answer_value: guestVal })
+      }
 
-      await Promise.all(answerPairs.map(({ questionId, hostVal, guestVal }) =>
-        Promise.all([
-          roomRepository.saveAnswer({ roomId: hostSession.room.id, participantId: hostSession.participantId, questionId, value: hostVal }),
-          roomRepository.saveAnswer({ roomId: guestSession.room.id, participantId: guestSession.participantId, questionId, value: guestVal }),
-        ])
-      ))
+      const { error: aErr } = await supabase.from('answers').insert([...hostAnswers, ...guestAnswers])
+      if (aErr) throw new Error(aErr.message)
 
       setStatus('done')
-      navigate(`/results/${hostSession.room.id}/${hostSession.participantId}`)
-    } catch {
+      navigate(`/results/${roomId}/${hostSession.participantId}`)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Bir hata oluştu')
       setStatus('idle')
     }
   }
@@ -303,6 +321,7 @@ function DemoRoomButton() {
       >
         {status === 'loading' ? 'Oluşturuluyor…' : '🧪 Demo oda oluştur'}
       </button>
+      {error && <p className="form-error" style={{ marginTop: 8 }}>{error}</p>}
     </div>
   )
 }
