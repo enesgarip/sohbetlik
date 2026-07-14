@@ -99,6 +99,10 @@ ${pairLines}${tendencySection}`
 const PRIMARY_MODEL = 'qwen/qwen3.6-27b'
 const FALLBACK_MODEL = 'openai/gpt-oss-120b'
 
+function asRecord(item: unknown): Record<string, unknown> {
+  return item && typeof item === 'object' ? item as Record<string, unknown> : {}
+}
+
 async function callLlm(prompt: string, apiKey: string): Promise<Insight[]> {
   const models = [PRIMARY_MODEL, FALLBACK_MODEL]
   let lastError = ''
@@ -143,13 +147,17 @@ async function callLlm(prompt: string, apiKey: string): Promise<Insight[]> {
         continue
       }
 
-      return items.map((item: Record<string, unknown>) => ({
-        tone: (['common', 'different', 'prompt'].includes(item.tone as string)
-          ? item.tone
-          : 'prompt') as Insight['tone'],
-        title: String(item.title ?? ''),
-        body: String(item.body ?? ''),
-      }))
+      return items.map((rawItem) => {
+        const item = asRecord(rawItem)
+
+        return {
+          tone: (['common', 'different', 'prompt'].includes(item.tone as string)
+            ? item.tone
+            : 'prompt') as Insight['tone'],
+          title: String(item.title ?? ''),
+          body: String(item.body ?? ''),
+        }
+      })
     } catch (err) {
       lastError = `${model}: ${err instanceof Error ? err.message : 'unknown error'}`
       continue
@@ -167,7 +175,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const apiKey = process.env.GROQ_API_KEY
 
   if (!apiKey) {
-    return res.status(500).json({ error: 'GROQ_API_KEY is not configured' })
+    console.error('[summary] GROQ_API_KEY is not configured')
+    return res.status(200).json({ insights: [], fallback: true })
   }
 
   const body = req.body as RequestBody | undefined
@@ -182,6 +191,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ insights })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
-    return res.status(502).json({ error: message })
+    console.error('[summary] AI summary unavailable', message)
+    return res.status(200).json({ insights: [], fallback: true })
   }
 }
