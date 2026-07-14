@@ -1457,6 +1457,7 @@ function RevealMode({ questions, personAnswers, counterpartAnswers, onClose }: {
   const [currentIdx, setCurrentIdx] = useState(0)
   const [phase, setPhase] = useState<'question' | 'reveal'>('question')
   const [animKey, setAnimKey] = useState(0)
+  const [showConfetti, setShowConfetti] = useState(false)
 
   const pairs = useMemo(() => {
     return questions.filter((q) => personAnswers[q.id] !== undefined && counterpartAnswers[q.id] !== undefined)
@@ -1475,6 +1476,11 @@ function RevealMode({ questions, personAnswers, counterpartAnswers, onClose }: {
 
   function handleReveal() {
     setPhase('reveal')
+    const same = String(personAnswers[current.id]) === String(counterpartAnswers[current.id])
+    if (same) {
+      setShowConfetti(true)
+      setTimeout(() => setShowConfetti(false), 1200)
+    }
   }
 
   function handleNext() {
@@ -1485,6 +1491,7 @@ function RevealMode({ questions, personAnswers, counterpartAnswers, onClose }: {
     setAnimKey((k) => k + 1)
     setCurrentIdx((i) => i + 1)
     setPhase('question')
+    setShowConfetti(false)
   }
 
   function handlePrev() {
@@ -1492,10 +1499,22 @@ function RevealMode({ questions, personAnswers, counterpartAnswers, onClose }: {
     setAnimKey((k) => k + 1)
     setCurrentIdx((i) => i - 1)
     setPhase('question')
+    setShowConfetti(false)
   }
 
   return (
     <div className="reveal-overlay">
+      {showConfetti && (
+        <div className="confetti-container" aria-hidden="true">
+          {Array.from({ length: 12 }, (_, i) => (
+            <span key={i} className="confetti-dot" style={{
+              left: `${12 + Math.random() * 76}%`,
+              animationDelay: `${Math.random() * 0.3}s`,
+              backgroundColor: ['var(--coral)', 'var(--sage)', 'var(--gold)', 'var(--accent)'][i % 4],
+            }} />
+          ))}
+        </div>
+      )}
       <div className="reveal-chrome">
         <button className="reveal-close" type="button" onClick={onClose} aria-label="Kapat">
           <X size={20} />
