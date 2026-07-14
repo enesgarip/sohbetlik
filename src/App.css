@@ -1635,6 +1635,64 @@ output {
   color: var(--muted);
 }
 
+.join-onboarding {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  max-width: 340px;
+  margin: 8px auto 0;
+  animation: fade-up 0.4s ease-out;
+}
+
+.join-onboarding-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--glass);
+  border: 1px solid var(--line);
+  font-size: 0.84rem;
+  color: var(--ink);
+}
+
+.join-onboarding-step span {
+  min-width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--paper);
+  font-size: 0.72rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.join-onboarding-step p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Landing hero entrance ── */
+
+.l-hero {
+  animation: fade-up 0.5s ease-out;
+}
+
+.l-steps {
+  animation: fade-up 0.5s ease-out 0.1s both;
+}
+
+.l-features {
+  animation: fade-up 0.5s ease-out 0.2s both;
+}
+
 /* ── Reveal Mode ("Birlikte keşfet") ── */
 
 .reveal-btn {

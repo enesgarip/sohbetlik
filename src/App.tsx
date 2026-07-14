@@ -500,6 +500,12 @@ function JoinPage() {
   const hostParticipant = room.participants.find((p) => p.role === 'host')
   const questionCount = room.questionIds.length
 
+  const isFirstVisit = !localStorage.getItem('sohbetlik_visited')
+
+  useEffect(() => {
+    localStorage.setItem('sohbetlik_visited', '1')
+  }, [])
+
   return (
     <section className="join-layout" aria-labelledby="join-title">
       <div className="pulse-orbit">
@@ -513,6 +519,22 @@ function JoinPage() {
           : `${questionCount} soruyu ayrı ayrı cevaplayacaksınız, sonra ortak noktalarınızı birlikte keşfedeceksiniz.`
         }
       </p>
+      {isFirstVisit && (
+        <div className="join-onboarding">
+          <div className="join-onboarding-step">
+            <span>1</span>
+            <p>Soruları kendi hızında cevapla</p>
+          </div>
+          <div className="join-onboarding-step">
+            <span>2</span>
+            <p>Cevapların gizli kalır, karşı taraf görmez</p>
+          </div>
+          <div className="join-onboarding-step">
+            <span>3</span>
+            <p>İkiniz de bitirince sonuçları birlikte keşfedin</p>
+          </div>
+        </div>
+      )}
       <div className="join-info-row">
         <div className="join-info-card">
           <Users size={16} aria-hidden="true" />
