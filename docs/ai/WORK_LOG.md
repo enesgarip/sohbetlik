@@ -1,5 +1,14 @@
 # Work Log
 
+## 2026-07-14 (Claude, polishing batch — dark mode, mobile UX, reorder, onboarding, perf)
+
+- **Dark mode**: `prefers-color-scheme: dark` media query ile otomatik. Yeni CSS variable'lar: `--ink-rgb`, `--glass`, `--glass-strong`, `--choice-bg`, `--choice-active`, `--output-bg`, `--match-same`, `--match-diff`, `--line-alpha`, `--shadow-alpha`. App.css'teki tüm hardcoded renkler (`#fffaf3`, `#22201c`, `rgba(255,...)`, `rgba(34,32,28,...)`) CSS variable'lara çevrildi. Dual `theme-color` meta tag.
+- **Mobil UX**: 48px minimum touch target tüm butonlarda (860px altı). `scale(0.97)` active feedback. Reveal mode mobilde tek kolonlu cevap kartları. `scroll-behavior: smooth`.
+- **Sonuç sayfası sıralaması**: "Birlikte keşfet" butonu hero section'a taşındı. Time Stats AI Insights'tan hemen sonraya alındı. Yeni sıra: Hero+Reveal → Tendencies → Insights → Cross-Level → Time Stats → Comparisons → Community → Actions.
+- **Onboarding**: Join sayfasında `sohbetlik_visited` localStorage flag'i ile ilk kez gelen kullanıcılara 3 adımlı kısa bilgi notu. Landing hero, steps, features'a staggered `fade-up` giriş animasyonları.
+- **Performans**: AdminDashboard `React.lazy` + `Suspense` ile lazy load. `pdfReport` dynamic import — sadece buton tıklandığında yüklenir. QR kodu dark/light scheme'e göre `fgColor` adapte eder.
+- Commits: `be1c265`, `c9f989c`, `a887b05`, `bbbf37c`, `d53674b`. All pushed to main.
+
 ## 2026-07-14 (Claude, "Birlikte keşfet" reveal mode)
 
 - **RevealMode bileşeni**: Tam ekran overlay — sonuç sayfasından "Birlikte keşfet" butonuyla açılır. Çiftler yanyana otururken bir telefondan cevapları tek tek keşfederler.
