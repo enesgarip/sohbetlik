@@ -37,7 +37,7 @@ export function sendLocalNotification(title: string, body: string) {
       badge: '/favicon.svg',
       tag: 'sohbetlik-partner',
       renotify: true,
-    })
+    } as NotificationOptions)
 
     notification.onclick = () => {
       window.focus()
