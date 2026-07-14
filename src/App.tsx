@@ -132,7 +132,6 @@ function App() {
             <Route path="/answer/:roomId/:participantId" element={<AnswerPage />} />
             <Route path="/waiting/:roomId/:participantId" element={<WaitingPage />} />
             <Route path="/results/:roomId/:participantId" element={<ResultsPage />} />
-            <Route path="/demo" element={<DemoPage />} />
             <Route path="/admin" element={<Suspense fallback={<LoadingState />}><AdminDashboard /></Suspense>} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
@@ -887,61 +886,6 @@ function TendencyAreaCard({ area, counterpartArea }: { area: AreaSummary; counte
         )
       })}
     </article>
-  )
-}
-
-function DemoPage() {
-  const navigate = useNavigate()
-  const [status, setStatus] = useState('Oda hazırlanıyor…')
-
-  useEffect(() => {
-    let cancelled = false
-
-    async function setup() {
-      const questionIds = questionRepository.getSessionQuestionIds()
-      const questions = questionRepository.getQuestionsByIds(questionIds)
-
-      function randomAnswer(q: typeof questions[number]): AnswerValue {
-        if (q.type === 'slider') return Math.floor(Math.random() * 5) + 1
-        return q.options[Math.floor(Math.random() * q.options.length)].id
-      }
-
-      const hostSession = await roomRepository.createRoom(questionIds)
-      if (cancelled) return
-
-      const guestSession = await roomRepository.joinRoomByCode(hostSession.room.code)
-      if (cancelled || !guestSession) return
-
-      setStatus('Cevaplar dolduruluyor…')
-
-      const answerPairs = questions.map((q) => {
-        const hostVal = randomAnswer(q)
-        const guestVal = Math.random() > 0.35 ? hostVal : randomAnswer(q)
-        return { questionId: q.id, hostVal, guestVal }
-      })
-
-      await Promise.all(answerPairs.map(({ questionId, hostVal, guestVal }) =>
-        Promise.all([
-          roomRepository.saveAnswer({ roomId: hostSession.room.id, participantId: hostSession.participantId, questionId, value: hostVal }),
-          roomRepository.saveAnswer({ roomId: guestSession.room.id, participantId: guestSession.participantId, questionId, value: guestVal }),
-        ])
-      ))
-      if (cancelled) return
-
-      navigate(`/results/${hostSession.room.id}/${hostSession.participantId}`, { replace: true })
-    }
-
-    void setup()
-    return () => { cancelled = true }
-  }, [navigate])
-
-  return (
-    <div className="loading-layout">
-      <div className="pulse-orbit">
-        <HeartHandshake size={34} aria-hidden="true" />
-      </div>
-      <p style={{ marginTop: 16, color: 'var(--muted)', fontSize: '0.9rem' }}>{status}</p>
-    </div>
   )
 }
 

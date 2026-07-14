@@ -1,4 +1,8 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { questionRepository } from '../repositories/questionRepository'
+import { roomRepository } from '../repositories/activeRoomRepository'
+import type { AnswerValue } from '../types/domain'
 
 type Overview = {
   totalRooms: number
@@ -230,6 +234,8 @@ export function AdminDashboard() {
         </div>
       )}
 
+      <DemoRoomButton />
+
       <p className="admin-footer">Her 60 saniyede otomatik güncellenir</p>
     </section>
   )
@@ -241,6 +247,62 @@ function StatCard({ label, value, sub }: { label: string; value: number; sub?: s
       <span className="admin-stat-value">{value.toLocaleString('tr-TR')}</span>
       <span className="admin-stat-label">{label}</span>
       {sub && <span className="admin-stat-sub">{sub}</span>}
+    </div>
+  )
+}
+
+function DemoRoomButton() {
+  const navigate = useNavigate()
+  const [status, setStatus] = useState<'idle' | 'loading' | 'done'>('idle')
+
+  async function createDemo() {
+    if (status === 'loading') return
+    setStatus('loading')
+
+    try {
+      const questionIds = questionRepository.getSessionQuestionIds()
+      const questions = questionRepository.getQuestionsByIds(questionIds)
+
+      function randomAnswer(q: typeof questions[number]): AnswerValue {
+        if (q.type === 'slider') return Math.floor(Math.random() * 5) + 1
+        return q.options[Math.floor(Math.random() * q.options.length)].id
+      }
+
+      const hostSession = await roomRepository.createRoom(questionIds)
+      const guestSession = await roomRepository.joinRoomByCode(hostSession.room.code)
+      if (!guestSession) throw new Error('join failed')
+
+      const answerPairs = questions.map((q) => {
+        const hostVal = randomAnswer(q)
+        const guestVal = Math.random() > 0.35 ? hostVal : randomAnswer(q)
+        return { questionId: q.id, hostVal, guestVal }
+      })
+
+      await Promise.all(answerPairs.map(({ questionId, hostVal, guestVal }) =>
+        Promise.all([
+          roomRepository.saveAnswer({ roomId: hostSession.room.id, participantId: hostSession.participantId, questionId, value: hostVal }),
+          roomRepository.saveAnswer({ roomId: guestSession.room.id, participantId: guestSession.participantId, questionId, value: guestVal }),
+        ])
+      ))
+
+      setStatus('done')
+      navigate(`/results/${hostSession.room.id}/${hostSession.participantId}`)
+    } catch {
+      setStatus('idle')
+    }
+  }
+
+  return (
+    <div style={{ marginTop: 24, textAlign: 'center' }}>
+      <button
+        className="l-btn primary"
+        type="button"
+        disabled={status === 'loading'}
+        onClick={() => void createDemo()}
+        style={{ width: 'auto', padding: '12px 24px' }}
+      >
+        {status === 'loading' ? 'Oluşturuluyor…' : '🧪 Demo oda oluştur'}
+      </button>
     </div>
   )
 }
