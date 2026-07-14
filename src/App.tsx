@@ -47,7 +47,7 @@ import { useCommunityNorms, getNormLabel } from './lib/communityNorms'
 import { REACTION_OPTIONS, getReactions, toggleReaction, type ReactionType } from './lib/reactions'
 import { cycleBookmark, getBookmark, type BookmarkStatus } from './lib/questionBookmarks'
 import { calculateTimeStats, formatDuration } from './lib/answerStats'
-const loadPdfReport = () => import('./lib/pdfReport')
+import { generateReport } from './lib/pdfReport'
 import { useRoom } from './hooks/useRoom'
 import {
   applyPendingAnswers,
@@ -148,7 +148,7 @@ const AB_COPY = {
     bottomCta: 'Hemen başla',
   },
   B: {
-    subtitle: 'Birbirinizi ne kadar iyi tanıyorsunuz? 24 soru, 7 dakika — sürprizlere hazır olun.',
+    subtitle: 'Birbirinizi ne kadar iyi tanıyorsunuz? 16 soru, 5-6 dakika — sürprizlere hazır olun.',
     cta: 'Sohbete başla',
     bottomCta: 'Ücretsiz dene',
   },
@@ -280,7 +280,7 @@ function HomePage() {
           <span className="l-step-num">2</span>
           <div>
             <strong>Ayrı ayrı cevaplayın</strong>
-            <p>16 soru, 7-8 dakika — kişilik testi değil</p>
+            <p>16 soru, 5-6 dakika — kişilik testi değil</p>
           </div>
         </div>
         <div className="l-step">
@@ -307,7 +307,7 @@ function HomePage() {
         <div className="l-feature">
           <span className="l-feature-icon">🔄</span>
           <strong>Her seferinde farklı</strong>
-          <p>144 soruluk havuz — tekrar oynayın, yeni sorular gelsin</p>
+          <p>Geniş soru havuzu — tekrar oynayın, yeni sorular gelsin</p>
         </div>
         <div className="l-feature">
           <span className="l-feature-icon">🔒</span>
@@ -425,6 +425,7 @@ function JoinPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isJoining, setIsJoining] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isFirstVisit] = useState(() => !localStorage.getItem('sohbetlik_visited'))
 
   useEffect(() => {
     if (!roomCode) {
@@ -458,6 +459,12 @@ function JoinPage() {
       active = false
     }
   }, [roomCode])
+
+  useEffect(() => {
+    if (isFirstVisit) {
+      localStorage.setItem('sohbetlik_visited', '1')
+    }
+  }, [isFirstVisit])
 
   async function joinRoom() {
     if (!roomCode || isJoining) {
@@ -500,12 +507,6 @@ function JoinPage() {
 
   const hostParticipant = room.participants.find((p) => p.role === 'host')
   const questionCount = room.questionIds.length
-
-  const isFirstVisit = !localStorage.getItem('sohbetlik_visited')
-
-  useEffect(() => {
-    localStorage.setItem('sohbetlik_visited', '1')
-  }, [])
 
   return (
     <section className="join-layout" aria-labelledby="join-title">
@@ -1007,9 +1008,8 @@ function ResultsPage() {
     [questions, participant],
   )
 
-  async function handleDownloadReport() {
+  function handleDownloadReport() {
     if (!room || !participant) return
-    const { generateReport } = await loadPdfReport()
     generateReport({
       roomCode: room.code,
       level: currentLevel,
@@ -1335,7 +1335,7 @@ function ResultsPage() {
         {personTendencies && (
           <ShareCard snapshot={personTendencies} roomCode={room.code} level={currentLevel} />
         )}
-        <button className="r-btn ghost" type="button" onClick={() => void handleDownloadReport()}>
+        <button className="r-btn ghost" type="button" onClick={handleDownloadReport}>
           <Download size={15} aria-hidden="true" />
           Rapor indir
         </button>

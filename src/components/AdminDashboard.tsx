@@ -40,6 +40,19 @@ type AnalyticsData = {
   dailyRooms: DailyRoom[]
 }
 
+function getDropoffLabel(bucket: string) {
+  const labels: Record<string, string> = {
+    '0': 'Hiç cevap yok',
+    '1-25': 'İlk çeyrek',
+    '26-50': 'Yarıya kadar',
+    '51-75': 'Yarıdan sonra',
+    '76-99': 'Sona yakın',
+    complete: 'Tamamladı',
+  }
+
+  return labels[bucket] ?? `${bucket} cevap`
+}
+
 export function AdminDashboard() {
   const [key, setKey] = useState('')
   const [data, setData] = useState<AnalyticsData | null>(null)
@@ -159,8 +172,8 @@ export function AdminDashboard() {
           <div className="admin-level-bars">
             {Object.entries(data.dropoff).map(([bucket, count]) => (
               <div className="admin-level-row" key={bucket}>
-                <span className="admin-level-label" style={{ width: 80 }}>
-                  {bucket === '0' ? 'Hiç cevap yok' : bucket === '24' ? '24 (tam)' : `${bucket} cevap`}
+                <span className="admin-level-label" style={{ width: 104 }}>
+                  {getDropoffLabel(bucket)}
                 </span>
                 <div className="admin-bar-track">
                   <div

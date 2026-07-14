@@ -1,5 +1,20 @@
 # Work Log
 
+## 2026-07-14 (Codex, expanded L2-L4 seed migration)
+
+- Added `supabase/migrations/20260714133000_seed_expanded_level2_level4_questions.sql`, generated from active source questions missing from existing migrations: L2 +16, L3 +14, L4 +14.
+- Verified source-vs-migration coverage now has no missing active L2-L4 slugs.
+- Ran Supabase remote dry-run; only the new migration was pending. Pushed it to the linked production Supabase project.
+- Verified production via anonymous Supabase reads: active question counts are L1=43, L2=40, L3=38, L4=38; expected L2-L4 source slugs = 116, remote active L2-L4 slugs = 116, missing = 0.
+- Local Supabase reset/lint could not run because Docker Desktop was not running on the machine; remote dry-run/push and remote read verification passed.
+
+## 2026-07-14 (Codex, report download and 16-question copy cleanup)
+
+- Fixed report download reliability by removing the async dynamic import from the button path, generating the report synchronously on click, and adding a new-tab fallback for browsers that do not support anchor downloads.
+- Cleaned current 16-question UX copy on the landing page and removed stale hardcoded pool-count copy.
+- Replaced admin drop-off buckets tied to 24 answers with room-length-relative progress buckets, so 16-question and legacy 24-question rooms are labeled correctly.
+- Updated Playwright flows to use `SESSION_QUESTION_COUNT` and added a report download assertion.
+
 ## 2026-07-14 (Claude, critical fix — missing questions breaking room creation)
 
 - **Bug**: "Oda oluştur" production'da tamamen kırıktı. `createRoom` → `getQuestionMaps` slug-to-UUID map oluştururken 19 soru DB'de bulunamıyordu: `Error: Soru veritabanında bulunamadı: playlist-tercihi`.

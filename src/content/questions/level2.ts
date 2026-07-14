@@ -1,6 +1,6 @@
 import type { QuestionContent } from '../types'
 
-// Seviye 2 (Karakter & Ritim) havuzu — 24 soru.
+// Seviye 2 (Karakter & Ritim) havuzu — 40 soru, oturumda 16 seçilir.
 // Konu: para alışkanlıkları, düzen/kaos, sosyal enerji, stres tarzı, günlük ritim detayları.
 // Parti kısıtları: kategori başına ≤3, trait başına ≤2,
 // 8 ikilem / 10 çoktan seçmeli / 6 slider.

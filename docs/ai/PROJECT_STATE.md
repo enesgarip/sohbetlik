@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-07-09
+Last updated: 2026-07-14
 
 ## Product
 
@@ -37,12 +37,12 @@ Core slogan:
 - `activeRoomRepository` picks Supabase when `VITE_SUPABASE_*` env exists, else the localStorage `localRoomRepository`.
 - `useRoom` hook drives all room pages: initial fetch + Realtime + 3s polling fallback.
 - Two-device sync is verified end-to-end against the local Supabase stack (`tests/sync.spec.ts`).
-- Two-device sync and next-level progression are verified end-to-end against production on `https://sohbetlik.vercel.app` (host + guest contexts completed Levels 1-4, 24 answers each per level, results visible and no Level 5 CTA).
+- Two-device sync and next-level progression are verified end-to-end against production on `https://sohbetlik.vercel.app` (2026-07-08 verification covered the prior 24-answer build through Levels 1-4; current default room size is 16 questions).
 - Question system is implemented (2026-07-08):
-  - Content-as-code: `src/content/` holds categories, trait registry, and 24-question pools for Levels 1-4.
+  - Content-as-code: `src/content/` holds categories, trait registry, and active question pools for Levels 1-4 (L1=43, L2=40, L3=38, L4=38).
   - Levels 2-4 have production seed migrations and next-level/rematch UI is generalized through Level 4: after both participants complete a room, results can offer the next level while `currentLevel < 4`.
   - Quality docs: `docs/product/QUESTION_WRITING_GUIDE.md` (standard), `docs/product/QUESTION_SYSTEM_DESIGN.md` (architecture), `docs/product/QUESTIONS_LEVEL1.md` (approved pool).
-  - `src/domain/questionSelection.ts` picks and orders 24 questions per session (level mix, trait/category caps, type pacing, opener/closer slots).
+  - `src/domain/questionSelection.ts` picks and orders 16 questions per session (level mix, trait/category caps, type pacing, opener/closer slots).
   - Mechanical content gate: `npm run questions:lint` (also runs inside `test:unit`).
   - Device-level seen-question history (`src/lib/seenQuestions.ts`) excludes recently seen questions when hosting.
   - Slider answers are never rendered as numbers; option order is shuffled with a room-seeded order shared by both devices.
@@ -57,13 +57,15 @@ Core slogan:
   - RLS
   - explicit grants
   - Realtime or polling fallback
-- Local Supabase Docker config and six migrations exist:
+- Local Supabase Docker config and eight migrations exist:
   - `20260707112731_initial_mvp_schema.sql` (tables, RLS, grants, realtime publication)
   - `20260707150000_seed_questions_and_room_access.sql` (question slugs + seed, guest participant reads, room delete)
   - `20260708090000_question_metadata_and_level1_pool.sql` (question metadata columns, `rooms.previous_room_id`, demo questions deactivated, 24-question Level 1 pool seeded)
   - `20260709090000_cleanup_stale_rooms.sql` (SECURITY DEFINER function to delete rooms >7 days old)
   - `20260709093000_seed_level2_questions.sql` (24-question Level 2 pool seeded idempotently by slug)
   - `20260710090000_seed_level3_level4_questions.sql` (24-question Level 3 and 24-question Level 4 pools seeded idempotently by slug)
+  - `20260714090000_seed_missing_level1_questions.sql` (19 later Level 1 questions)
+  - `20260714133000_seed_expanded_level2_level4_questions.sql` (44 later Level 2-4 questions)
 - MVP question slugs map to DB uuids through `questions.slug`; questions are seeded in the migration (not `seed.sql`) so remote pushes get them.
 - Room `status` is intentionally never set to `completed` in MVP: guest RLS read access depends on the room staying open.
 - Upstash Redis remains only a fallback if Supabase becomes blocked again.

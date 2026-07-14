@@ -128,10 +128,25 @@ export function generateReport(data: ReportData) {
 </body>
 </html>`
 
-  const blob = new Blob([html], { type: 'text/html' })
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
   const url = URL.createObjectURL(blob)
-  const win = window.open(url, '_blank')
-  if (win) {
-    win.addEventListener('afterprint', () => URL.revokeObjectURL(url))
+  const fileName = `sohbetlik-rapor-${roomCode}.html`
+  const a = document.createElement('a')
+  const supportsDownload = 'download' in a
+  a.href = url
+  a.download = fileName
+  a.style.display = 'none'
+
+  if (supportsDownload) {
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+  } else {
+    const opened = window.open(url, '_blank', 'noopener,noreferrer')
+    if (!opened) {
+      window.location.href = url
+    }
   }
+
+  setTimeout(() => URL.revokeObjectURL(url), 60_000)
 }

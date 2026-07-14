@@ -1,12 +1,14 @@
 # Next Actions
 
-Last updated: 2026-07-09
+Last updated: 2026-07-14
 
 ## Current Priority
 
-Monitor the Level 3-4 rollout, then pick the next product milestone.
+Monitor the expanded question-pool rollout, then pick the next product milestone.
 
 ## Recently Completed
+
+- Expanded L2-L4 seed coverage: `20260714133000_seed_expanded_level2_level4_questions.sql` backfills 44 active source questions missing from the original Level 2-4 seed migrations. Pushed to production Supabase; anonymous remote reads now show active counts L1=43, L2=40, L3=38, L4=38 and no missing L2-L4 source slugs.
 
 - AI Summary: Vercel serverless function (`api/summary.ts`) calls Groq (Llama 3.3 70B) with answer pairs + followupPrompt + aiHint. Client fetches on results page when both participants have answered; falls back to local insights if API unavailable. `GROQ_API_KEY` env var needed on Vercel production. Results page shows a green "Cevaplarınıza özel AI analizi" badge when AI insights are present. Simulate-guest button removed from UI; `api/simulate-guest.ts` kept for programmatic testing.
 - `/room/:roomId` viewer resolution: page now finds the viewer's own participant via `getViewerParticipant`; non-participants are redirected to `/join/:roomCode`.

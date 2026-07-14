@@ -1,6 +1,6 @@
 import type { QuestionContent } from '../types'
 
-// Seviye 1 (İlk Tanışma) havuzu — ilk parti, 24 soru.
+// Seviye 1 (İlk Tanışma) havuzu — 43 soru, oturumda 16 seçilir.
 // İçerik onayı: docs/product/QUESTIONS_LEVEL1.md (Aşama 3).
 // Parti kısıtları: kategori başına ≤3, trait başına ≤2,
 // 8 ikilem / 10 çoktan seçmeli / 6 slider.

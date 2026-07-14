@@ -207,18 +207,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // ── Drop-off analysis ──
-    const dropoffBuckets: Record<string, number> = { '0': 0, '1-5': 0, '6-11': 0, '12-17': 0, '18-23': 0, '24': 0 }
+    const dropoffBuckets: Record<string, number> = {
+      '0': 0,
+      '1-25': 0,
+      '26-50': 0,
+      '51-75': 0,
+      '76-99': 0,
+      complete: 0,
+    }
     for (const stats of roomStats) {
       if (stats.isCompleted) continue
       for (const p of (participantsByRoom[stats.room.id] ?? [])) {
         const key = `${stats.room.id}:${p.id}`
         const count = answerCountByParticipant[key] ?? 0
+        const totalQuestions = Math.max(1, stats.room.question_count)
+        const progressRatio = count / totalQuestions
+
         if (count === 0) dropoffBuckets['0']++
-        else if (count >= 24) dropoffBuckets['24']++
-        else if (count <= 5) dropoffBuckets['1-5']++
-        else if (count <= 11) dropoffBuckets['6-11']++
-        else if (count <= 17) dropoffBuckets['12-17']++
-        else dropoffBuckets['18-23']++
+        else if (count >= totalQuestions) dropoffBuckets.complete++
+        else if (progressRatio <= 0.25) dropoffBuckets['1-25']++
+        else if (progressRatio <= 0.5) dropoffBuckets['26-50']++
+        else if (progressRatio <= 0.75) dropoffBuckets['51-75']++
+        else dropoffBuckets['76-99']++
       }
     }
 

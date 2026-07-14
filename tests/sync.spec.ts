@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { expect, test } from '@playwright/test'
+import { SESSION_QUESTION_COUNT } from '../src/repositories/questionRepository'
 
 // Real two-device sync needs a Supabase backend. Local runs get it from
 // .env.local (e.g. the `supabase start` stack); CI smoke runs skip it.
@@ -24,7 +25,7 @@ test.describe('two-device sync', () => {
     const guestPage = await guestContext.newPage()
 
     await hostPage.goto('/')
-    await hostPage.getByRole('button', { name: 'Oda oluştur' }).click()
+    await hostPage.getByRole('button', { name: /Oda oluştur|Sohbete başla/ }).click()
     await expect(hostPage.getByRole('heading', { name: 'Odan hazır.' })).toBeVisible()
 
     const roomCode = await hostPage.locator('.invite-details strong').innerText()
@@ -38,7 +39,7 @@ test.describe('two-device sync', () => {
 
     // Realtime or the 3s polling fallback should surface the guest's answer.
     const guestRow = hostPage.locator('.participant-row', { hasText: 'Davetli' })
-    await expect(guestRow.locator('strong')).toHaveText('1/24', { timeout: 15_000 })
+    await expect(guestRow.locator('strong')).toHaveText(`1/${SESSION_QUESTION_COUNT}`, { timeout: 15_000 })
 
     await hostContext.close()
     await guestContext.close()

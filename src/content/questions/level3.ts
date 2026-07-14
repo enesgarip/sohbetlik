@@ -1,6 +1,6 @@
 import type { QuestionContent } from '../types'
 
-// Seviye 3 (Yakınlaşma) havuzu — 24 soru.
+// Seviye 3 (Yakınlaşma) havuzu — 38 soru, oturumda 16 seçilir.
 // Konu: iletişim tarzı, alan ihtiyacı, duygusal ifade, mesajlaşma beklentisi, yalnız zaman.
 // Yasak bölge: üçüncü kişiler, kıyas.
 // Parti kısıtları: kategori başına ≤3, trait başına ≤2,

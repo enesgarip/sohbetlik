@@ -1,6 +1,6 @@
 import type { QuestionContent } from '../types'
 
-// Seviye 4 (Ufuk) havuzu — 24 soru.
+// Seviye 4 (Ufuk) havuzu — 38 soru, oturumda 16 seçilir.
 // Konu: uzun vade, çocuk bakışı, şehir/ülke, kariyer-yaşam dengesi, birlikte büyüme.
 // Yasak bölge: kesin karar dili ("bunu yapMALISIN"), travma, eski ilişki dökümü,
 // gelir rakamları, sağlık geçmişi, dini/siyasi kimlik.
