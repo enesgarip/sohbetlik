@@ -1,5 +1,11 @@
 # Work Log
 
+## 2026-07-14 (Codex, all-level flow verification)
+
+- Production L1 -> L4 smoke test found Level 4 sessions could contain 17 questions (`Soru 17/17`) because opener reservation could exceed the Level 1 quota in the Level 4 mix.
+- Capped reserved opening questions by the available minimum-level quota and added a real-pool regression test that every room level returns exactly 16 questions across multiple seeds.
+- Added short anonymous sign-in retry/backoff in the Supabase room repository after e2e exposed transient anonymous auth failures under parallel browser load.
+
 ## 2026-07-14 (Codex, admin demo room reliability)
 
 - Fixed AdminDashboard "Demo oda oluştur" failing with `participants_room_id_user_id_key`: the old client-side flow tried to create host and guest participants with the same anonymous Supabase user in one browser session.

@@ -233,4 +233,22 @@ describe('selectSessionQuestions', () => {
     expect(closer.intensity).toBe(1)
     expect(closer.funScore).toBeGreaterThanOrEqual(4)
   })
+
+  it('keeps every real room level at the requested session count', () => {
+    const levels: QuestionLevel[] = [1, 2, 3, 4]
+
+    for (const level of levels) {
+      for (let seed = 1; seed <= 25; seed += 1) {
+        const result = selectSessionQuestions({
+          pool: activeQuestionContents,
+          level,
+          count: 16,
+          random: mulberry32(level * 100 + seed),
+        })
+
+        expect(result, `level ${level}, seed ${seed}`).toHaveLength(16)
+        expect(Math.max(...result.map((question) => question.level))).toBe(level)
+      }
+    }
+  })
 })

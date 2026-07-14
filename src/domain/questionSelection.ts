@@ -368,9 +368,10 @@ export function selectSessionQuestions(input: SelectSessionInput): SelectableQue
     .sort((a, b) => (a.type === 'either_or' ? 0 : 1) - (b.type === 'either_or' ? 0 : 1))
 
   let reservedOpeners = 0
+  const maxReservedOpeners = Math.min(2, quotas.get(minMixLevel) ?? 0)
 
   for (const candidate of openerCandidates) {
-    if (reservedOpeners >= 2 || state.picked.length >= count) {
+    if (reservedOpeners >= maxReservedOpeners || state.picked.length >= count) {
       break
     }
 

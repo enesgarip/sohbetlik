@@ -13,6 +13,7 @@ type Client = SupabaseClient<Database>
 type ParticipantRow = Database['public']['Tables']['participants']['Row']
 
 const UNIQUE_VIOLATION = '23505'
+const AUTH_RETRY_DELAYS_MS = [0, 300, 900]
 
 function requireClient(): Client {
   if (!supabase) {
@@ -31,15 +32,26 @@ async function ensureUserId(client: Client): Promise<string> {
     return data.session.user.id
   }
 
-  const { data: signInData, error } = await client.auth.signInAnonymously()
+  let lastError: unknown = null
 
-  if (error || !signInData.user) {
-    throw new Error(
-      'Anonim oturum açılamadı. Supabase projesinde anonymous sign-ins aktif olmalı.',
-    )
+  for (const delayMs of AUTH_RETRY_DELAYS_MS) {
+    if (delayMs > 0) {
+      await new Promise((resolve) => setTimeout(resolve, delayMs))
+    }
+
+    const { data: signInData, error } = await client.auth.signInAnonymously()
+
+    if (signInData.user) {
+      return signInData.user.id
+    }
+
+    lastError = error
   }
 
-  return signInData.user.id
+  throw new Error(
+    'Anonim oturum açılamadı. Supabase projesinde anonymous sign-ins aktif olmalı.',
+    { cause: lastError },
+  )
 }
 
 type QuestionMaps = {
