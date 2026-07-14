@@ -17,7 +17,7 @@ import {
   X,
 } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import {
   BrowserRouter,
   Link as RouterLink,
@@ -42,12 +42,12 @@ import { buildConversationInsights, getAnswerLabel } from './domain/results'
 import { calculateTendencies, compareTendencies } from './domain/tendencyScoring'
 import type { AreaSummary } from './domain/tendencyScoring'
 import { ShareCard } from './components/ShareCard'
-import { AdminDashboard } from './components/AdminDashboard'
+const AdminDashboard = lazy(() => import('./components/AdminDashboard').then(m => ({ default: m.AdminDashboard })))
 import { useCommunityNorms, getNormLabel } from './lib/communityNorms'
 import { REACTION_OPTIONS, getReactions, toggleReaction, type ReactionType } from './lib/reactions'
 import { cycleBookmark, getBookmark, type BookmarkStatus } from './lib/questionBookmarks'
 import { calculateTimeStats, formatDuration } from './lib/answerStats'
-import { generateReport } from './lib/pdfReport'
+const loadPdfReport = () => import('./lib/pdfReport')
 import { useRoom } from './hooks/useRoom'
 import {
   applyPendingAnswers,
@@ -132,7 +132,7 @@ function App() {
             <Route path="/answer/:roomId/:participantId" element={<AnswerPage />} />
             <Route path="/waiting/:roomId/:participantId" element={<WaitingPage />} />
             <Route path="/results/:roomId/:participantId" element={<ResultsPage />} />
-            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin" element={<Suspense fallback={<LoadingState />}><AdminDashboard /></Suspense>} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </section>
@@ -388,7 +388,7 @@ function RoomPage() {
             value={inviteLink}
             size={148}
             bgColor="transparent"
-            fgColor="#22201c"
+            fgColor={window.matchMedia('(prefers-color-scheme: dark)').matches ? '#e8e2d8' : '#22201c'}
             level="M"
             includeMargin={false}
           />
@@ -1006,8 +1006,9 @@ function ResultsPage() {
     [questions, participant],
   )
 
-  function handleDownloadReport() {
+  async function handleDownloadReport() {
     if (!room || !participant) return
+    const { generateReport } = await loadPdfReport()
     generateReport({
       roomCode: room.code,
       level: currentLevel,
@@ -1333,7 +1334,7 @@ function ResultsPage() {
         {personTendencies && (
           <ShareCard snapshot={personTendencies} roomCode={room.code} level={currentLevel} />
         )}
-        <button className="r-btn ghost" type="button" onClick={handleDownloadReport}>
+        <button className="r-btn ghost" type="button" onClick={() => void handleDownloadReport()}>
           <Download size={15} aria-hidden="true" />
           Rapor indir
         </button>
