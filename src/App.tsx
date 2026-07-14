@@ -219,7 +219,8 @@ function HomePage() {
 
       trackEvent('room_created', variant)
       navigate(`/room/${session.room.id}`)
-    } catch {
+    } catch (err) {
+      console.error('[createRoom]', err)
       setError('Oda oluşturulamadı. Bağlantını kontrol edip tekrar dener misin?')
       setIsCreating(false)
     }
