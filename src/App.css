@@ -853,6 +853,56 @@ output {
   .secondary-action {
     width: 100%;
   }
+
+  .primary-action,
+  .secondary-action,
+  .answer-option,
+  .l-btn,
+  .r-btn,
+  .ghost-action,
+  .copy-button {
+    min-height: 48px;
+  }
+
+  .primary-action:active,
+  .secondary-action:active,
+  .answer-option:active,
+  .l-btn:active,
+  .r-btn:active {
+    transform: scale(0.97);
+  }
+
+  .landing {
+    padding: 32px 18px 28px;
+  }
+
+  .reveal-question {
+    font-size: 1.2rem;
+  }
+
+  .reveal-answer-cards {
+    grid-template-columns: 1fr;
+    max-width: 260px;
+  }
+
+  .reveal-nav-btn {
+    min-height: 48px;
+    padding: 12px 20px;
+  }
+
+  .r-block-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .r-reaction-bar {
+    gap: 6px;
+  }
+
+  .r-reaction-btn {
+    min-width: 40px;
+    min-height: 40px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

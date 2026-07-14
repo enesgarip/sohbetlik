@@ -67,6 +67,8 @@
 html {
   min-width: 320px;
   background: var(--paper);
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 body {
