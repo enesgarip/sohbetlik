@@ -1,5 +1,14 @@
 # Work Log
 
+## 2026-07-14 (Claude, critical fix — missing questions breaking room creation)
+
+- **Bug**: "Oda oluştur" production'da tamamen kırıktı. `createRoom` → `getQuestionMaps` slug-to-UUID map oluştururken 19 soru DB'de bulunamıyordu: `Error: Soru veritabanında bulunamadı: playlist-tercihi`.
+- **Kök neden**: `src/content/questions/level1.ts`'te 43 soru var ama Supabase'te sadece ilk 24'ü seed edilmişti. Havuz genişletme partisi (buzdolabi-kapagi, telefon-alarmi, playlist-tercihi, yolda-kaybolmak, enerji-saati, arkadas-cagri, para-harcama, yeni-insanlar, haber-tuketimi, surpriz-tepki, yardim-isteme, film-secimi + 7 easter egg soru) hiç migrate edilmemişti.
+- **Fix**: `supabase/migrations/20260714090000_seed_missing_level1_questions.sql` — 19 soruyu `ON CONFLICT (slug) DO NOTHING` ile idempotent ekledi. `supabase db push` ile production'a uygulandı.
+- **Demo oda**: AdminDashboard'a `DemoRoomButton` eklendi (admin auth arkasında). Aynı browser'da Supabase anonymous auth aynı userId verdiği için guest doğrudan `participants` tablosuna insert edilir, cevaplar batch insert.
+- **Confetti**: Reveal mode'da eşleşen cevaplarda CSS-only confetti animasyonu (12 dot, 1.1s).
+- Commit `3558069`, pushed to main.
+
 ## 2026-07-14 (Claude, polishing batch — dark mode, mobile UX, reorder, onboarding, perf)
 
 - **Dark mode**: `prefers-color-scheme: dark` media query ile otomatik. Yeni CSS variable'lar: `--ink-rgb`, `--glass`, `--glass-strong`, `--choice-bg`, `--choice-active`, `--output-bg`, `--match-same`, `--match-diff`, `--line-alpha`, `--shadow-alpha`. App.css'teki tüm hardcoded renkler (`#fffaf3`, `#22201c`, `rgba(255,...)`, `rgba(34,32,28,...)`) CSS variable'lara çevrildi. Dual `theme-color` meta tag.
