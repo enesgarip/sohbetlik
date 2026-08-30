@@ -1,5 +1,7 @@
 # Sohbetlik
 
+**English** | [Türkçe](README.tr.md)
+
 > **Doğru cevaplar değil, güzel sohbetler.** — *Not right answers, but good conversations.*
 
 [![CI](https://github.com/enesgarip/sohbetlik/actions/workflows/ci.yml/badge.svg)](https://github.com/enesgarip/sohbetlik/actions/workflows/ci.yml)
