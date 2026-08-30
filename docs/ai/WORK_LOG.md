@@ -1,5 +1,11 @@
 # Work Log
 
+## 2026-08-30 (Claude, English README rewrite)
+
+- Rewrote the root `README.md` in English for the public GitHub repo: product pitch and non-goals (no scoring/judgment), how-it-works flow, question system, AI summaries with fallback, architecture diagram, routes table, tech stack, getting-started (localStorage fallback works with zero env vars), env vars, commands, local Supabase, project structure, docs links, deployment, and product principles.
+- Added CI and production badges (`ci.yml` workflow badge + shields.io link to `sohbetlik.vercel.app`).
+- No runtime code changed.
+
 ## 2026-07-14 (Codex, manual theme toggle)
 
 - Added a header theme toggle so users can switch between light and dark mode manually instead of relying only on `prefers-color-scheme`.
