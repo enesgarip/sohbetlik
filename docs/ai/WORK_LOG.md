@@ -1,5 +1,15 @@
 # Work Log
 
+## 2026-08-30 (Claude, Dependabot fixes + Turkish README)
+
+- Added `README.tr.md` (full Turkish translation) with an English/Turkish language switcher at the top of both READMEs.
+- Cleared all 15 open Dependabot alerts (10 high, 5 moderate) — all were transitive; no code changes needed:
+  - Bumped overrides: `undici` ^8.7.0 → ^8.9.0 (5 alerts), `js-yaml` ^4.2.0 → ^4.3.1.
+  - Bumped `react-router-dom` ^7.18.1 → ^7.18.2 (resolves react-router 7.18.3; RSC-mode CSRF advisory — app does not use RSC mode).
+  - `npm update` within existing ranges: `nanoid` 3.3.18, `postcss` 8.5.26, `fast-uri` 3.1.6, `brace-expansion` 5.0.9.
+  - `npm audit fix` also bumped `tar` to 7.5.22 (high advisory npm found beyond the Dependabot list). `npm audit` now reports 0 vulnerabilities.
+- Checks: `lint` ✅ (pre-existing warnings only), `test:unit` ✅ (25), `build` ✅, `test:e2e` 5/6 then the failing sync spec passed clean on isolated re-run (transient: room creation against production Supabase exceeded the 5s expect timeout on first run).
+
 ## 2026-08-30 (Claude, English README rewrite)
 
 - Rewrote the root `README.md` in English for the public GitHub repo: product pitch and non-goals (no scoring/judgment), how-it-works flow, question system, AI summaries with fallback, architecture diagram, routes table, tech stack, getting-started (localStorage fallback works with zero env vars), env vars, commands, local Supabase, project structure, docs links, deployment, and product principles.
