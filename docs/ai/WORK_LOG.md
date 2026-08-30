@@ -1,5 +1,11 @@
 # Work Log
 
+## 2026-08-30 (Claude, CI smoke fix — broken since 2026-07-10)
+
+- CI's Playwright Smoke job had failed on every run since `dd3f1e5` (2026-07-10): `app.spec.ts` "creates a room and completes the two-person conversation flow" moved the guest into `browser.newContext()`, but CI has no Supabase env, and on the localStorage fallback a separate context has empty storage — the guest can never find the room, so the test always timed out at 60s (host stuck at "Davetli 0/16").
+- Fix: the guest now joins from a second tab in the host's context when Supabase env is absent (reusing sync.spec's `hasSupabaseEnv()` pattern); with env present it keeps the separate-context two-device simulation.
+- Verified both modes locally: fallback mode (`.env.local` temporarily removed) 4/4, Supabase mode 4/4. The CI run for this commit is the first green CI in ~7 weeks.
+
 ## 2026-08-30 (Claude, Dependabot fixes + Turkish README)
 
 - Added `README.tr.md` (full Turkish translation) with an English/Turkish language switcher at the top of both READMEs.

@@ -1,5 +1,21 @@
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { expect, test, type Page } from '@playwright/test'
 import { SESSION_QUESTION_COUNT } from '../src/repositories/questionRepository'
+
+// Without Supabase env the app runs on the localStorage fallback, where a room
+// only exists inside the browser context that created it. The guest must then
+// join from a second tab in the same context; a separate context only works
+// against a real backend.
+function hasSupabaseEnv() {
+  try {
+    const env = readFileSync(fileURLToPath(new URL('../.env.local', import.meta.url)), 'utf8')
+
+    return /^VITE_SUPABASE_URL=.+$/m.test(env)
+  } catch {
+    return false
+  }
+}
 
 async function createRoomFromHome(page: Page) {
   await page.goto('/')
@@ -33,8 +49,8 @@ test('creates a room and completes the two-person conversation flow', async ({ p
   await completeQuestionSet(page)
   await expect(page.getByRole('heading', { name: 'Senin cevapların tamam.' })).toBeVisible()
 
-  const guestContext = await browser.newContext()
-  const guestPage = await guestContext.newPage()
+  const guestContext = hasSupabaseEnv() ? await browser.newContext() : null
+  const guestPage = guestContext ? await guestContext.newPage() : await page.context().newPage()
 
   try {
     await guestPage.goto(`/join/${roomCode.toLowerCase()}`)
@@ -51,7 +67,11 @@ test('creates a room and completes the two-person conversation flow', async ({ p
     const report = await downloadPromise
     expect(report.suggestedFilename()).toMatch(/^sohbetlik-rapor-.+\.html$/)
   } finally {
-    await guestContext.close()
+    if (guestContext) {
+      await guestContext.close()
+    } else {
+      await guestPage.close()
+    }
   }
 })
 
